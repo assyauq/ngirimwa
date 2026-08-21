@@ -1,0 +1,39 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Databases & Runtime sessions
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+backend/*.db*
+data/*.db*
+backend/data/
+data/media/
+.license-machine-id
+
+# Dependencies
+node_modules/
+*/node_modules/
+frontend/node_modules/
+
+# Build output & Distribution ZIPs
+dist/
+build/
+frontend/dist/
+backend/tmp/
+.tmp/
+*/.tmp/
+tmp/
+
+# OS & Logs
+.DS_Store
+Thumbs.db
+*.log
+
+# Internal dev notes
+AGENTS.md

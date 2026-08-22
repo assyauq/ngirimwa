@@ -131,11 +131,13 @@ const productDetailExamples: Record<ProductType, Record<string, string>> = {
 };
 
 function productDetailPlaceholder(type: ProductType, label: string) {
-  return productDetailExamples[type][label.trim()] || `Tulis informasi untuk ${label.trim() || 'field ini'}`;
+  const examples = productDetailExamples[type] || productDetailExamples.physical || {};
+  return examples[label.trim()] || `Tulis informasi untuk ${label.trim() || 'field ini'}`;
 }
 
 function suggestedProductDetails(type: ProductType): ProductDetailItem[] {
-  return productDetailPresets[type].map(label => ({ label, value: '' }));
+  const presets = productDetailPresets[type] || productDetailPresets.physical || [];
+  return presets.map(label => ({ label, value: '' }));
 }
 
 function parseProductDetails(raw: string | undefined, type: ProductType): ProductDetailItem[] {

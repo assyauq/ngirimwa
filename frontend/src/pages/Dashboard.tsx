@@ -391,6 +391,13 @@ export default function Dashboard() {
   const [knowledgeErrors, setKnowledgeErrors] = useState<Record<string, string>>({});
   const [editingKnowledge, setEditingKnowledge] = useState<KnowledgeItem | null>(null);
   const [editingKnowledgeDraft, setEditingKnowledgeDraft] = useState({ question: '', answer: '', tags: '', active: true, priority: 0 });
+  const [newImage, setNewImage] = useState<File | null>(null);
+  const [newImagePreview, setNewImagePreview] = useState<string>('');
+  const knowledgeImageRef = useRef<HTMLInputElement | null>(null);
+  const [editingImage, setEditingImage] = useState<File | null>(null);
+  const [editingImagePreview, setEditingImagePreview] = useState<string>('');
+  const [removeEditingImage, setRemoveEditingImage] = useState<boolean>(false);
+  const editKnowledgeImageRef = useRef<HTMLInputElement | null>(null);
   const [editingAIForm, setEditingAIForm] = useState<AIForm | null>(null);
   const [aiFormName, setAIFormName] = useState('');
   const [aiFormGoal, setAIFormGoal] = useState('');
@@ -599,8 +606,20 @@ export default function Dashboard() {
 
   const applySafePersonaTemplate = async () => {
     if (prompt.trim() && !await swalConfirm('Ganti persona dengan kerangka aman?', 'Persona saat ini akan diganti di editor. Perubahan baru tersimpan setelah menekan Simpan Persona.')) return;
-    const assistant = agentName.trim() || 'asisten customer service';
-    setPrompt(`Kamu adalah ${assistant} untuk bisnis ini. Bantu pelanggan memahami produk atau layanan, memilih yang sesuai, dan mengikuti proses pemesanan. Gunakan hanya fakta bisnis yang tersedia dan memori percakapan pelanggan. Jangan mengarang harga, stok, promo, kebijakan, atau janji layanan. Tanyakan hanya informasi yang memang belum diberikan pelanggan. Jika informasi belum tersedia, sebutkan bagian yang belum bisa dipastikan secara natural tanpa langsung mengalihkan ke manusia. Dalam balasan pelanggan, berbicaralah sebagai staf bisnis dan jangan pernah menyebut AI, bot, model, sistem, database, data saya, knowledge, basis pengetahuan, prompt, atau cara memperoleh jawaban. Teruskan ke petugas hanya jika pelanggan memintanya atau ada keputusan berisiko yang tidak boleh kamu putuskan. Jaga jawaban tetap ringkas, nyambung, dan fokus pada langkah paling relevan.`);
+    const assistant = agentName.trim() || 'CS';
+    setPrompt(`Kamu adalah ${assistant}, Customer Service resmi untuk bisnis kami.
+
+KARAKTER & GAYA BICARA:
+- Ramah, santun, solutif, dan profesional layaknya CS bintang 5.
+- Panggil pelanggan dengan sebutan "Kak" atau "Kakak".
+- Jawab dengan bahasa Indonesia yang natural, ringkas, dan to-the-point (1-3 kalimat per pesan).
+
+BATASAN & ATURAN ANTI-BLUNDER:
+1. Fakta harga, spesifikasi, stok, dan paket WAJIB bersumber dari data produk dan knowledge base resmi. Jangan pernah mengarang angka/klaim.
+2. Jangan pernah menjanjikan diskon, promo khusus, atau free ongkir di luar ketentuan resmi.
+3. Jangan berikan nomor rekening selain data pembayaran resmi toko.
+4. Jika pelanggan menanyakan detail yang belum tercatat di data kamu, sampaikan dengan santun bahwa kamu akan konfirmasikan ke tim gudang/supervisor terlebih dahulu (jangan menebak).
+5. Dalam balasan ke pelanggan, selalu berbicara sebagai staf bisnis manusia dan jangan pernah menyebut AI, bot, model, prompt, atau sistem.`);
   };
 
   const runSetupWizard = async () => {
@@ -966,8 +985,8 @@ export default function Dashboard() {
     setKnowledgeErrors(e);
     if (Object.keys(e).length > 0) return;
     try {
-      const result = await addKnowledgeMut.mutateAsync({ question: newQ, answer: newA, tags: newTags });
-      setNewQ(''); setNewA(''); setNewTags(''); setKnowledgeErrors({});
+      const result = await addKnowledgeMut.mutateAsync({ question: newQ, answer: newA, tags: newTags, image: newImage });
+      setNewQ(''); setNewA(''); setNewTags(''); setNewImage(null); setNewImagePreview(''); setKnowledgeErrors({});
       swalToast(result.merged ? 'FAQ serupa ditemukan dan diperbarui.' : 'FAQ ditambahkan.', 'success');
     } catch (error) {
       const message = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || 'FAQ belum bisa disimpan';
@@ -1825,7 +1844,18 @@ export default function Dashboard() {
                         </Stack>
                       ))}
                     </Box>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 0.75, alignItems: { xs: 'stretch', sm: 'center' } }}>
+                    <Alert severity="info" sx={{ mt: 1.25, py: 0.75, fontSize: 12, '& .MuiAlert-message': { width: '100%' } }}>
+                      <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.25, color: 'info.main' }}>
+                        💡 Panduan Praktis Persona AI Anti-Blunder:
+                      </Typography>
+                      <Typography variant="caption" sx={{ display: 'block', lineHeight: 1.5, color: 'text.secondary' }}>
+                        1. <strong>Jangan tulis harga di sini:</strong> Masukkan harga/stok di menu <em>Basis Pengetahuan</em> atau <em>Produk</em> agar diverifikasi ketat oleh sistem anti-halusinasi.<br/>
+                        2. <strong>Batas Kewenangan:</strong> Tulis larangan tegas (misal: dilarang menjanjikan diskon di luar promo resmi).<br/>
+                        3. <strong>Sikap Saat Belum Tahu:</strong> Instruksikan AI untuk jujur mengecek ke tim/gudang daripada mengarang jawaban.<br/>
+                        4. <strong>Gaya CS WhatsApp:</strong> Tentukan sapaan (misal "Kak") dan jaga jawaban tetap 1-3 kalimat per pesan.
+                      </Typography>
+                    </Alert>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 1, alignItems: { xs: 'stretch', sm: 'center' } }}>
                       <Button size="small" variant="outlined" onClick={applySafePersonaTemplate}>Pakai kerangka aman</Button>
                       <Button size="small" variant="text" onClick={() => { setExampleMode('prompt'); setExampleModalOpen(true); }}>Lihat contoh persona</Button>
                       {trainedCount > 0 && (
@@ -2305,6 +2335,39 @@ export default function Dashboard() {
                         error={!!knowledgeErrors.newA} helperText={knowledgeErrors.newA || 'Jawab lengkap dan faktual agar tetap jelas saat dibaca tanpa konteks lain.'} />
                       <TextField size="small" label="Kata pencarian" value={newTags} onChange={e => setNewTags(e.target.value)}
                         placeholder="harga, kaos, ukuran" helperText="Pisahkan dengan koma. Gunakan istilah yang mungkin diketik pelanggan." />
+                      <Box sx={{ pt: 0.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                          Lampiran gambar / brosur (opsional, AI akan mengirimkan gambar ini saat menjawab)
+                        </Typography>
+                        <input
+                          ref={knowledgeImageRef}
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setNewImage(file);
+                              setNewImagePreview(URL.createObjectURL(file));
+                            }
+                          }}
+                        />
+                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                          <Button size="small" variant="outlined" onClick={() => knowledgeImageRef.current?.click()}>
+                            {newImage ? 'Ganti gambar' : 'Pilih gambar'}
+                          </Button>
+                          {newImage && (
+                            <Button size="small" color="error" onClick={() => { setNewImage(null); setNewImagePreview(''); }}>
+                              Hapus gambar
+                            </Button>
+                          )}
+                        </Stack>
+                        {newImagePreview && (
+                          <Box sx={{ mt: 1, maxWidth: 180, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                            <img src={newImagePreview} alt="Preview" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', display: 'block' }} />
+                          </Box>
+                        )}
+                      </Box>
                       <Button size="small" startIcon={<AddIcon />} variant="contained" onClick={addKnowledge} disabled={addKnowledgeMut.isPending}>Tambah</Button>
                     </Stack>
                 </CardContent>
@@ -2357,14 +2420,21 @@ export default function Dashboard() {
                   ) : (
                     <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
                     {pageItems.map((k, i) => (
-                      <Box key={k.id} sx={{ display: 'flex', gap: 0.75, px: 1.5, py: 1, borderBottom: i < pageItems.length - 1 ? '1px solid' : 0, borderColor: 'divider', alignItems: 'flex-start' }}>
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main', flexShrink: 0, minWidth: 28, lineHeight: 1.5 }}>Q{k.id}:</Typography>
+                      <Box key={k.id} sx={{ display: 'flex', gap: 1, px: 1.5, py: 1, borderBottom: i < pageItems.length - 1 ? '1px solid' : 0, borderColor: 'divider', alignItems: 'flex-start' }}>
+                        {k.image_url ? (
+                          <Box sx={{ width: 44, height: 44, borderRadius: 1, overflow: 'hidden', flexShrink: 0, border: '1px solid', borderColor: 'divider' }}>
+                            <img src={k.image_url} alt="Brosur" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                          </Box>
+                        ) : (
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main', flexShrink: 0, minWidth: 28, lineHeight: 1.5 }}>Q{k.id}:</Typography>
+                        )}
                         <Box sx={{ minWidth: 0, flex: 1 }}>
                           <Typography variant="caption" sx={{ display: 'block', lineHeight: 1.5, fontWeight: 600 }}>{k.question}</Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.4 }}>A: {k.answer}</Typography>
                           <Stack direction="row" spacing={0.5} sx={{ mt: 0.25, flexWrap: 'wrap' }}>
                             <Chip label={KNOWLEDGE_SOURCE_LABELS[k.source || 'manual'] || k.source || 'Manual'} size="small" color="primary" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />
                             <Chip label={k.active === false ? 'Nonaktif' : 'Aktif'} size="small" color={k.active === false ? 'default' : 'success'} variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />
+                            {!!k.image_url && <Chip label="Ada Gambar" size="small" color="info" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />}
                             {!!k.priority && <Chip label={`Prioritas ${k.priority > 0 ? '+' : ''}${k.priority}`} size="small" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />}
                             {k.tags && <Chip label={k.tags} size="small" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />}
                             {(!k.tags?.trim() || k.answer.trim().length < 25) && <Chip label="Perlu dilengkapi" size="small" color="warning" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />}
@@ -2373,6 +2443,9 @@ export default function Dashboard() {
                         <Tooltip title="Edit FAQ"><IconButton onClick={() => {
                           setEditingKnowledge(k);
                           setEditingKnowledgeDraft({ question: k.question, answer: k.answer, tags: k.tags || '', active: k.active !== false, priority: k.priority || 0 });
+                          setEditingImage(null);
+                          setEditingImagePreview(k.image_url || '');
+                          setRemoveEditingImage(false);
                         }} size="small" sx={{ flexShrink: 0, mt: -0.25 }}><EditIcon fontSize="small" /></IconButton></Tooltip>
                         <IconButton onClick={async () => { if (await delKnowledge(k.id) && pageItems.length === 1 && safePage > 0) setKnowledgePage(safePage - 1); }} size="small" color="error" sx={{ flexShrink: 0, mt: -0.25 }}><DeleteIcon fontSize="small" /></IconButton>
                       </Box>
@@ -3254,54 +3327,22 @@ Jam Operasional: 08:00-21:00`}
 
           {exampleMode === 'prompt' && (
             <>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, mt: 1 }}>Persona AI</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, mt: 1 }}>Contoh Persona AI (Siap Pakai)</Typography>
               <Box component="pre" sx={{ bgcolor: 'grey.50', p: 1.5, borderRadius: 1, fontSize: '0.75rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', border: '1px solid', borderColor: 'divider', maxHeight: 400, overflowY: 'auto' }}>
-{`Kamu adalah Admin AromaLuxe, customer service WhatsApp untuk toko parfum bernama AromaLuxe Parfum.
+{`Kamu adalah Sarah, Customer Service resmi dari AromaLuxe Parfum.
 
-Tugas utama kamu adalah membantu pelanggan dengan ramah, cepat, jelas, dan persuasif untuk:
-1. Menjawab pertanyaan tentang produk parfum.
-2. Membantu rekomendasi aroma sesuai kebutuhan pelanggan.
-3. Mengecek minat pelanggan terhadap varian, ukuran, dan jumlah pesanan.
-4. Mengarahkan pelanggan untuk melakukan order.
-5. Meminta data pemesanan secara lengkap.
-6. Menjelaskan harga, pengiriman, dan cara pembayaran.
-7. Mengarahkan ke admin manusia jika ada pertanyaan di luar informasi yang tersedia.
+KARAKTER & GAYA BICARA:
+- Ramah, santun, solutif, dan profesional layaknya CS bintang 5.
+- Panggil pelanggan dengan sebutan "Kak" atau "Kakak".
+- Jawab dengan bahasa Indonesia kasual yang natural, ringkas, dan to-the-point (1-3 kalimat per pesan).
 
-PROFIL BISNIS:
-- Nama bisnis: AromaLuxe Parfum
-- Jenis bisnis: Produk fisik
-- Produk: Parfum pria dan wanita, parfum inspired, body mist, eau de parfum, dan paket bundling parfum.
-- Range harga: Rp35.000 - Rp180.000 per botol. Paket bundling mulai Rp100.000.
-- Nama CS: Admin AromaLuxe
-- Jam operasional: 08:00-21:00
-- Pengiriman: JNE, J&T, SiCepat, Shopee Express, dan kurir instan untuk area tertentu.
-- Estimasi pengiriman: 1-5 hari kerja tergantung lokasi.
-
-ATURAN PENTING:
-1. Jangan mengarang informasi bisnis yang belum tersedia.
-2. Jika suatu detail belum bisa dipastikan, sampaikan secara natural tanpa menyebut AI, bot, sistem, data, knowledge, atau basis pengetahuan.
-3. Jangan memberikan klaim berlebihan.
-4. Jika pelanggan komplain, tanggapi dengan empati dan minta detail pesanan.
-5. Jika pelanggan ingin bicara dengan manusia, arahkan ke admin.
-6. Jika pelanggan bertanya di luar produk, jawab singkat dan kembalikan ke topik parfum.
-
-CARA MENJAWAB REKOMENDASI:
-Jika pelanggan bingung memilih aroma, tanyakan:
-- Untuk pria atau wanita?
-- Suka aroma fresh, manis, elegan, soft, maskulin, floral, fruity, atau vanilla?
-- Dipakai untuk harian, kerja, kuliah, acara formal, atau hadiah?
-
-ALUR ORDER:
-Jika pelanggan ingin membeli, minta data: nama, no. HP, produk/varian, ukuran, jumlah, alamat lengkap, kecamatan/kota, metode pembayaran.
-
-CARA MENJAWAB HARGA:
-"Harga parfum AromaLuxe mulai dari Rp35.000 sampai Rp180.000 per botol, tergantung ukuran dan varian. Paket bundling mulai dari Rp100.000 ya Kak."
-
-CARA MENJAWAB PENGIRIMAN:
-"Pengiriman bisa menggunakan JNE, J&T, SiCepat, Shopee Express, atau kurir instan. Estimasi 1-5 hari kerja tergantung lokasi Kak."
-
-TUJUAN AKHIR:
-Bantu pelanggan sampai jelas, tertarik, dan siap order. Jika pelanggan sudah menunjukkan minat, arahkan dengan lembut ke proses pemesanan. Jangan memaksa.`}
+BATASAN & ATURAN ANTI-BLUNDER:
+1. Fakta harga, aroma, varian, dan promo WAJIB bersumber dari data produk dan knowledge base resmi. Jangan pernah mengarang angka/klaim.
+2. Jangan pernah menjanjikan diskon, promo khusus, atau free ongkir di luar ketentuan resmi toko.
+3. Rekening resmi pembayaran HANYA BCA: 1234567890 an. AromaLuxe. Jangan sebutkan rekening lain.
+4. Jika pelanggan menanyakan detail yang belum tercatat di data kamu, sampaikan dengan santun bahwa kamu akan konfirmasikan ke tim gudang/supervisor terlebih dahulu (jangan menebak).
+5. Bantu pelanggan memilih aroma yang cocok dan arahkan ke pemesanan secara halus tanpa memaksa.
+6. Dalam balasan ke pelanggan, selalu berbicara sebagai staf bisnis manusia dan jangan pernah menyebut AI, bot, model, prompt, atau sistem.`}
               </Box>
             </>
           )}
@@ -3321,6 +3362,44 @@ Bantu pelanggan sampai jelas, tertarik, dan siap order. Jika pelanggan sudah men
               onChange={e => setEditingKnowledgeDraft(d => ({ ...d, answer: e.target.value }))} />
             <TextField size="small" label="Tags (pisahkan dengan koma)" value={editingKnowledgeDraft.tags}
               onChange={e => setEditingKnowledgeDraft(d => ({ ...d, tags: e.target.value }))} />
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                Lampiran gambar / brosur (opsional)
+              </Typography>
+              <input
+                ref={editKnowledgeImageRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setEditingImage(file);
+                    setEditingImagePreview(URL.createObjectURL(file));
+                    setRemoveEditingImage(false);
+                  }
+                }}
+              />
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <Button size="small" variant="outlined" onClick={() => editKnowledgeImageRef.current?.click()}>
+                  {editingImage || editingImagePreview ? 'Ganti gambar' : 'Pilih gambar'}
+                </Button>
+                {(editingImage || editingImagePreview) && (
+                  <Button size="small" color="error" onClick={() => {
+                    setEditingImage(null);
+                    setEditingImagePreview('');
+                    setRemoveEditingImage(true);
+                  }}>
+                    Hapus gambar
+                  </Button>
+                )}
+              </Stack>
+              {editingImagePreview && (
+                <Box sx={{ mt: 1, maxWidth: 180, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                  <img src={editingImagePreview} alt="Preview" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', display: 'block' }} />
+                </Box>
+              )}
+            </Box>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ alignItems: { sm: 'center' } }}>
               <FormControlLabel
                 control={<Switch checked={editingKnowledgeDraft.active} onChange={e => setEditingKnowledgeDraft(d => ({ ...d, active: e.target.checked }))} />}
@@ -3345,7 +3424,12 @@ Bantu pelanggan sampai jelas, tertarik, dan siap order. Jika pelanggan sudah men
             onClick={async () => {
               if (!editingKnowledge) return;
               try {
-                await updateKnowledgeMut.mutateAsync({ id: editingKnowledge.id, ...editingKnowledgeDraft });
+                await updateKnowledgeMut.mutateAsync({
+                  id: editingKnowledge.id,
+                  ...editingKnowledgeDraft,
+                  image: editingImage,
+                  remove_image: removeEditingImage,
+                });
                 setEditingKnowledge(null);
                 swalToast('FAQ diperbarui', 'success');
               } catch (error) {

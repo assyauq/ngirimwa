@@ -1204,22 +1204,69 @@ func processMessageLocked(agentID uint, sender types.JID, in services.IncomingMe
 	latencyMs := time.Since(turnStart).Milliseconds()
 	reply = services.LinkifyWhatsApp(reply, agent.Number) // nomor WA jadi tautan klik (kecuali nomor sendiri)
 	markBeforeReply()
-	sendErr := sendChunked(agentID, sender, reply, agent.AIReplyDelayMin, agent.AIReplyDelayMax, func() bool {
-		var count int64
-		database.DB.Model(&models.ChatHistory{}).
-			Where("agent_id = ? AND sender = ? AND from_human = ? AND created_at >= ?", agentID, num, true, turnStart).
-			Count(&count)
-		if count > 0 {
-			return false
+
+	var sendErr error
+	if chatResult.AttachmentPath != "" {
+		if mediaBytes, err := os.ReadFile(chatResult.AttachmentPath); err == nil && len(mediaBytes) > 0 {
+			mime := chatResult.AttachmentMime
+			if mime == "" {
+				mime = "image/jpeg"
+			}
+			if len([]rune(reply)) <= 1000 {
+				sendErr = services.WA(agentID).SendImage(num, reply, mime, mediaBytes)
+			} else {
+				sendErr = services.WA(agentID).SendImage(num, "", mime, mediaBytes)
+				if sendErr == nil {
+					sendErr = sendChunked(agentID, sender, reply, agent.AIReplyDelayMin, agent.AIReplyDelayMax, func() bool {
+						var count int64
+						database.DB.Model(&models.ChatHistory{}).
+							Where("agent_id = ? AND sender = ? AND from_human = ? AND created_at >= ?", agentID, num, true, turnStart).
+							Count(&count)
+						if count > 0 {
+							return false
+						}
+						var activePause int64
+						database.DB.Model(&models.Contact{}).
+							Where("agent_id = ? AND number = ? AND manual_pause_until > ?", agentID, num, time.Now()).
+							Count(&activePause)
+						return activePause == 0
+					})
+				}
+			}
+		} else {
+			sendErr = sendChunked(agentID, sender, reply, agent.AIReplyDelayMin, agent.AIReplyDelayMax, func() bool {
+				var count int64
+				database.DB.Model(&models.ChatHistory{}).
+					Where("agent_id = ? AND sender = ? AND from_human = ? AND created_at >= ?", agentID, num, true, turnStart).
+					Count(&count)
+				if count > 0 {
+					return false
+				}
+				var activePause int64
+				database.DB.Model(&models.Contact{}).
+					Where("agent_id = ? AND number = ? AND manual_pause_until > ?", agentID, num, time.Now()).
+					Count(&activePause)
+				return activePause == 0
+			})
 		}
-		var activePause int64
-		database.DB.Model(&models.Contact{}).
-			Where("agent_id = ? AND number = ? AND manual_pause_until > ?", agentID, num, time.Now()).
-			Count(&activePause)
-		return activePause == 0
-	}) // balasan panjang dipecah jadi beberapa bubble (lebih manusiawi)
+	} else {
+		sendErr = sendChunked(agentID, sender, reply, agent.AIReplyDelayMin, agent.AIReplyDelayMax, func() bool {
+			var count int64
+			database.DB.Model(&models.ChatHistory{}).
+				Where("agent_id = ? AND sender = ? AND from_human = ? AND created_at >= ?", agentID, num, true, turnStart).
+				Count(&count)
+			if count > 0 {
+				return false
+			}
+			var activePause int64
+			database.DB.Model(&models.Contact{}).
+				Where("agent_id = ? AND number = ? AND manual_pause_until > ?", agentID, num, time.Now()).
+				Count(&activePause)
+			return activePause == 0
+		})
+	}
 	if sendErr != nil {
-		log.Printf("WA send chunked gagal (agent %d, %s): %v", agentID, num, sendErr)
+		log.Printf("WA send balasan gagal (agent %d, %s): %v", agentID, num, sendErr)
 	}
 	logRow(displayText, reply, sendErr)
 	logAITurn(agentID, num, displayText, reply, modelName, knowledgeCount, usedShippingTool, escalate, turnError, latencyMs, trace)

@@ -1614,8 +1614,18 @@ export function useAgentDisconnect(agentId: number) {
 export function useAddKnowledge(agentId: number) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { question: string; answer: string; tags: string }) =>
-      (await api.post(`/agents/${agentId}/knowledge`, body)).data as { data: KnowledgeItem; merged: boolean },
+    mutationFn: async (body: { question: string; answer: string; tags: string; image?: File | null } | FormData) => {
+      let payload: unknown = body;
+      if (!(body instanceof FormData) && body.image) {
+        const fd = new FormData();
+        fd.append('question', body.question);
+        fd.append('answer', body.answer);
+        fd.append('tags', body.tags);
+        fd.append('image', body.image);
+        payload = fd;
+      }
+      return (await api.post(`/agents/${agentId}/knowledge`, payload)).data as { data: KnowledgeItem; merged: boolean };
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agent', agentId, 'knowledge'] });
       qc.invalidateQueries({ queryKey: ['agent', agentId, 'knowledge-usage'] });
@@ -1637,8 +1647,27 @@ export function useDeleteKnowledge(agentId: number) {
 export function useUpdateKnowledge(agentId: number) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { id: number; question: string; answer: string; tags: string; active?: boolean; priority?: number }) =>
-      (await api.put(`/agents/${agentId}/knowledge/${body.id}`, body)).data,
+    mutationFn: async (body: { id: number; question: string; answer: string; tags: string; active?: boolean; priority?: number; image?: File | null; remove_image?: boolean } | FormData) => {
+      let payload: unknown = body;
+      let id: number;
+      if (body instanceof FormData) {
+        id = Number(body.get('id'));
+      } else {
+        id = body.id;
+        if (body.image || body.remove_image) {
+          const fd = new FormData();
+          fd.append('question', body.question);
+          fd.append('answer', body.answer);
+          fd.append('tags', body.tags);
+          if (body.active !== undefined) fd.append('active', String(body.active));
+          if (body.priority !== undefined) fd.append('priority', String(body.priority));
+          if (body.remove_image) fd.append('remove_image', 'true');
+          if (body.image) fd.append('image', body.image);
+          payload = fd;
+        }
+      }
+      return (await api.put(`/agents/${agentId}/knowledge/${id}`, payload)).data;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agent', agentId, 'knowledge'] });
       qc.invalidateQueries({ queryKey: ['agent', agentId, 'knowledge-usage'] });
@@ -1748,7 +1777,7 @@ export function useTestChat(agentId: number) {
   return useMutation({
     mutationFn: async (vars: { message: string; history: { role: 'user' | 'bot'; text: string }[] }) =>
       (await api.post(`/agents/${agentId}/test-chat`, vars)).data as {
-        reply: string; escalate: boolean; model?: string;
+        reply: string; escalate: boolean; model?: string; image_url?: string;
       },
   });
 }

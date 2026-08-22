@@ -14,6 +14,7 @@ import PageHeader from './PageHeader';
 type Msg = {
   role: 'user' | 'bot';
   text: string;
+  image_url?: string;
   escalate?: boolean;
   model?: string;
   error?: boolean;
@@ -63,6 +64,7 @@ export default function TestChatPanel({ agentId }: { agentId: number }) {
       setMsgs(current => [...current, {
         role: 'bot',
         text: response.reply,
+        image_url: response.image_url,
         escalate: response.escalate,
         model: response.model,
       }]);
@@ -238,6 +240,11 @@ export default function TestChatPanel({ agentId }: { agentId: number }) {
                       lineHeight: 1.55,
                     }}
                   >
+                    {message.image_url && (
+                      <Box sx={{ mb: 1, maxWidth: 260, borderRadius: 1.5, overflow: 'hidden' }}>
+                        <img src={message.image_url} alt="Lampiran AI" style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block', borderRadius: 6 }} />
+                      </Box>
+                    )}
                     {renderWithLinks(message.text)}
                   </Box>
                   {message.escalate && (

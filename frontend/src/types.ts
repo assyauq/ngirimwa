@@ -687,6 +687,9 @@ export interface KnowledgeItem {
   question: string;
   answer: string;
   tags?: string;
+  image_path?: string;
+  image_mime?: string;
+  image_url?: string;
   source?: string;
   source_url?: string;
   active?: boolean;

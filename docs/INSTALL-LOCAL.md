@@ -1,225 +1,112 @@
-# Menjalankan NgertiKode.id | ChatLoop di Komputer Lokal
+# Panduan Instalasi & Menjalankan Source Code ChatLoop
 
-Panduan ini berlaku untuk **macOS**, **Windows**, dan **Linux**.
+Panduan langkah-demi-langkah menjalankan project **ChatLoop WhatsApp AI Assistant** di komputer lokal (**macOS**, **Windows**, dan **Linux**).
 
-Ringkasan PDF (untuk pembeli): [`PANDUAN-INSTALASI.pdf`](PANDUAN-INSTALASI.pdf).
+Versi dokumen PDF: [`docs/PANDUAN-INSTALASI.pdf`](PANDUAN-INSTALASI.pdf).
 
-**Cara yang disarankan:** buka project di **Visual Studio Code**, lalu jalankan semua perintah lewat **Terminal di dalam VS Code**.
+---
 
-## Kebutuhan
+## 1. Instal Software yang Dibutuhkan
 
-| Software | Keterangan |
-|----------|------------|
-| **Visual Studio Code** | https://code.visualstudio.com/ |
-| **Go** | Versi sesuai `go.mod` (lihat file tersebut) |
-| **Node.js** | 22+ disarankan (18+ biasanya cukup) + npm |
-| **MySQL** | 8.x, service harus berjalan |
+Pastikan komputer Anda telah terpasang software pendukung berikut sebelum memulai:
 
-### Instal cepat
+| Software | Fungsi | Tautan Unduhan |
+| :--- | :--- | :--- |
+| **Visual Studio Code** | Editor kode utama | [code.visualstudio.com](https://code.visualstudio.com/) |
+| **Go (Golang)** | Runtime Backend API | [go.dev/dl](https://go.dev/dl/) |
+| **Node.js (LTS)** | Runtime Frontend Vite | [nodejs.org](https://nodejs.org/) *(Pilih versi LTS)* |
+| **MySQL Database** | Database server | Gunakan **XAMPP**, **Laragon**, atau MySQL Server 8.x |
 
-- **Go:** https://go.dev/dl/
-- **Node.js:** https://nodejs.org/ (pilih LTS)
-- **MySQL:**
-  - macOS: `brew install mysql` lalu `brew services start mysql`
-  - Windows: [MySQL Installer](https://dev.mysql.com/downloads/installer/) (pastikan “MySQL Server” terpasang & service Running)
-  - Linux: paket distro (`mysql-server` / `mariadb-server`)
-
-Setelah install, **buka ulang terminal** agar `go`, `node`, dan `npm` dikenali.
-
-Cek:
-
+Setelah instalasi selesai, buka terminal/CMD dan verifikasi:
 ```bash
 go version
 node -v
 npm -v
 ```
 
-## 1. Ekstrak source & buka di VS Code
+---
 
-1. Ekstrak ZIP ke folder lokal (hindari folder yang di-sync publik).
-2. Buka **Visual Studio Code**.
-3. **File → Open Folder…** (Windows) / **File → Open…** (macOS).
-4. Pilih folder **root** project (ada `package.json`, `go.mod`, folder `frontend` & `backend`).
-5. Buka terminal VS Code: **Terminal → New Terminal**  
-   (pintasan: `Ctrl+`` di Windows, `Control+`` di macOS).
+## 2. Ekstrak ZIP & Buka di Visual Studio Code
 
-Pastikan terminal berada di root project. Jangan unggah source atau file `.env` ke repository publik.
-
-## 2. Environment (`.env`)
-
-Dari **Terminal VS Code** di root project:
-
-```bash
-# macOS / Linux
-cp .env.example .env
-
-# Windows CMD
-copy .env.example .env
-
-# atau lintas OS (butuh Node)
-npm run setup:env
-```
-
-### Edit file `.env` di VS Code
-
-1. Di **sidebar kiri**, klik file `.env`.
-2. Jangan hapus nama variabel di kiri tanda `=`. Hanya ganti nilai di **kanan**.
-3. Simpan file: `Ctrl+S` (Windows) / `Cmd+S` (macOS).
-
-| Nama di `.env` | Diisi dengan |
-|----------------|--------------|
-| `DB_HOST` | Alamat MySQL, biasanya `127.0.0.1` |
-| `DB_PORT` | Port MySQL, biasanya `3306` |
-| `DB_USER` | Username MySQL (contoh `root`) |
-| `DB_PASS` | Password MySQL Anda |
-| `DB_NAME` | Nama database (contoh `db_wa_blast`) |
-| `JWT_SECRET` | Kunci acak **minimal 32 karakter** — lihat cara buat di bawah |
-| `SUPERADMIN_USERNAME` | Username login dashboard |
-| `SUPERADMIN_PASSWORD` | Password admin (kuat, min. 12 karakter) |
-| `LICENSE_KEY` | Salin dari `SOURCE-LICENSE` / dashboard member (contoh `WA-xxxx…`) |
-| `LICENSE_API_SECRET` | **Wajib** — secret API lisensi dari manifest / dashboard member NgertiKode.id (bukan dikarang sendiri) |
-
-Backend dapat membuat database/tabel otomatis jika user MySQL punya izin `CREATE`.
-
-### Cara membuat `JWT_SECRET` (wajib acak)
-
-Jalankan **salah satu** perintah di Terminal VS Code, lalu **salin seluruh hasilnya** ke baris `JWT_SECRET=...` di `.env`.
-
-**macOS / Linux:**
-
-```bash
-openssl rand -hex 32
-```
-
-**Windows PowerShell (Terminal VS Code):**
-
-```powershell
-[Convert]::ToHexString((1..32 | ForEach-Object { Get-Random -Maximum 256 }) -as [byte[]]).ToLower()
-```
-
-**Semua OS (Node sudah terpasang):**
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-Contoh hasil (panjang ~64 karakter hex):
-
-```env
-JWT_SECRET=a3f91c8e2b7d0e4f6a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef
-```
-
-Jangan pakai kata sederhana seperti `secret123` atau `password`.
-
-## 3. Install dependency (sekali saja)
-
-Masih di **Terminal VS Code**, root project:
-
-```bash
-npm run setup
-```
-
-Setara dengan:
-
-```bash
-go mod download
-npm --prefix frontend install
-```
-
-## 4. Jalankan (satu perintah — semua OS)
-
-Di **Terminal VS Code**:
-
-```bash
-npm run dev
-```
-
-Itu saja. Perintah yang sama di Mac, Windows, dan Linux. Biarkan terminal VS Code tetap terbuka.
-
-| Cara lain | Perintah |
-|-----------|----------|
-| Node langsung | `node scripts/dev.mjs` |
-| macOS / Linux | `./scripts/dev.sh` |
-| Windows CMD | `scripts\dev.bat` |
-| Windows PowerShell | `powershell -ExecutionPolicy Bypass -File scripts\dev.ps1` |
-
-### Yang terjadi
-
-1. Frontend: http://127.0.0.1:5173  
-2. Backend API: http://127.0.0.1:3030  
-3. Air (hot-reload Go) diinstal otomatis bila belum ada  
-4. Port bentrok → script berhenti dengan pesan jelas  
-
-Login: `SUPERADMIN_USERNAME` / `SUPERADMIN_PASSWORD` dari `.env`.
-
-Hentikan: klik Terminal VS Code, lalu **Ctrl+C**.
-
-### Mode manual (dua terminal) — opsional
-
-Jika ingin memisahkan proses:
-
-```bash
-# Terminal 1
-go run ./backend
-
-# Terminal 2
-npm --prefix frontend run dev
-```
-
-## 5. Hubungkan WhatsApp
-
-1. Login dashboard  
-2. Tambah / pilih agent (nomor)  
-3. Hubungkan WhatsApp (QR atau pairing)  
-4. Tunggu status **Online / terhubung** sebelum memakai fitur di dashboard
-
-## Windows — tips anti-ribet
-
-1. Install Go + Node + MySQL dengan opsi **Add to PATH**.  
-2. Pakai **PowerShell** atau **Windows Terminal**, bukan hanya double-click sembarangan tanpa PATH.  
-3. Boleh double-click `scripts\dev.bat` **setelah** `npm run setup` dan `.env` siap (jalankan dari folder project).  
-4. Jika PowerShell menolak script:
-
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1
-   ```
-
-5. Firewall Windows: izinkan Node/Go saat diminta (localhost).  
-6. Pastikan service **MySQL** status *Running* di Services (`services.msc`).
-
-## macOS — tips
-
-```bash
-chmod +x scripts/dev.sh   # sekali saja jika perlu
-npm run setup
-npm run setup:env         # jika belum ada .env
-# edit .env
-npm run dev
-```
-
-## Masalah umum
-
-| Gejala | Solusi |
-|--------|--------|
-| `LICENSE_KEY kosong` / banner **LISENSI BELUM AKTIF** | Isi `LICENSE_KEY` **dan** `LICENSE_API_SECRET` dari manifest/dashboard member ke `.env`, lalu restart `npm run dev` |
-| `Invalid signature` | Public key lisensi harus yang resmi dari rilis |
-| Banner **SERVER SIAP** | Lisensi OK — buka dashboard `http://127.0.0.1:5173` |
-| MySQL gagal connect | Cek service MySQL + `DB_*` di `.env` |
-| Port 3030 / 5173 dipakai | Hentikan dev lama (Ctrl+C) atau tutup proses di port itu |
-| `go: command not found` | Install Go, restart terminal |
-| `npm: command not found` | Install Node.js LTS, restart terminal |
-| Frontend tidak nyambung API | Backend harus jalan di port 3030 |
-| Windows: Air tidak ketemu | Script fallback ke `go run`; atau tambahkan `%USERPROFILE%\go\bin` ke PATH |
-
-## Keamanan
-
-Jangan membagikan:
-
-- `.env`
-- Database / dump
-- Sesi WhatsApp (`data/`, file session)
-- Manifest / key lisensi pribadi
+1. Ekstrak file `ChatLoop-v4-xxxx.zip` yang telah Anda unduh dari Member Dashboard LMS.
+2. Buka aplikasi **Visual Studio Code**.
+3. Pilih menu **File → Open Folder...** (Windows/Linux) atau **File → Open...** (macOS), lalu pilih folder hasil ekstrak tersebut.
+4. Buka Terminal internal VS Code: menu **Terminal → New Terminal** (atau pintasan `Ctrl + \`` / `Cmd + \``).
 
 ---
 
-Penggunaan tunduk pada [EULA](EULA.md) & [Disclaimer](DISCLAIMER.md).
+## 3. Membuat Database & Menyiapkan File `.env`
+
+1. Buat database baru di MySQL (via phpMyAdmin / DBeaver / HeidiSQL) dengan nama:
+   ```sql
+   CREATE DATABASE db_wa_blast;
+   ```
+
+2. Di terminal VS Code, jalankan perintah inisialisasi file `.env`:
+   ```bash
+   npm run setup:env
+   ```
+
+   > ✨ **Konfigurasi Otomatis dari LMS:**  
+   > File `.env` Anda **sudah otomatis terisi** dengan `LICENSE_KEY` resmi dan `JWT_SECRET` unik Anda. Anda **tidak perlu** generate JWT manual dari website lain atau copy-paste lisensi.
+
+3. Buka file `.env` di sidebar VS Code dan sesuaikan password MySQL lokal Anda:
+   ```ini
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASS=              # Kosongkan jika MySQL lokal Anda tanpa password (default XAMPP)
+   DB_NAME=db_wa_blast
+
+   # Nilai di bawah ini sudah otomatis terisi dan siap pakai:
+   JWT_SECRET=...
+   SUPERADMIN_USERNAME=superadmin
+   SUPERADMIN_PASSWORD=superadmin123
+   LICENSE_KEY=...
+   ```
+
+---
+
+## 4. Instalasi Dependency Project (Hanya 1 Perintah)
+
+Pastikan posisi terminal berada di folder utama project, lalu jalankan:
+```bash
+npm run setup
+```
+Perintah ini akan otomatis mengunduh semua modul Go backend dan dependensi React frontend sampai selesai.
+
+---
+
+## 5. Menjalankan Aplikasi
+
+Jalankan backend dan frontend sekaligus dengan perintah:
+```bash
+npm run dev
+```
+
+Aplikasi akan aktif pada port lokal komputer Anda:
+* 🌐 **Frontend (Web Dashboard):** `http://127.0.0.1:5173` atau `http://localhost:5173`
+* ⚙️ **Backend API:** `http://127.0.0.1:3030`
+
+> ⚠️ *Biarkan terminal tetap terbuka selama Anda menggunakan aplikasi ChatLoop.*
+
+---
+
+## 6. Login ke Dashboard ChatLoop
+
+1. Buka browser dan kunjungi: **`http://localhost:5173`**
+2. Login dengan akun bawaan:
+   * **Username:** `superadmin`
+   * **Password:** `superadmin123`
+3. Masuk ke menu **WhatsApp Session** ➔ Scan QR Code dengan WhatsApp di smartphone Anda.
+
+---
+
+## ❓ Penyelesaian Masalah Populer (FAQ)
+
+1. **Perintah `npm` atau `go` tidak dikenali (*command not found*):**
+   * Pastikan software sudah terpasang, lalu **tutup dan buka kembali VS Code** agar sistem membaca PATH environment baru.
+2. **Gagal koneksi database (*Error: connection refused*):**
+   * Pastikan service MySQL di XAMPP / Laragon / OS Anda sudah dalam status **Running** dan database `db_wa_blast` sudah dibuat.
+3. **Port 5173 atau 3030 sudah digunakan:**
+   * Tutup terminal/aplikasi lain yang sedang memakai port tersebut, lalu jalankan kembali `npm run dev`.

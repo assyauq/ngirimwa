@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Panduan Instalasi ChatLoop v4 - NgertiKode.id</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  @page {
+    size: A4;
+    margin: 10mm 14mm;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1e293b;
+    background-color: #ffffff;
+    line-height: 1.45;
+    font-size: 12px;
+  }
+
+  .header {
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+  }
+
+  .brand span {
+    color: #0284c7;
+  }
+
+  .badge {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    border: 1px solid #bae6fd;
+  }
+
+  h1 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 3px;
+  }
+
+  .subtitle {
+    color: #64748b;
+    font-size: 11.5px;
+    margin-bottom: 12px;
+  }
+
+  .step-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .step-number {
+    width: 20px;
+    height: 20px;
+    background: #0284c7;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  p {
+    margin-bottom: 5px;
+    color: #334155;
+  }
+
+  ul, ol {
+    margin-left: 18px;
+    margin-bottom: 5px;
+    color: #334155;
+  }
+
+  li {
+    margin-bottom: 2px;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background-color: #f1f5f9;
+    color: #0369a1;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+    border: 1px solid #e2e8f0;
+  }
+
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    background-color: #0f172a;
+    color: #f8fafc;
+    padding: 7px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    line-height: 1.4;
+    margin: 5px 0;
+    overflow-x: auto;
+  }
+
+  .alert {
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 7px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    margin: 5px 0;
+  }
+
+  .alert-title {
+    font-weight: 700;
+    margin-bottom: 1px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .table-box {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 5px 0;
+    font-size: 11px;
+  }
+
+  .table-box th, .table-box td {
+    border: 1px solid #e2e8f0;
+    padding: 4px 8px;
+    text-align: left;
+  }
+
+  .table-box th {
+    background-color: #f1f5f9;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .footer {
+    margin-top: 10px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 6px;
+    text-align: center;
+    font-size: 10px;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">NgertiKode<span>.id</span></div>
+  <div class="badge">Panduan Resmi Member v4.0</div>
+</div>
+
+<h1>Panduan Instalasi & Menjalankan Source Code ChatLoop</h1>
+<p class="subtitle">Panduan langkah-demi-langkah menjalankan project ChatLoop WhatsApp AI Assistant di komputer lokal (macOS, Windows, dan Linux).</p>
+
+<!-- STEP 1 -->
+<div class="step-card">
+  <div class="step-header">
+    <div class="step-number">1</div>
+    <div class="step-title">Instalasi Software yang Dibutuhkan</div>
+  </div>
+  <p>Pastikan komputer Anda telah terpasang software pendukung berikut sebelum memulai:</p>
+  <table class="table-box">
+    <thead>
+      <tr>
+        <th>Software</th>
+        <th>Fungsi</th>
+        <th>Tautan Unduhan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Visual Studio Code</strong></td>
+        <td>Editor kode utama</td>
+        <td><code>code.visualstudio.com</code></td>
+      </tr>
+      <tr>
+        <td><strong>Go (Golang)</strong></td>
+        <td>Runtime Backend API</td>
+        <td><code>go.dev/dl</code></td>
+      </tr>
+      <tr>
+        <td><strong>Node.js (LTS)</strong></td>
+        <td>Runtime Frontend Vite</td>
+        <td><code>nodejs.org</code> (Pilih versi LTS)</td>
+      </tr>
+      <tr>
+        <td><strong>MySQL Database</strong></td>
+        <td>Database server</td>
+        <td>Gunakan <strong>XAMPP</strong>, <strong>Laragon</strong>, atau MySQL Server 8.x</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="margin-top: 4px;">Cek instalasi melalui Terminal / CMD: <code>go version</code> | <code>node -v</code> | <code>npm -v</code></p>
+</div>
+
+<!-- STEP 2 -->
+<div class="step-card">
+  <div class="step-header">
+    <div class="step-number">2</div>
+    <div class="step-title">Ekstrak ZIP & Buka di Visual Studio Code</div>
+  </div>
+  <ol>
+    <li>Ekstrak file <code>ChatLoop-v4-xxxx.zip</code> yang telah Anda unduh dari Member Dashboard LMS.</li>
+    <li>Buka <strong>Visual Studio Code</strong> ➔ Pilih <strong>File → Open Folder...</strong> ➔ Pilih folder hasil ekstrak.</li>
+    <li>Buka Terminal internal VS Code: <strong>Terminal → New Terminal</strong> (shortcut: <code>Ctrl + `</code> / <code>Cmd + `</code>).</li>
+  </ol>
+</div>
+
+<!-- STEP 3 -->
+<div class="step-card">
+  <div class="step-header">
+    <div class="step-number">3</div>
+    <div class="step-title">Membuat Database & Menyiapkan File .env</div>
+  </div>
+  <p>1. Buat database baru di MySQL (via phpMyAdmin / DBeaver): <code>CREATE DATABASE db_wa_blast;</code></p>
+  <p>2. Di terminal VS Code, jalankan perintah inisialisasi:</p>
+  <pre>npm run setup:env</pre>
+
+  <div class="alert">
+    <div class="alert-title">✨ Konfigurasi Otomatis dari LMS</div>
+    File <code>.env</code> Anda <strong>sudah otomatis terisi</strong> dengan <code>LICENSE_KEY</code> resmi dan <code>JWT_SECRET</code> unik Anda. Anda <strong>tidak perlu</strong> generate JWT manual dari website lain atau copy-paste lisensi.
+  </div>
+
+  <p>3. Buka file <code>.env</code> di VS Code dan sesuaikan password MySQL lokal Anda:</p>
+  <pre>DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASS=               # Kosongkan jika MySQL lokal Anda tanpa password (default XAMPP)
+DB_NAME=db_wa_blast
+
+# Nilai di bawah ini sudah otomatis terisi dan siap pakai:
+JWT_SECRET=...
+SUPERADMIN_USERNAME=superadmin
+SUPERADMIN_PASSWORD=superadmin123
+LICENSE_KEY=...</pre>
+</div>
+
+<div class="page-break"></div>
+
+<!-- STEP 4 -->
+<div class="step-card">
+  <div class="step-header">
+    <div class="step-number">4</div>
+    <div class="step-title">Instalasi Dependency Project (Hanya 1 Perintah)</div>
+  </div>
+  <p>Pastikan posisi terminal berada di folder utama project, lalu jalankan:</p>
+  <pre>npm run setup</pre>
+  <p>Perintah ini akan otomatis mengunduh semua modul Go backend dan dependensi React frontend sampai selesai.</p>
+</div>
+
+<!-- STEP 5 -->
+<div class="step-card">
+  <div class="step-header">
+    <div class="step-number">5</div>
+    <div class="step-title">Menjalankan Aplikasi</div>
+  </div>
+  <p>Jalankan backend dan frontend sekaligus dengan perintah:</p>
+  <pre>npm run dev</pre>
+  <p>Aplikasi akan aktif pada port lokal komputer Anda:</p>
+  <ul>
+    <li>🌐 <strong>Frontend (Web Dashboard):</strong> <code>http://127.0.0.1:5173</code> atau <code>http://localhost:5173</code></li>
+    <li>⚙️ <strong>Backend API:</strong> <code>http://127.0.0.1:3030</code></li>
+  </ul>
+  <p><em>Biarkan terminal tetap terbuka selama Anda menggunakan aplikasi ChatLoop.</em></p>
+</div>
+
+<!-- STEP 6 -->
+<div class="step-card">
+  <div class="step-header">
+    <div class="step-number">6</div>
+    <div class="step-title">Login ke Dashboard ChatLoop</div>
+  </div>
+  <ol>
+    <li>Buka browser dan kunjungi: <strong><code>http://localhost:5173</code></strong></li>
+    <li>Login dengan akun bawaan:
+      <ul>
+        <li><strong>Username:</strong> <code>superadmin</code></li>
+        <li><strong>Password:</strong> <code>superadmin123</code></li>
+      </ul>
+    </li>
+    <li>Masuk ke menu <strong>WhatsApp Session</strong> ➔ Scan QR Code dengan WhatsApp di smartphone Anda.</li>
+  </ol>
+</div>
+
+<!-- TROUBLESHOOTING -->
+<div class="step-card" style="background-color: #fff7ed; border-color: #fed7aa;">
+  <div class="step-header">
+    <div class="step-number" style="background-color: #ea580c;">?</div>
+    <div class="step-title" style="color: #9a3412;">Penyelesaian Masalah Populer (FAQ)</div>
+  </div>
+  
+  <p><strong>1. Perintah 'npm' atau 'go' tidak dikenali (command not found):</strong></p>
+  <p style="font-size: 11px; margin-left: 10px; color: #431407;">
+    Pastikan software sudah terpasang, lalu <strong>tutup dan buka kembali VS Code</strong> agar sistem membaca PATH environment baru.
+  </p>
+
+  <p><strong>2. Gagal koneksi database (Error: connection refused):</strong></p>
+  <p style="font-size: 11px; margin-left: 10px; color: #431407;">
+    Pastikan service MySQL di XAMPP / Laragon / OS Anda sudah dalam status <strong>Running</strong> dan database <code>db_wa_blast</code> sudah dibuat.
+  </p>
+
+  <p><strong>3. Port 5173 atau 3030 sudah digunakan:</strong></p>
+  <p style="font-size: 11px; margin-left: 10px; color: #431407;">
+    Tutup terminal/aplikasi lain yang sedang memakai port tersebut, lalu jalankan kembali <code>npm run dev</code>.
+  </p>
+</div>
+
+<div class="footer">
+  <div>© 2026 NgertiKode.id — All Rights Reserved.</div>
+  <div>Dokumen Resmi Lisensi & Panduan Instalasi</div>
+</div>
+
+</body>
+</html>

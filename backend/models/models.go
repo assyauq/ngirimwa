@@ -201,6 +201,9 @@ type Knowledge struct {
 	// Dipakai mengelompokkan & menghapus knowledge per sumber (mis. hapus semua dari 1 website).
 	Source    string `gorm:"size:16;default:manual;index" json:"source"`
 	SourceURL string `gorm:"type:text" json:"source_url"`
+	ImagePath string `gorm:"size:512" json:"image_path"`
+	ImageMime string `gorm:"size:64" json:"image_mime"`
+	ImageURL  string `gorm:"-" json:"image_url,omitempty"`
 	CharCount int    `gorm:"not null;default:0" json:"char_count"` // panjang Answer, untuk hitung kuota karakter
 	// Lifecycle fakta mencegah informasi lama/temporer tetap ikut retrieval.
 	Active         bool       `gorm:"not null;default:true;index" json:"active"`

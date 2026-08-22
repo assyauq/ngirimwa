@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -344,12 +345,17 @@ type RetrievalTrace struct {
 	ResponseChars     int
 }
 
-// ChatResult hasil ChatWithKnowledge beserta jejak retrieval.
+// ChatResult hasil ChatWithKnowledge beserta jejak retrieval dan lampiran media.
 type ChatResult struct {
-	Reply    string
-	Escalate bool
-	Model    string
-	Trace    RetrievalTrace
+	Reply          string
+	Escalate       bool
+	Model          string
+	AttachmentPath string
+	AttachmentMime string
+	AttachmentType string
+	AttachmentID   uint
+	AttachmentSrc  string // "knowledge" | "product"
+	Trace          RetrievalTrace
 }
 
 // ChatWithKnowledge mengembalikan balasan AI + jejak retrieval (untuk metrics grounding).
@@ -406,7 +412,14 @@ KEBIJAKAN PERCAKAPAN CUSTOMER SERVICE:
 - Jangan menutup balasan dengan kalimat generik seperti "ada yang ingin ditanyakan lagi?", "ada lagi yang bisa dibantu?", atau variasinya.
 - Bila percakapan perlu dilanjutkan, ajukan maksimal satu pertanyaan spesifik yang paling relevan dengan jawaban pelanggan dan tahap percakapan saat ini. Jika tidak perlu bertanya, akhiri dengan pernyataan natural tanpa memaksa pertanyaan.
 - Jangan terus mendorong closing atau form. Tawarkan langkah berikutnya hanya ketika sinyal minat atau kebutuhan pelanggan sudah cukup jelas.
-- Jangan mengeskalasi hanya karena pesan singkat, perubahan topik, basa-basi, atau informasi belum tersedia.`
+- Jangan mengeskalasi hanya karena pesan singkat, perubahan topik, basa-basi, atau informasi belum tersedia.
+
+ATURAN PENGIRIMAN GAMBAR / MEDIA:
+- Jika sumber memiliki tag lampiran gambar (misal [[SEND_KB_IMAGE:id]] atau [[SEND_PRODUCT_IMAGE:id]]):
+  1. Sertakan tag lampiran tersebut HANYA JIKA:
+     - Pelanggan secara eksplisit meminta foto, gambar, brosur, katalog, pricelist, atau menu (misal: "minta foto", "liat modelnya", "ada brosur?").
+     - ATAU ini adalah pertama kali pelanggan menanyakan informasi umum tentang paket/layanan/produk di percakapan baru.
+  2. JANGAN sertakan tag lampiran jika pelanggan hanya menanyakan detail lanjutan atau follow-up (seperti: "paling murah berapa", "harga ukuran M berapa", "warna apa aja", "bisa COD?", "ongkirnya berapa", "alamat tokonya di mana", "stok ready?"). Pada kondisi ini, JAWAB DENGAN TEKS SAJA tanpa tag lampiran.`
 
 	responsePolicy := selectAIResponsePolicy(userMsg, retrievalQuery, productContext, len(relevant))
 	trace.ResponsePolicy = responsePolicy.Name
@@ -455,7 +468,7 @@ BATAS RESPONS SAAT INI:
 		return ChatResult{Trace: trace}, err
 	}
 	if len(resp.Choices) == 0 {
-		return ChatResult{Reply: "Maaf, saya tidak bisa menjawab.", Model: p.Short, Trace: trace}, nil
+		return createChatResult(agentID, "Maaf, saya tidak bisa menjawab.", p.Short, false, relevant, trace.ProductIDs, userMsg, history, trace), nil
 	}
 	if string(resp.Choices[0].FinishReason) == "length" {
 		log.Printf("WARN: jawaban kemungkinan terpotong (finish_reason=length) — pertimbangkan naikkan MaxTokens. Pesan: %q", userMsg)
@@ -469,7 +482,7 @@ BATAS RESPONS SAAT INI:
 	}
 	if reply == "" {
 		// Model sesekali balas kosong; jangan kirim pesan kosong ke WhatsApp.
-		return ChatResult{Reply: "Maaf kak, boleh diulang pertanyaannya?", Model: p.Short, Trace: trace}, nil
+		return createChatResult(agentID, "Maaf kak, boleh diulang pertanyaannya?", p.Short, false, relevant, trace.ProductIDs, userMsg, history, trace), nil
 	}
 	reply = sanitizeCustomerFacingReply(reply)
 	if responseNeedsCondensing(reply, responsePolicy) {
@@ -513,11 +526,11 @@ BATAS RESPONS SAAT INI:
 					trace.AnswerOverlap = retryOverlap
 					trace.ResponseChars = len([]rune(grounded))
 					if retryOK {
-						return ChatResult{Reply: grounded, Model: p.Short, Trace: trace}, nil
+						return createChatResult(agentID, grounded, p.Short, false, relevant, trace.ProductIDs, userMsg, history, trace), nil
 					}
 					// Angka ungrounded tetap ditolak; low_overlap saja boleh lolos jika tidak invent angka.
 					if retryReason == "low_overlap" && !replyHasUngroundedNumbers(grounded, relevant, productContext) && !looksLikeInventedSpecifics(grounded, relevant) {
-						return ChatResult{Reply: grounded, Model: p.Short, Trace: trace}, nil
+						return createChatResult(agentID, grounded, p.Short, false, relevant, trace.ProductIDs, userMsg, history, trace), nil
 					}
 					log.Printf("WARN: grounding retry masih gagal (%s, overlap=%.3f)", retryReason, retryOverlap)
 				}
@@ -527,11 +540,193 @@ BATAS RESPONS SAAT INI:
 			trace.AnswerOverlap = 0
 			fallback := safeUngroundedReply()
 			trace.ResponseChars = len([]rune(fallback))
-			return ChatResult{Reply: fallback, Model: p.Short, Trace: trace}, nil
+			return createChatResult(agentID, fallback, p.Short, false, relevant, trace.ProductIDs, userMsg, history, trace), nil
 		}
 	}
 
-	return ChatResult{Reply: reply, Model: p.Short, Trace: trace}, nil
+	return createChatResult(agentID, reply, p.Short, false, relevant, trace.ProductIDs, userMsg, history, trace), nil
+}
+
+var kbImgDirective = regexp.MustCompile(`\[\[(?:SEND_KB_IMAGE|KB_IMG):(\d+)\]\]`)
+var prodImgDirective = regexp.MustCompile(`\[\[(?:SEND_PRODUCT_IMAGE|PRODUCT_IMG):(\d+)\]\]`)
+
+var visualIntentRegex = regexp.MustCompile(`(?i)\b(?:foto|photo|gambar|image|pic|picture|brosur|brochure|flyer|pamflet|katalog|catalog|catalogue|pricelist|daftar\s+harga|daftar\s+menu|menu|spill|penampakan|bentuk(?:nya)?|model(?:nya)?|contoh(?:nya)?|liat|lihat|tengok|minta\s+foto|minta\s+gambar|kirim\s+foto|kirim\s+gambar|mana\s+fotonya|ada\s+fotonya)\b`)
+
+func looksLikeVisualRequest(userMsg string) bool {
+	return visualIntentRegex.MatchString(userMsg)
+}
+
+func knowledgeAlreadySentInHistory(history []models.ChatHistory, k models.Knowledge) bool {
+	if len(history) == 0 {
+		return false
+	}
+	startIdx := 0
+	if len(history) > 6 {
+		startIdx = len(history) - 6
+	}
+
+	qTokens := topicRetrievalTokens(tokenizeQuery(k.Question))
+	if len(qTokens) == 0 {
+		return false
+	}
+
+	for i := startIdx; i < len(history); i++ {
+		h := history[i]
+		lowerReply := strings.ToLower(h.Reply)
+		matchCount := 0
+		for _, token := range qTokens {
+			if strings.Contains(lowerReply, strings.ToLower(token)) {
+				matchCount++
+			}
+		}
+		if matchCount >= 2 && (matchCount*10)/len(qTokens) >= 5 {
+			return true
+		}
+		cleanAns := strings.ToLower(strings.TrimSpace(k.Answer))
+		if len(cleanAns) > 25 {
+			limit := 40
+			if len(cleanAns) < limit {
+				limit = len(cleanAns)
+			}
+			snippet := cleanAns[:limit]
+			if strings.Contains(lowerReply, snippet) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func productAlreadySentInHistory(history []models.ChatHistory, p models.Product) bool {
+	if len(history) == 0 {
+		return false
+	}
+	startIdx := 0
+	if len(history) > 6 {
+		startIdx = len(history) - 6
+	}
+	pNameLower := strings.ToLower(strings.TrimSpace(p.Name))
+	if len(pNameLower) < 3 {
+		return false
+	}
+	for i := startIdx; i < len(history); i++ {
+		h := history[i]
+		if strings.Contains(strings.ToLower(h.Reply), pNameLower) {
+			return true
+		}
+	}
+	return false
+}
+
+var narrowAttributeRegex = regexp.MustCompile(`(?i)\b(?:paling\s+(?:murah|mahal|laris|bagus|banyak|sedikit)|terendah|tertinggi|termurah|termahal|ukuran\s+[smlxl\d]+|size\s+[smlxl\d]+|warna\s+\w+|bisa\s+cod|ongkir|ongkos\s+kirim|kirim\s+ke|alamat|lokasi|buka\s+jam|garansi|metode\s+bayar|transfer\s+ke|rekening|cara\s+bayar|ready\s+gak|ada\s+stok|stoknya|bahan(?:nya)?|cocok\s+untuk)\b`)
+
+func isNarrowAttributeQuery(msg string) bool {
+	return narrowAttributeRegex.MatchString(msg)
+}
+
+func stripMediaDirectives(s string) string {
+	s = kbImgDirective.ReplaceAllString(s, "")
+	s = prodImgDirective.ReplaceAllString(s, "")
+	return strings.TrimSpace(s)
+}
+
+func resolveChatAttachment(agentID uint, relevant []models.Knowledge, productIDsStr, reply, userMsg string, history []models.ChatHistory) (path, mime, attachType string, attachID uint, attachSrc string) {
+	// 1. Explicit directive in AI reply (Model decided media is appropriate to attach)
+	if match := kbImgDirective.FindStringSubmatch(reply); len(match) == 2 {
+		if kid, err := strconv.ParseUint(match[1], 10, 64); err == nil && kid > 0 {
+			var k models.Knowledge
+			if database.DB.Where("agent_id = ? AND id = ?", agentID, uint(kid)).First(&k).Error == nil && k.ImagePath != "" {
+				if _, err := os.Stat(k.ImagePath); err == nil {
+					return k.ImagePath, k.ImageMime, "image", k.ID, "knowledge"
+				}
+			}
+		}
+	}
+	if match := prodImgDirective.FindStringSubmatch(reply); len(match) == 2 {
+		if pid, err := strconv.ParseUint(match[1], 10, 64); err == nil && pid > 0 {
+			var p models.Product
+			if database.DB.Where("agent_id = ? AND id = ?", agentID, uint(pid)).First(&p).Error == nil && p.ImagePath != "" {
+				if _, err := os.Stat(p.ImagePath); err == nil {
+					return p.ImagePath, p.ImageMime, "image", p.ID, "product"
+				}
+			}
+		}
+	}
+
+	// 2. Explicit User Visual Request (User explicitly requested photo, flyer, catalog, brochure, pricelist)
+	userAsksVisual := looksLikeVisualRequest(userMsg)
+	if userAsksVisual {
+		if len(relevant) > 0 {
+			for _, k := range relevant {
+				if strings.TrimSpace(k.ImagePath) != "" {
+					if _, err := os.Stat(k.ImagePath); err == nil {
+						return k.ImagePath, k.ImageMime, "image", k.ID, "knowledge"
+					}
+				}
+			}
+		}
+		if strings.TrimSpace(productIDsStr) != "" {
+			parts := strings.Split(productIDsStr, ",")
+			for _, part := range parts {
+				if pid, err := strconv.ParseUint(strings.TrimSpace(part), 10, 64); err == nil && pid > 0 {
+					var p models.Product
+					if database.DB.Where("agent_id = ? AND id = ?", agentID, uint(pid)).First(&p).Error == nil && p.ImagePath != "" {
+						if _, err := os.Stat(p.ImagePath); err == nil {
+							return p.ImagePath, p.ImageMime, "image", p.ID, "product"
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// 3. First-Turn Presentation ONLY: when chat session has NO prior turns (len(history) == 0)
+	// and inquiry is not a narrow attribute query
+	if len(history) == 0 && !isNarrowAttributeQuery(userMsg) {
+		if len(relevant) > 0 {
+			for _, k := range relevant {
+				if strings.TrimSpace(k.ImagePath) != "" {
+					if _, err := os.Stat(k.ImagePath); err == nil {
+						return k.ImagePath, k.ImageMime, "image", k.ID, "knowledge"
+					}
+				}
+			}
+		}
+		if strings.TrimSpace(productIDsStr) != "" {
+			parts := strings.Split(productIDsStr, ",")
+			for _, part := range parts {
+				if pid, err := strconv.ParseUint(strings.TrimSpace(part), 10, 64); err == nil && pid > 0 {
+					var p models.Product
+					if database.DB.Where("agent_id = ? AND id = ?", agentID, uint(pid)).First(&p).Error == nil && p.ImagePath != "" {
+						if _, err := os.Stat(p.ImagePath); err == nil {
+							return p.ImagePath, p.ImageMime, "image", p.ID, "product"
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return "", "", "", 0, ""
+}
+
+func createChatResult(agentID uint, reply, model string, escalate bool, relevant []models.Knowledge, productIDsStr, userMsg string, history []models.ChatHistory, trace RetrievalTrace) ChatResult {
+	if escalate {
+		return ChatResult{Escalate: true, Model: model, Trace: trace}
+	}
+	attachPath, attachMime, attachType, attachID, attachSrc := resolveChatAttachment(agentID, relevant, productIDsStr, reply, userMsg, history)
+	cleanReply := stripMediaDirectives(reply)
+	return ChatResult{
+		Reply:          cleanReply,
+		Escalate:       false,
+		Model:          model,
+		AttachmentPath: attachPath,
+		AttachmentMime: attachMime,
+		AttachmentType: attachType,
+		AttachmentID:   attachID,
+		AttachmentSrc:  attachSrc,
+		Trace:          trace,
+	}
 }
 
 func knowledgeIDs(items []models.Knowledge) []uint {
@@ -1222,6 +1417,9 @@ func productKnowledgeContext(agentID uint, msg string) (string, []uint) {
 		}
 		if productCheckoutAvailable(p.ButtonsJSON) {
 			sb.WriteString("Checkout resmi: tersedia. Jika pelanggan sudah jelas ingin memproses produk, gunakan jalur checkout produk yang disediakan sistem.\n")
+		}
+		if strings.TrimSpace(p.ImagePath) != "" {
+			sb.WriteString(fmt.Sprintf("Lampiran gambar: [[SEND_PRODUCT_IMAGE:%d]]\n", p.ID))
 		}
 		sb.WriteString("\n")
 	}

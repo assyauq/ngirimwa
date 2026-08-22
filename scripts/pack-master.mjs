@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(ROOT, 'dist');
-const OUTPUT_ZIP = path.join(DIST_DIR, 'chatloop-member.zip');
+const OUTPUT_ZIP = path.join(DIST_DIR, 'chatloop-master.zip');
 const STAGING_DIR = path.join(os.tmpdir(), `chatloop-pack-${Date.now()}`);
 const IS_WIN = process.platform === 'win32';
 

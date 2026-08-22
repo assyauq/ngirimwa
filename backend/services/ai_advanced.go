@@ -567,8 +567,8 @@ func formatKnowledgeBlock(relevant []models.Knowledge) string {
 		if src := strings.TrimSpace(k.Source); src != "" {
 			kb.WriteString(" · " + src)
 		}
-		if freshAt := knowledgeFreshnessTime(k); !freshAt.IsZero() {
-			kb.WriteString(" · diverifikasi/diperbarui " + freshAt.Format("2006-01-02"))
+		if strings.TrimSpace(k.ImagePath) != "" {
+			kb.WriteString(fmt.Sprintf(" · lampiran: [[SEND_KB_IMAGE:%d]]", k.ID))
 		}
 		kb.WriteString("]\n")
 		kb.WriteString("Q: " + k.Question + "\n")

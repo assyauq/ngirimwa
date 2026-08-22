@@ -135,8 +135,22 @@ func TestChat(c *gin.Context) {
 	logAITurn(id, testAITurnSender, req.Message, reply, model, knowledgeCount, usedShippingTool, escalate, turnError, latencyMs, trace)
 
 	reply = services.LinkifyWhatsApp(reply, agent.Number) // nomor WA jadi tautan klik (kecuali nomor sendiri)
+
+	var imageURL string
+	if chatResult.AttachmentPath != "" {
+		token := issueMediaToken(currentTenantID(c), id)
+		if token != "" {
+			if chatResult.AttachmentSrc == "product" && chatResult.AttachmentID > 0 {
+				imageURL = fmt.Sprintf("/api/agents/%d/products/%d/image?token=%s", id, chatResult.AttachmentID, token)
+			} else if chatResult.AttachmentSrc == "knowledge" && chatResult.AttachmentID > 0 {
+				imageURL = fmt.Sprintf("/api/agents/%d/knowledge/%d/image?token=%s", id, chatResult.AttachmentID, token)
+			}
+		}
+	}
+
 	c.JSON(200, gin.H{
 		"reply": reply, "escalate": escalate, "model": model,
+		"image_url":          imageURL,
 		"knowledge_count":    knowledgeCount,
 		"retrieval_mode":     trace.RetrievalMode,
 		"retrieval_query":    trace.RetrievalQuery,

@@ -1,112 +1,112 @@
-# Panduan Instalasi & Menjalankan Source Code ChatLoop
+# Panduan Instalasi & Menjalankan ChatLoop
 
-Panduan langkah-demi-langkah menjalankan project **ChatLoop WhatsApp AI Assistant** di komputer lokal (**macOS**, **Windows**, dan **Linux**).
+Panduan menjalankan **ChatLoop WhatsApp AI Assistant** secara lokal di macOS, Windows, dan Linux.
 
-Versi dokumen PDF: [`docs/PANDUAN-INSTALASI.pdf`](PANDUAN-INSTALASI.pdf).
+## 1. Prasyarat
 
----
+| Software | Fungsi |
+|---|---|
+| Visual Studio Code | Editor kode |
+| Go | Backend API |
+| Node.js LTS | Frontend Vite |
+| MySQL 8.x | Database |
 
-## 1. Instal Software yang Dibutuhkan
+Verifikasi:
 
-Pastikan komputer Anda telah terpasang software pendukung berikut sebelum memulai:
-
-| Software | Fungsi | Tautan Unduhan |
-| :--- | :--- | :--- |
-| **Visual Studio Code** | Editor kode utama | [code.visualstudio.com](https://code.visualstudio.com/) |
-| **Go (Golang)** | Runtime Backend API | [go.dev/dl](https://go.dev/dl/) |
-| **Node.js (LTS)** | Runtime Frontend Vite | [nodejs.org](https://nodejs.org/) *(Pilih versi LTS)* |
-| **MySQL Database** | Database server | Gunakan **XAMPP**, **Laragon**, atau MySQL Server 8.x |
-
-Setelah instalasi selesai, buka terminal/CMD dan verifikasi:
 ```bash
 go version
 node -v
 npm -v
 ```
 
----
+## 2. Siapkan project
 
-## 2. Ekstrak ZIP & Buka di Visual Studio Code
+Clone repository lalu buka folder project di VS Code.
 
-1. Ekstrak file `ChatLoop-v4-xxxx.zip` yang telah Anda unduh dari Member Dashboard LMS.
-2. Buka aplikasi **Visual Studio Code**.
-3. Pilih menu **File → Open Folder...** (Windows/Linux) atau **File → Open...** (macOS), lalu pilih folder hasil ekstrak tersebut.
-4. Buka Terminal internal VS Code: menu **Terminal → New Terminal** (atau pintasan `Ctrl + \`` / `Cmd + \``).
+```bash
+git clone <repository-url>
+cd ngirimwa
+```
 
----
+Buat `.env` dari contoh:
 
-## 3. Membuat Database & Menyiapkan File `.env`
+```bash
+npm run setup:env
+```
 
-1. Buat database baru di MySQL (via phpMyAdmin / DBeaver / HeidiSQL) dengan nama:
-   ```sql
-   CREATE DATABASE db_wa_blast;
-   ```
+Sesuaikan konfigurasi database dan secret lokal di `.env`:
 
-2. Di terminal VS Code, jalankan perintah inisialisasi file `.env`:
-   ```bash
-   npm run setup:env
-   ```
+```ini
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASS=
+DB_NAME=db_wa_blast
 
-   > ✨ **Konfigurasi Otomatis dari LMS:**  
-   > File `.env` Anda **sudah otomatis terisi** dengan `LICENSE_KEY` resmi dan `JWT_SECRET` unik Anda. Anda **tidak perlu** generate JWT manual dari website lain atau copy-paste lisensi.
+JWT_SECRET=ganti_dengan_string_acak_minimal_32_karakter
+SUPERADMIN_USERNAME=superadmin
+SUPERADMIN_PASSWORD=ubah_password_ini
+```
 
-3. Buka file `.env` di sidebar VS Code dan sesuaikan password MySQL lokal Anda:
-   ```ini
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASS=              # Kosongkan jika MySQL lokal Anda tanpa password (default XAMPP)
-   DB_NAME=db_wa_blast
+Jangan memasukkan `.env` ke Git.
 
-   # Nilai di bawah ini sudah otomatis terisi dan siap pakai:
-   JWT_SECRET=...
-   SUPERADMIN_USERNAME=superadmin
-   SUPERADMIN_PASSWORD=superadmin123
-   LICENSE_KEY=...
-   ```
+## 3. Siapkan database
 
----
+Buat database MySQL:
 
-## 4. Instalasi Dependency Project (Hanya 1 Perintah)
+```sql
+CREATE DATABASE db_wa_blast;
+```
 
-Pastikan posisi terminal berada di folder utama project, lalu jalankan:
+Nama database dapat diganti sesuai kebutuhan dan harus sama dengan `DB_NAME`.
+
+## 4. Install dependency
+
+Dari root project:
+
 ```bash
 npm run setup
 ```
-Perintah ini akan otomatis mengunduh semua modul Go backend dan dependensi React frontend sampai selesai.
 
----
+Perintah ini mengunduh dependency Go dan dependency frontend.
 
-## 5. Menjalankan Aplikasi
+## 5. Jalankan aplikasi
 
-Jalankan backend dan frontend sekaligus dengan perintah:
 ```bash
 npm run dev
 ```
 
-Aplikasi akan aktif pada port lokal komputer Anda:
-* 🌐 **Frontend (Web Dashboard):** `http://127.0.0.1:5173` atau `http://localhost:5173`
-* ⚙️ **Backend API:** `http://127.0.0.1:3030`
+Development server:
 
-> ⚠️ *Biarkan terminal tetap terbuka selama Anda menggunakan aplikasi ChatLoop.*
+- Frontend Vite: `http://127.0.0.1:5173`
+- Backend API: `http://127.0.0.1:3030`
 
----
+Launcher akan menjalankan Vite dan backend Go dengan hot reload bila Air tersedia.
 
-## 6. Login ke Dashboard ChatLoop
+## 6. Login pertama
 
-1. Buka browser dan kunjungi: **`http://localhost:5173`**
-2. Login dengan akun bawaan:
-   * **Username:** `superadmin`
-   * **Password:** `superadmin123`
-3. Masuk ke menu **WhatsApp Session** ➔ Scan QR Code dengan WhatsApp di smartphone Anda.
+Buka:
 
----
+```text
+http://localhost:5173
+```
 
-## ❓ Penyelesaian Masalah Populer (FAQ)
+Gunakan akun superadmin yang dikonfigurasi pada `.env` atau dibuat oleh mekanisme seed aplikasi. Setelah login, hubungkan nomor WhatsApp melalui menu koneksi WhatsApp dan ikuti alur QR/pairing yang tersedia.
 
-1. **Perintah `npm` atau `go` tidak dikenali (*command not found*):**
-   * Pastikan software sudah terpasang, lalu **tutup dan buka kembali VS Code** agar sistem membaca PATH environment baru.
-2. **Gagal koneksi database (*Error: connection refused*):**
-   * Pastikan service MySQL di XAMPP / Laragon / OS Anda sudah dalam status **Running** dan database `db_wa_blast` sudah dibuat.
-3. **Port 5173 atau 3030 sudah digunakan:**
-   * Tutup terminal/aplikasi lain yang sedang memakai port tersebut, lalu jalankan kembali `npm run dev`.
+## 7. Troubleshooting
+
+### `go` atau `npm` tidak ditemukan
+
+Pastikan Go dan Node.js sudah terpasang dan PATH sudah tersedia pada terminal baru.
+
+### Database connection refused
+
+Pastikan MySQL sedang berjalan dan nilai `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, dan `DB_NAME` benar.
+
+### Port 5173 atau 3030 sudah digunakan
+
+Hentikan proses yang memakai port tersebut lalu jalankan kembali `npm run dev`.
+
+### Frontend tidak tampil setelah build
+
+Pastikan `frontend/dist` sudah dibuat dan `STATIC_DIR` menunjuk ke lokasi build frontend yang benar pada deployment production.

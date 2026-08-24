@@ -1,4 +1,4 @@
-name: Package Member Release
+name: Open Source Release
 
 on:
   push:
@@ -10,32 +10,46 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  test-and-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.8'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install zip utility
-        run: sudo apt-get update && sudo apt-get install -y zip
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
 
-      - name: Package member release
+      - name: Test Go backend
+        run: go test ./...
+
+      - name: Build backend
+        run: go build -o dist/chatloop-server ./backend
+
+      - name: Build frontend
+        run: npm --prefix frontend run build
+
+      - name: Package source
         run: node scripts/pack-master.mjs
 
-      - name: Upload Artifact (Downloadable from GitHub Actions)
+      - name: Upload source artifact
         uses: actions/upload-artifact@v4
         with:
-          name: chatloop-member-zip
-          path: dist/chatloop-member.zip
+          name: chatloop-source
+          path: dist/chatloop-source.zip
 
-      - name: Create GitHub Release (if tag pushed)
+      - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/chatloop-member.zip
+          files: dist/chatloop-source.zip
           generate_release_notes: true

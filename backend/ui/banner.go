@@ -15,16 +15,13 @@ import (
 
 const (
 	colorReset = "\x1b[0m"
-	colorRed   = "\x1b[1;31m"
 	colorGreen = "\x1b[1;32m"
 )
 
-// boxMaxWidth membatasi lebar pembungkusan teks isi kotak.
 const boxMaxWidth = 56
 
 func runeLen(s string) int { return utf8.RuneCountInString(s) }
 
-// useColor true hanya bila f adalah terminal interaktif dan NO_COLOR tidak di-set.
 func useColor(f *os.File) bool {
 	if os.Getenv("NO_COLOR") != "" {
 		return false
@@ -36,7 +33,6 @@ func useColor(f *os.File) bool {
 	return fi.Mode()&os.ModeCharDevice != 0
 }
 
-// wrapWords memecah teks panjang menjadi beberapa baris <= max karakter.
 func wrapWords(s string, max int) []string {
 	words := strings.Fields(s)
 	if len(words) == 0 {
@@ -61,7 +57,6 @@ func wrapWords(s string, max int) []string {
 	return lines
 }
 
-// renderBox membangun kotak Unicode berisi judul + baris isi (tanpa warna).
 func renderBox(title string, lines []string) string {
 	inner := runeLen(title)
 	for _, l := range lines {
@@ -84,7 +79,6 @@ func renderBox(title string, lines []string) string {
 	return b.String()
 }
 
-// colorize membungkus tiap baris dengan kode warna (agar warna konsisten per baris).
 func colorize(s, color string) string {
 	rows := strings.Split(strings.TrimRight(s, "\n"), "\n")
 	for i, r := range rows {
@@ -101,38 +95,12 @@ func printBox(f *os.File, color, title string, lines []string) {
 	fmt.Fprint(f, "\n"+out+"\n")
 }
 
-// LicenseError menampilkan kotak error lisensi (merah) lalu keluar dengan status 1.
-func LicenseError(reason string) {
-	if strings.TrimSpace(reason) == "" {
-		reason = "Lisensi tidak valid."
-	}
-	body := []string{"LISENSI BELUM AKTIF", ""}
-	body = append(body, wrapWords(reason, boxMaxWidth)...)
-	body = append(body,
-		"",
-		"Cara mengaktifkan",
-		" 1) Beli lisensi di ngertikode.id",
-		" 2) Isi di file .env:",
-		"      LICENSE_KEY=WA-xxxx",
-		"      LICENSE_API_SECRET=... (dari manifest)",
-		"      LICENSE_API_URL=https://api.ngertikode.id",
-		" 3) Jalankan lagi  ->  npm run dev",
-		"",
-		"Pastikan .env di root project, lalu restart",
-		"terminal dev setelah menyimpan.",
-		"",
-		"Docs  docs/PANDUAN-INSTALASI.pdf",
-	)
-	printBox(os.Stderr, colorRed, "Chatloop.id", body)
-	os.Exit(1)
-}
-
-// StartupOK menampilkan banner sukses (hijau) saat server siap menerima koneksi.
+// StartupOK menampilkan banner sukses saat server siap menerima koneksi.
 func StartupOK(port string) {
 	body := []string{
 		"SERVER SIAP",
 		"",
-		"Lisensi aktif. Backend berjalan dan siap",
+		"Backend berjalan dan siap",
 		"menerima koneksi dari dashboard.",
 		"",
 		"Endpoint",

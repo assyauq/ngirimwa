@@ -201,7 +201,7 @@ function airConfigPath() {
 async function main() {
   process.chdir(ROOT);
   log('══════════════════════════════════════════════');
-  log('  NgertiKode.id | ChatLoop — development (lintas OS)');
+  log('  Ngirimwa | ChatLoop — development (lintas OS)');
   log(`  Platform: ${process.platform} / ${os.arch()}`);
   log('══════════════════════════════════════════════\n');
 

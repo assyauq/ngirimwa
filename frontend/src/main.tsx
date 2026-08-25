@@ -1,8 +1,6 @@
 /*
  * WA AI Assistant — WhatsApp AI & Blast.
- * © 2026 ngertikode.id. Hak cipta dilindungi.
- * Penggunaan tunduk pada EULA (docs/EULA.md). Dilarang menjual ulang atau
- * mendistribusikan source code ini.
+ * Open Source Edition.
  */
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

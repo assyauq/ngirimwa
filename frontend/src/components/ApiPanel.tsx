@@ -418,14 +418,14 @@ function WebhookFlowVisual() {
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={0.5} sx={{ mb: 1.5, alignItems: { sm: 'center' }, justifyContent: 'space-between' }}>
         <Box>
           <Typography sx={{ fontWeight: 850 }}>Cara kerja webhook</Typography>
-          <Typography variant="caption" color="text.secondary">Data dikirim otomatis saat aktivitas terjadi—sistem Anda tidak perlu mengecek ChatLoop berulang kali.</Typography>
+          <Typography variant="caption" color="text.secondary">Data dikirim otomatis saat aktivitas terjadi—sistem Anda tidak perlu mengecek Kirimwa berulang kali.</Typography>
         </Box>
         <Chip size="small" color="success" variant="outlined" label="Otomatis & realtime" />
       </Stack>
       <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ alignItems: 'center', justifyContent: 'center' }}>
         <WebhookFlowNode icon={<PersonIcon fontSize="small" />} title="Pelanggan" detail="Mengirim pesan WhatsApp" />
         <WebhookFlowConnector delay={0} />
-        <WebhookFlowNode icon={<ApiIcon fontSize="small" />} title="ChatLoop" detail="Menerima aktivitas baru" />
+        <WebhookFlowNode icon={<ApiIcon fontSize="small" />} title="Kirimwa" detail="Menerima aktivitas baru" />
         <WebhookFlowConnector delay={0.45} />
         <WebhookFlowNode accent icon={<WebhookIcon fontSize="small" />} title="Webhook" detail="Mengirim event JSON" />
         <WebhookFlowConnector delay={0.9} />
@@ -474,7 +474,7 @@ export default function ApiPanel({ agentId, onOpenDashboard }: { agentId: number
   const [newSecret, setNewSecret] = useState('');
   const [webhookExample, setWebhookExample] = useState<'Node.js' | 'PHP'>('Node.js');
   const [testTo, setTestTo] = useState('');
-  const [testText, setTestText] = useState('Uji REST API ChatLoop — pesan dari dashboard.');
+  const [testText, setTestText] = useState('Uji REST API Kirimwa — pesan dari dashboard.');
   const [testResult, setTestResult] = useState<string>('');
   const urlValue = urlDirty ? webhookUrl : (settings?.webhook_url ?? '');
   const apiReady = !!settings?.has_key && !!settings?.connected;
@@ -741,7 +741,7 @@ export default function ApiPanel({ agentId, onOpenDashboard }: { agentId: number
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 700 }}>Contoh website HTML + backend proxy</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Path <code>/api/kirim-whatsapp</code> ada di <b>server Anda</b>, bukan di ChatLoop. Server itulah yang memanggil ChatLoop dengan API key.
+                  Path <code>/api/kirim-whatsapp</code> ada di <b>server Anda</b>, bukan di Kirimwa. Server itulah yang memanggil Kirimwa dengan API key.
                 </Typography>
               </Box>
             </AccordionSummary>
@@ -751,7 +751,7 @@ export default function ApiPanel({ agentId, onOpenDashboard }: { agentId: number
               </Alert>
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5}>
                 <Box sx={{ flex: 1, minWidth: 0 }}><CodeBlock label="1. public/index.html (frontend Anda)" value={HTML_FORM_EXAMPLE} /></Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}><CodeBlock label="2. server.js (backend Anda → ChatLoop)" value={BACKEND_PROXY_EXAMPLE} /></Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}><CodeBlock label="2. server.js (backend Anda → Kirimwa)" value={BACKEND_PROXY_EXAMPLE} /></Box>
               </Stack>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
                 Simpan key sebagai <code>CHATLOOP_API_KEY</code>, jalankan server, buka HTML.
@@ -874,7 +874,7 @@ export default function ApiPanel({ agentId, onOpenDashboard }: { agentId: number
       {tab === 2 && (
         <Stack spacing={1.5}>
           <Alert severity="info">
-            <b>Webhook adalah notifikasi otomatis ke server Anda.</b> Saat pesan masuk, gambar selesai dianalisis, atau status berubah, ChatLoop mengirim HTTP POST berisi JSON ke URL yang disimpan. Halaman HTML biasa tidak dapat menerima webhook; Anda membutuhkan endpoint backend yang dapat diakses melalui HTTPS.
+            <b>Webhook adalah notifikasi otomatis ke server Anda.</b> Saat pesan masuk, gambar selesai dianalisis, atau status berubah, Kirimwa mengirim HTTP POST berisi JSON ke URL yang disimpan. Halaman HTML biasa tidak dapat menerima webhook; Anda membutuhkan endpoint backend yang dapat diakses melalui HTTPS.
           </Alert>
 
           <WebhookFlowVisual />
@@ -905,7 +905,7 @@ export default function ApiPanel({ agentId, onOpenDashboard }: { agentId: number
               <Chip size="small" color={settings?.webhook_url ? 'success' : 'default'} label={settings?.webhook_url ? 'Aktif' : 'Nonaktif'} />
             </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              ChatLoop mengirim event pesan masuk, hasil analisis gambar, dan status pengiriman ke URL HTTPS milikmu. Kosongkan URL untuk menonaktifkan.
+              Kirimwa mengirim event pesan masuk, hasil analisis gambar, dan status pengiriman ke URL HTTPS milikmu. Kosongkan URL untuk menonaktifkan.
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
               <TextField fullWidth size="small" label="URL webhook" placeholder="https://app.example.com/webhooks/whatsapp" value={urlValue} onChange={event => { setWebhookUrl(event.target.value); setUrlDirty(true); }} />
@@ -951,7 +951,7 @@ export default function ApiPanel({ agentId, onOpenDashboard }: { agentId: number
           </Paper>
 
           <Alert severity="info" icon={<ShieldIcon fontSize="inherit" />}>
-            Contoh endpoint di atas sudah memverifikasi header X-Signature. Balas HTTP 2xx setelah event diterima; ChatLoop mencoba ulang setelah 2 dan 5 detik bila endpoint gagal.
+            Contoh endpoint di atas sudah memverifikasi header X-Signature. Balas HTTP 2xx setelah event diterima; Kirimwa mencoba ulang setelah 2 dan 5 detik bila endpoint gagal.
           </Alert>
         </Stack>
       )}

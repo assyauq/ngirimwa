@@ -18,7 +18,7 @@ import (
 
 // Konstanta crawler. Disengaja konservatif: hemat resource VPS & sopan ke situs target.
 const (
-	crawlUA         = "ChatLoopBot/1.0 (+https://chatloop.id; pelatihan AI customer service)"
+	crawlUA         = "KirimwaBot/1.0 (+https://ngirimwa.web.id; pelatihan AI customer service)"
 	crawlTimeout    = 15 * time.Second
 	crawlDelay      = 400 * time.Millisecond // jeda antar-halaman (politeness)
 	maxPageBytes    = 3 << 20                // batas 3MB/halaman agar tidak boros memori

@@ -3,7 +3,7 @@ import { Box, TextField, Button, Typography, Alert, CircularProgress, Link } fro
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { unlockInboxSound } from '../services/inboxSound';
-import logo from '../assets/logo-chatloop-login.png';
+import logo from '../assets/logo-kirimwa-login.png';
 
 function responseStatus(error: unknown) {
   if (typeof error === 'object' && error && 'response' in error) {
@@ -281,7 +281,7 @@ export default function Login() {
           <Box sx={{ textAlign: 'center', mb: 0.5 }}>
             <img
               src={logo}
-              alt="ChatLoop"
+              alt="Kirimwa"
               style={{
                 width: '42%',
                 maxWidth: 180,

@@ -217,7 +217,7 @@ func newSignedWebhookRequest(url, secret string, body io.Reader) (*http.Request,
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "ChatLoop-Webhook/1")
+	req.Header.Set("User-Agent", "Kirimwa-Webhook/1")
 	if secret != "" {
 		mac := hmac.New(sha256.New, []byte(secret))
 		mac.Write(payload)

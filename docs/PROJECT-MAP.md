@@ -1,4 +1,4 @@
-# Ngirimwa / ChatLoop — Project Architecture & Development Map
+# Ngirimwa / Kirimwa — Project Architecture & Development Map
 
 > **Purpose:** canonical development map for AI agents and human developers working on `assyauq/ngirimwa`.
 >
@@ -12,7 +12,7 @@
 
 ## 1. System Overview
 
-ChatLoop is a WhatsApp business platform combining AI auto-reply, multi-agent WhatsApp, Inbox, CRM, broadcast/blast, scheduling, knowledge base, website crawling, products/orders, REST API, webhook, and tenant/user management.
+Kirimwa is a WhatsApp business platform combining AI auto-reply, multi-agent WhatsApp, Inbox, CRM, broadcast/blast, scheduling, knowledge base, website crawling, products/orders, REST API, webhook, and tenant/user management.
 
 High-level architecture:
 

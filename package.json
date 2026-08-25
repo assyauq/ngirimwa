@@ -1,7 +1,7 @@
 {
-  "name": "chatloop",
+  "name": "kirimwa",
   "private": false,
-  "description": "ChatLoop — self-hosted WhatsApp AI business platform",
+  "description": "Kirimwa — self-hosted WhatsApp AI business platform",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:backend": "go run ./backend",

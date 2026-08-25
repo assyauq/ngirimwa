@@ -1,6 +1,6 @@
-# Panduan Instalasi & Menjalankan ChatLoop
+# Panduan Instalasi & Menjalankan Kirimwa
 
-Panduan menjalankan **ChatLoop WhatsApp AI Assistant** secara lokal di macOS, Windows, dan Linux.
+Panduan menjalankan **Kirimwa WhatsApp AI Assistant** secara lokal di macOS, Windows, dan Linux.
 
 ## 1. Prasyarat
 

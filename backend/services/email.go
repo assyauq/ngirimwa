@@ -10,7 +10,7 @@ import (
 )
 
 // SendEmail mengirim email via Resend (https://resend.com).
-// Konfigurasi: RESEND_API_KEY di .env, EMAIL_FROM opsional (default "ChatLoop <noreply@chatloop.id>").
+// Konfigurasi: RESEND_API_KEY di .env, EMAIL_FROM opsional (default "Kirimwa <noreply@chatloop.id>").
 func SendEmail(to, subject, htmlBody string) error {
 	apiKey := os.Getenv("RESEND_API_KEY")
 	if apiKey == "" {
@@ -19,7 +19,7 @@ func SendEmail(to, subject, htmlBody string) error {
 	}
 	from := os.Getenv("EMAIL_FROM")
 	if from == "" {
-		from = "ChatLoop <noreply@chatloop.id>"
+		from = "Kirimwa <noreply@chatloop.id>"
 	}
 
 	payload := map[string]any{

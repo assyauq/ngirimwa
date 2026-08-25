@@ -30,7 +30,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import VolumeOffOutlinedIcon from '@mui/icons-material/VolumeOffOutlined';
 import VolumeUpOutlinedIcon from '@mui/icons-material/VolumeUpOutlined';
 import { QRCodeSVG } from 'qrcode.react';
-import logo from '../assets/logo-chatloop-1.png';
+import logo from '../assets/logo-kirimwa-1.png';
 import api from '../services/api';
 import { swalConfirm, swalAlert, swalToast } from '../services/swal';
 import { playInboxSound, unlockInboxSound } from '../services/inboxSound';
@@ -1179,10 +1179,10 @@ BATASAN & ATURAN ANTI-BLUNDER:
                 bgcolor: 'background.paper', overflow: 'hidden',
               }}
             >
-              <img src={logo} alt="ChatLoop" style={{ width: 28, height: 28 }} />
+              <img src={logo} alt="Kirimwa" style={{ width: 28, height: 28 }} />
             </Box>
             <Box sx={{ minWidth: 0, display: { xs: 'none', sm: 'block' } }}>
-              <Typography sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.01em' }}>ChatLoop</Typography>
+              <Typography sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.01em' }}>Kirimwa</Typography>
               <Typography
                 variant="caption"
                 color="text.secondary"

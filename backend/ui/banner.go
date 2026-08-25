@@ -110,5 +110,5 @@ func StartupOK(port string) {
 		"Hentikan server dengan Ctrl+C di terminal",
 		"npm run dev.",
 	}
-	printBox(os.Stdout, colorGreen, "Chatloop.id", body)
+	printBox(os.Stdout, colorGreen, "Kirimwa", body)
 }

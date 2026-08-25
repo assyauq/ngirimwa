@@ -2757,7 +2757,7 @@ const ChatComposer = memo(function ChatComposer({
           </Popover>
           <ComposerTextarea
             ref={bindMessageInput}
-            data-chatloop-role="composer-input"
+            data-kirimwa-role="composer-input"
             rows={1}
             maxLength={MAX_COMPOSER_TEXT_LENGTH}
             aria-label="Pesan WhatsApp"
@@ -3945,7 +3945,7 @@ export default function InboxPanel({
                 <SmartToyIcon sx={{ fontSize: 36, color: WA.greenDark }} />
               </Box>
               <Typography sx={{ fontWeight: 300, fontSize: 28, color: '#41525d', mb: 1 }}>
-                ChatLoop Inbox
+                Kirimwa Inbox
               </Typography>
               <Typography sx={{ maxWidth: 420, color: WA.meta, fontSize: 14, lineHeight: 1.5 }}>
                 Pilih percakapan di kiri untuk membalas pelanggan. Chat AI, CS, dan pelanggan digabung dalam satu thread.
@@ -4426,7 +4426,7 @@ export default function InboxPanel({
           // memasang backdrop global, dan langsung hilang saat ditutup.
           return (
             <Box
-              data-chatloop-role="inbox-mobile-side-panel"
+              data-kirimwa-role="inbox-mobile-side-panel"
               sx={{
                 position: 'absolute',
                 inset: 0,
@@ -4443,7 +4443,7 @@ export default function InboxPanel({
         }
         return sender && contactSidePanel ? (
           <Box
-            data-chatloop-role="inbox-desktop-side-panel"
+            data-kirimwa-role="inbox-desktop-side-panel"
             sx={{
               width: { md: 340, lg: 380, xl: 400 },
               flexShrink: 0,

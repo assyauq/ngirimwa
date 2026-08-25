@@ -79,7 +79,7 @@ Development servers:
 
 - `docs/PROJECT-MAP.md` — architecture and development map.
 - `docs/INSTALL-LOCAL.md` — local installation guide.
-- `docs/LICENSE-AUDIT.md` — historical technical audit of the removed proprietary licensing subsystem.
+- `docs/LICENSE-AUDIT-REPORT.md` — historical technical audit of the removed proprietary licensing subsystem.
 
 ## Security
 

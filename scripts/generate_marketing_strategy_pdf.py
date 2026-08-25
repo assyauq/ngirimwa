@@ -135,19 +135,19 @@ def build():
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     story = []
 
-    story += [Spacer(1, 25 * mm), p("DOKUMEN STRATEGI MARKETING", "CoverKicker"), p("WA Blast<br/>Managed Care", "CoverTitle"), p("Strategi mengubah pembeli source code menjadi pelanggan bulanan tanpa mengurangi hak lisensi yang sudah mereka miliki.", "CoverSub"), Spacer(1, 43 * mm)]
+    story += [Spacer(1, 25 * mm), p("DOKUMEN STRATEGI MARKETING", "CoverKicker"), p("WA Blast<br/>Managed Care", "CoverTitle"), p("Strategi mengubah pengguna mandiri menjadi pelanggan bulanan tanpa mengurangi kontrol server yang sudah mereka miliki.", "CoverSub"), Spacer(1, 43 * mm)]
     metrics = Table([
         [p("<b>Rp199K</b><br/>harga normal per bulan", "CoverSub"), p("<b>30 Hari</b><br/>trial pelanggan lama", "CoverSub"), p("<b>20 Member</b><br/>batch pertama", "CoverSub")]
     ], colWidths=[55 * mm] * 3, style=TableStyle([("BOX", (0, 0), (-1, -1), .6, colors.HexColor("#78BE94")), ("INNERGRID", (0, 0), (-1, -1), .4, colors.HexColor("#78BE94")), ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#124937")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 10), ("TOPPADDING", (0, 0), (-1, -1), 10), ("BOTTOMPADDING", (0, 0), (-1, -1), 10)]))
     story += [metrics, Spacer(1, 28 * mm), p("Disiapkan untuk WA Blast Source Code<br/>Versi 1.0 - 19 Juli 2026", "CoverSub")]
 
     section(story, "Ringkasan Eksekutif", "Menjual ketenangan operasional, bukan menjual ulang source code")
-    story += [p("Pelanggan telah membeli source code dan memperoleh support standar selama satu tahun. Penawaran bulanan harus memberikan nilai baru yang terpisah: pemantauan, backup, bantuan update, health check, dan penanganan operasional prioritas.", "Lead"), callout("<b>Rekomendasi utama:</b> luncurkan <b>WA Blast Managed Care</b> seharga Rp199.000 per bulan, diawali program Founding Member Rp149.000 per bulan untuk 20 pelanggan lama.", True), Spacer(1, 4 * mm), cards([("Produk utama", "Managed Care: layanan pengelolaan ringan di atas lisensi source code."), ("Janji utama", "Pelanggan lebih tenang dan tidak perlu mengecek server sendirian."), ("Peluncuran", "Layani manual, validasi permintaan, kemudian otomasi."), ("Tujuan 90 hari", "Dapatkan 20 trial dan minimal 5 pelanggan berbayar.")])]
-    story += [p("Prinsip yang tidak boleh dilanggar", "H2x")] + bullets(["Source code dan versi yang telah dibeli tetap dapat digunakan ketika Managed Care dihentikan.", "Setiap bulan pelanggan menerima bukti nilai: laporan, status backup, temuan, dan pekerjaan.", "Support standar menjelaskan cara penggunaan; Managed Care membantu mengerjakan operasional.", "Jangan menjanjikan bebas blokir, uptime mutlak, atau penyelesaian semua gangguan tanpa batas."])
+    story += [p("Pelanggan telah menggunakan aplikasi dan memperoleh support standar. Penawaran bulanan harus memberikan nilai baru yang terpisah: pemantauan, backup, bantuan update, health check, dan penanganan operasional prioritas.", "Lead"), callout("<b>Rekomendasi utama:</b> luncurkan <b>WA Blast Managed Care</b> seharga Rp199.000 per bulan, diawali program Founding Member Rp149.000 per bulan untuk 20 pelanggan lama.", True), Spacer(1, 4 * mm), cards([("Produk utama", "Managed Care: layanan pengelolaan ringan di atas server pelanggan."), ("Janji utama", "Pelanggan lebih tenang dan tidak perlu mengecek server sendirian."), ("Peluncuran", "Layani manual, validasi permintaan, kemudian otomasi."), ("Tujuan 90 hari", "Dapatkan 20 trial dan minimal 5 pelanggan berbayar.")])]
+    story += [p("Prinsip yang tidak boleh dilanggar", "H2x")] + bullets(["Aplikasi dan server yang telah disetup tetap dapat digunakan ketika Managed Care dihentikan.", "Setiap bulan pelanggan menerima bukti nilai: laporan, status backup, temuan, dan pekerjaan.", "Support standar menjelaskan cara penggunaan; Managed Care membantu mengerjakan operasional.", "Jangan menjanjikan bebas blokir, uptime mutlak, atau penyelesaian semua gangguan tanpa batas."])
 
     section(story, "Arsitektur Penawaran", "Pisahkan lisensi, support standar, dan layanan Managed")
     story += [data_table(["Komponen", "Model Bayar", "Hak / Manfaat", "Fungsi"], [
-        ["<b>Source Code License</b>", "Sekali beli", "Versi source code dan instalasi sesuai lisensi", "Pendapatan akuisisi"],
+        ["<b>Setup Aplikasi</b>", "Sekali beli", "Jasa instalasi server dan aplikasi siap pakai", "Pendapatan akuisisi"],
         ["<b>Update & Support</b>", "12 bulan lalu renewal", "Update produk, bug fix, dokumentasi, support standar", "Pendapatan maintenance"],
         ["<b>Managed Care</b>", "Bulanan/tahunan", "Monitoring, backup, health check, bantuan update dan prioritas", "Pendapatan berulang"],
         ["<b>Custom Work</b>", "Per proyek", "Integrasi, fitur custom, migrasi besar", "Pendapatan jasa"],
@@ -158,11 +158,11 @@ def build():
         ["Tinggi", "Pernah meminta instalasi, mengalami service mati, atau sering bertanya update", "Undang personal ke trial"],
         ["Tinggi", "Menggunakan aplikasi untuk operasional bisnis harian", "Tawarkan monitoring dan backup"],
         ["Sedang", "Agency dengan beberapa klien", "Tawarkan Agency setelah Basic tervalidasi"],
-        ["Rendah", "Membeli untuk belajar dan belum deploy", "Tawarkan deployment atau kelas"],
-    ], [25 * mm, 95 * mm, 60 * mm]), callout("<b>Positioning:</b> WA Blast Managed Care adalah pendamping operasional untuk pemilik lisensi yang ingin aplikasi terpantau, memiliki backup, mendapat bantuan update, dan memperoleh respons prioritas tanpa mengubah hak source code.")]
+        ["Rendah", "Menggunakan untuk belajar dan belum deploy", "Tawarkan deployment atau kelas"],
+    ], [25 * mm, 95 * mm, 60 * mm]), callout("<b>Positioning:</b> WA Blast Managed Care adalah pendamping operasional untuk pemilik server yang ingin aplikasi terpantau, memiliki backup, mendapat bantuan update, dan memperoleh respons prioritas tanpa mengubah kepemilikan server mereka.")]
 
     section(story, "Paket & Harga", "Mulai dengan satu paket utama agar keputusan mudah")
-    story += [cards([("Managed Care - Rp199.000/bulan", "Atau Rp1.990.000/tahun. Health check bulanan, pemeriksaan backup, bantuan update, pemeriksaan log ringan, priority support, satu bantuan langsung, dan laporan."), ("Founding Member - Rp149.000/bulan", "Harga terkunci selama langganan aktif. Trial 30 hari, maksimal 20 pelanggan lama, semua manfaat Managed Care, dan wajib memberi feedback.")]), p("Paket lanjutan", "H2x"), callout("<b>Managed Agency - Rp599.000/bulan:</b> hingga lima instalasi klien, bantuan deployment, prioritas lebih tinggi, dan laporan per instalasi."), p("Ketentuan komersial", "H2x")] + bullets(["Paket dapat dihentikan; source code tetap dapat digunakan.", "Paket tahunan setara pembayaran 10 bulan.", "Pekerjaan di luar cakupan diberikan estimasi terpisah.", "Priority support berarti prioritas antrean, bukan jaminan semua masalah langsung selesai.", "Harga Founding Member berlaku selama pembayaran tidak terputus."])
+    story += [cards([("Managed Care - Rp199.000/bulan", "Atau Rp1.990.000/tahun. Health check bulanan, pemeriksaan backup, bantuan update, pemeriksaan log ringan, priority support, satu bantuan langsung, dan laporan."), ("Founding Member - Rp149.000/bulan", "Harga terkunci selama langganan aktif. Trial 30 hari, maksimal 20 pelanggan lama, semua manfaat Managed Care, dan wajib memberi feedback.")]), p("Paket lanjutan", "H2x"), callout("<b>Managed Agency - Rp599.000/bulan:</b> hingga lima instalasi klien, bantuan deployment, prioritas lebih tinggi, dan laporan per instalasi."), p("Ketentuan komersial", "H2x")] + bullets(["Paket dapat dihentikan; server dan aplikasi tetap dapat digunakan.", "Paket tahunan setara pembayaran 10 bulan.", "Pekerjaan di luar cakupan diberikan estimasi terpisah.", "Priority support berarti prioritas antrean, bukan jaminan semua masalah langsung selesai.", "Harga Founding Member berlaku selama pembayaran tidak terputus."])
 
     section(story, "Funnel 30 Hari", "Biarkan pelanggan merasakan nilai sebelum diminta membayar")
     funnel = [
@@ -180,19 +180,19 @@ def build():
 
     section(story, "Copy Marketing", "Naskah siap pakai untuk pelanggan lama")
     copies = [
-        ("Undangan", "Halo Kak {{nama}}, kami membuka 20 kuota WA Blast Managed Care khusus pemilik lisensi. Selama 30 hari kami membantu health check, backup, pengecekan error, dan update. Trial gratis dan tidak mengubah hak source code. Setelah trial bisa lanjut Rp149.000/bulan atau berhenti tanpa membuat aplikasi terkunci. Apakah ingin masuk batch pertama?"),
+        ("Undangan", "Halo Kak {{nama}}, kami membuka 20 kuota WA Blast Managed Care khusus pengguna aktif. Selama 30 hari kami membantu health check, backup, pengecekan error, dan update. Trial gratis dan tidak mengubah kepemilikan server. Setelah trial bisa lanjut Rp149.000/bulan atau berhenti tanpa membuat aplikasi terkunci. Apakah ingin masuk batch pertama?"),
         ("Laporan minggu pertama", "Pemeriksaan awal sudah selesai. Minggu ini kami memeriksa {{jumlah_pemeriksaan}} bagian, memvalidasi {{jumlah_backup}} backup, dan menemukan {{jumlah_temuan}} hal yang perlu diperhatikan. Ringkasannya kami lampirkan."),
         ("Konversi hari ke-21", "Selama trial kami sudah membantu {{hasil_utama}}. Jika ingin monitoring, backup, health check, bantuan update, dan priority support tetap berjalan, lanjutkan sebagai Founding Member Rp149.000/bulan."),
-        ("Reminder", "Trial berakhir pada {{tanggal}}. Pilih Rp149.000/bulan atau Rp1.490.000/tahun. Jika belum ingin melanjutkan, lisensi dan aplikasi tetap bisa digunakan seperti biasa."),
+        ("Reminder", "Trial berakhir pada {{tanggal}}. Pilih Rp149.000/bulan atau Rp1.490.000/tahun. Jika belum ingin melanjutkan, aplikasi tetap bisa digunakan seperti biasa."),
     ]
     for title, text in copies:
         story += [p(title, "H2x"), callout(text)]
-    story += [p("Headline landing page", "H2x"), callout("<b>WA Blast sudah Anda miliki. Sekarang operasionalnya tidak perlu Anda urus sendirian.</b><br/>Monitoring, backup, bantuan update, health check, dan priority support untuk pemilik lisensi.", True)]
+    story += [p("Headline landing page", "H2x"), callout("<b>WA Blast sudah Anda gunakan. Sekarang operasionalnya tidak perlu Anda urus sendirian.</b><br/>Monitoring, backup, bantuan update, health check, dan priority support untuk pengguna setia.", True)]
 
     section(story, "Penanganan Keberatan", "Jawaban sales yang transparan dan tidak defensif")
     story += [data_table(["Keberatan", "Jawaban"], [
         ["Bukannya sudah dapat support?", "Benar. Support standar tetap berlaku. Managed Care adalah pemeriksaan langsung, backup, bantuan update, monitoring, dan prioritas."],
-        ["Kalau berhenti aplikasinya mati?", "Tidak. Source code dan aplikasi tetap dapat digunakan; hanya layanan Managed yang berhenti."],
+        ["Kalau berhenti aplikasinya mati?", "Tidak. Server dan aplikasi tetap dapat digunakan; hanya layanan Managed yang berhenti."],
         ["Saya bisa mengurus sendiri.", "Tentu. Paket ini opsional untuk menghemat waktu atau mendapatkan pendamping teknis."],
         ["Kenapa bulanan?", "Pemeriksaan, backup, bantuan update, dan kesiapan bantuan diberikan berkelanjutan. Ada opsi tahunan."],
         ["Dijamin tidak diblokir?", "Tidak ada jaminan. Kami membantu pengurangan risiko, tetapi keputusan platform di luar kendali kami."],

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Panduan Instalasi ChatLoop v4 - NgertiKode.id</title>
+<title>Panduan Instalasi ChatLoop v4</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -197,8 +197,8 @@
 <body>
 
 <div class="header">
-  <div class="brand">NgertiKode<span>.id</span></div>
-  <div class="badge">Panduan Resmi Member v4.0</div>
+  <div class="brand">ChatLoop</div>
+  <div class="badge">Panduan Instalasi v4.0</div>
 </div>
 
 <h1>Panduan Instalasi & Menjalankan Source Code ChatLoop</h1>
@@ -252,7 +252,7 @@
     <div class="step-title">Ekstrak ZIP & Buka di Visual Studio Code</div>
   </div>
   <ol>
-    <li>Ekstrak file <code>ChatLoop-v4-xxxx.zip</code> yang telah Anda unduh dari Member Dashboard LMS.</li>
+    <li>Ekstrak file <code>ChatLoop-v4-xxxx.zip</code> yang telah Anda unduh.</li>
     <li>Buka <strong>Visual Studio Code</strong> ➔ Pilih <strong>File → Open Folder...</strong> ➔ Pilih folder hasil ekstrak.</li>
     <li>Buka Terminal internal VS Code: <strong>Terminal → New Terminal</strong> (shortcut: <code>Ctrl + `</code> / <code>Cmd + `</code>).</li>
   </ol>
@@ -268,11 +268,6 @@
   <p>2. Di terminal VS Code, jalankan perintah inisialisasi:</p>
   <pre>npm run setup:env</pre>
 
-  <div class="alert">
-    <div class="alert-title">✨ Konfigurasi Otomatis dari LMS</div>
-    File <code>.env</code> Anda <strong>sudah otomatis terisi</strong> dengan <code>LICENSE_KEY</code> resmi dan <code>JWT_SECRET</code> unik Anda. Anda <strong>tidak perlu</strong> generate JWT manual dari website lain atau copy-paste lisensi.
-  </div>
-
   <p>3. Buka file <code>.env</code> di VS Code dan sesuaikan password MySQL lokal Anda:</p>
   <pre>DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -283,8 +278,7 @@ DB_NAME=db_wa_blast
 # Nilai di bawah ini sudah otomatis terisi dan siap pakai:
 JWT_SECRET=...
 SUPERADMIN_USERNAME=superadmin
-SUPERADMIN_PASSWORD=superadmin123
-LICENSE_KEY=...</pre>
+SUPERADMIN_PASSWORD=superadmin123</pre>
 </div>
 
 <div class="page-break"></div>
@@ -358,8 +352,8 @@ LICENSE_KEY=...</pre>
 </div>
 
 <div class="footer">
-  <div>© 2026 NgertiKode.id — All Rights Reserved.</div>
-  <div>Dokumen Resmi Lisensi & Panduan Instalasi</div>
+  <div>ChatLoop Open Source</div>
+  <div>Panduan Instalasi</div>
 </div>
 
 </body>

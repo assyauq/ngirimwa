@@ -3285,9 +3285,7 @@ BATASAN & ATURAN ANTI-BLUNDER:
             <Typography variant="caption" color="text.secondary">Ganti password (isi hanya jika ingin mengganti)</Typography>
             <TextField label="Password lama" size="small" type="password" fullWidth value={profileOldPassword} onChange={e => setProfileOldPassword(e.target.value)} />
             <TextField label="Password baru" size="small" type="password" fullWidth value={profileNewPassword} onChange={e => setProfileNewPassword(e.target.value)} helperText="Minimal 8 karakter" />
-            <Divider />
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Lisensi</Typography>
-            <TextField label="License Key" size="small" fullWidth value={localStorage.getItem('licenseKeyHint') || '(tersimpan di .env)'} disabled helperText="Dari ngertikode.id. Tidak bisa diubah di sini." />
+
             <Alert severity="info" sx={{ mt: 0.5 }}>
               <Typography variant="caption">
                 Konfigurasi OpenRouter (model AI & API key) dipindahkan ke menu <b>AI & Model</b> di sidebar.

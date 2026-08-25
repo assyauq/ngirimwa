@@ -32,7 +32,6 @@ Tencent VPS / Production
   |              +--> AI services
   |              +--> WhatsApp services (WhatsMeow)
   |              +--> Schedulers / background jobs
-  |              +--> License subsystem
   |
   +--> MySQL
   |
@@ -66,7 +65,7 @@ ngirimwa/
 │   ├── config/
 │   ├── database/
 │   ├── handlers/
-│   ├── license/
+
 │   ├── models/
 │   ├── services/
 │   └── ui/
@@ -87,7 +86,7 @@ ngirimwa/
 ├── .gitignore
 ├── NOTICE
 ├── README.md
-├── SOURCE-LICENSE.template.md
+
 ├── go.mod
 └── go.sum
 ```
@@ -119,7 +118,7 @@ ngirimwa/
 | `scripts/` | Developer/build helpers | Cross-platform launch/build scripts |
 | `.github/workflows/release.yml` | CI/release automation | Inspect before changing deployment/release semantics |
 | `NOTICE` | Copyright/legal notice | Preserve |
-| `SOURCE-LICENSE.template.md` | Source/license template | Preserve unless legal owner changes it |
+
 
 ---
 
@@ -349,15 +348,7 @@ Major responsibilities:
 
 **AI-agent rule:** inspect the relevant service before adding new business behavior in a handler.
 
-### 4.7 `backend/license/`
-
-License verification/activation/heartbeat subsystem.
-
-The application verifies licensing during startup and runs a heartbeat. Treat this subsystem as production-critical and legally sensitive.
-
-Do not remove, bypass, or rewrite it as part of ordinary UI/feature work.
-
-### 4.8 `backend/ui/`
+### 4.7 `backend/ui/`
 
 Terminal/startup UI helpers, including license/startup messaging. This is not the React dashboard UI.
 
@@ -376,23 +367,21 @@ Startup order observed:
 ```text
 1. database.Init()
 2. knowledge consolidation
-3. license verification
-4. license heartbeat
-5. AI initialization
-6. embedding initialization
-7. WhatsApp initialization
-8. WhatsApp event handler registration
-9. start linked agents
-10. reconnect watchdog
-11. resume broadcasts
-12. cleanup stuck schedules/broadcast junk/orphan assignments
-13. seed shipping cities
-14. scheduled message/media cleanup workers
-15. failed-send retry worker
-16. login throttle sweeper
-17. Gin router + middleware
-18. serve frontend/dist when available
-19. listen on HTTP server
+3. AI initialization
+4. embedding initialization
+5. WhatsApp initialization
+6. WhatsApp event handler registration
+7. start linked agents
+8. reconnect watchdog
+9. resume broadcasts
+10. cleanup stuck schedules/broadcast junk/orphan assignments
+11. seed shipping cities
+12. scheduled message/media cleanup workers
+13. failed-send retry worker
+14. login throttle sweeper
+15. Gin router + middleware
+16. serve frontend/dist when available
+17. listen on HTTP server
 ```
 
 This sequence is sensitive. Do not reorder startup dependencies without understanding their runtime implications.
@@ -778,7 +767,6 @@ Recommended search terms:
 logo
 favicon
 chatloop
-NgertiKode
 brand
 icon
 Logo
@@ -947,7 +935,6 @@ production DB
 WA session data
 .env
 media
-license state
 ```
 
 unless explicitly requested and backed up.
@@ -980,12 +967,11 @@ Treat these as production-critical:
 2. broadcast/rate-limit/anti-spam controls
 3. authentication/JWT/tenant isolation
 4. database migrations/backfills
-5. license subsystem
-6. public API authentication
-7. webhook/API secrets
-8. production `.env`
-9. customer media/session data
-10. deployment/systemd configuration
+5. public API authentication
+6. webhook/API secrets
+7. production `.env`
+8. customer media/session data
+9. deployment/systemd configuration
 
 ---
 

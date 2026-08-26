@@ -109,7 +109,7 @@ ngirimwa/
 | Path | Responsibility | Notes |
 |---|---|---|
 | `README.md` | Product + developer overview | Functional feature list and local development guide |
-| `go.mod` | Go module/dependencies | Module is `wa-assistant`, Go 1.25.8 |
+| `go.mod` | Go module/dependencies | Module is `kirimwa`, Go 1.25.8 |
 | `go.sum` | Go dependency checksums | Must stay synchronized with `go.mod` |
 | `.env.example` | Environment variable template | Production `.env` must remain outside Git |
 | `.gitignore` | Git exclusions | Prevents runtime/build/secrets from being committed |

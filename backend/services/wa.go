@@ -15,8 +15,8 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/appstate"

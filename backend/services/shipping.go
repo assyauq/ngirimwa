@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"wa-assistant/backend/config"
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
+	"kirimwa/backend/config"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
 )
 
 // ShippingResult = satu hasil ongkir dari RajaOngkir V2.

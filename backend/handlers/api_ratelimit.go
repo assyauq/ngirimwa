@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"wa-assistant/backend/config"
+	"kirimwa/backend/config"
 )
 
 // Rate limiting REST API per-nomor (token bucket in-memory; server single-process).

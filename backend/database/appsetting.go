@@ -1,6 +1,6 @@
 package database
 
-import "wa-assistant/backend/models"
+import "kirimwa/backend/models"
 
 // GetAppSetting membaca setting platform; mengembalikan def bila kosong/tak ada.
 func GetAppSetting(key, def string) string {

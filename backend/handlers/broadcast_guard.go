@@ -3,9 +3,9 @@ package handlers
 import (
 	"strings"
 
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
-	"wa-assistant/backend/services"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
+	"kirimwa/backend/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +16,7 @@ type broadcastGuardRecipient struct {
 }
 
 // BroadcastConsentSummary mengembalikan ringkasan catatan lokal untuk tampilan Kontak.
-// Angka ini berasal dari aktivitas ChatLoop, bukan quality rating atau verifikasi WhatsApp.
+// Angka ini berasal dari aktivitas Kirimwa, bukan quality rating atau verifikasi WhatsApp.
 func BroadcastConsentSummary(c *gin.Context) {
 	agentID, ok := resolveAgent(c)
 	if !ok {

@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
-	"wa-assistant/backend/services"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
+	"kirimwa/backend/services"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"wa-assistant/backend/services"
+	"kirimwa/backend/services"
 )
 
 func TestMessageTimeUsesWhatsAppTimestamp(t *testing.T) {

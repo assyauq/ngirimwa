@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 )
 
 func TestVisionFieldInstructionConstrainsSelectAnswer(t *testing.T) {

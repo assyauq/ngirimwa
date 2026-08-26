@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"wa-assistant/backend/services"
+	"kirimwa/backend/services"
 
 	"github.com/gin-gonic/gin"
 )

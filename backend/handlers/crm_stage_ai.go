@@ -4,9 +4,9 @@ import (
 	"log"
 	"time"
 
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
-	"wa-assistant/backend/services"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
+	"kirimwa/backend/services"
 )
 
 func maybeAssessCRMLeadStage(agentID uint, sender string, latestChatID uint) {

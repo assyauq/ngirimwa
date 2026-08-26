@@ -1,4 +1,4 @@
-# Ngirimwa / ChatLoop — Project Architecture & Development Map
+# Ngirimwa / Kirimwa — Project Architecture & Development Map
 
 > **Purpose:** canonical development map for AI agents and human developers working on `assyauq/ngirimwa`.
 >
@@ -12,7 +12,7 @@
 
 ## 1. System Overview
 
-ChatLoop is a WhatsApp business platform combining AI auto-reply, multi-agent WhatsApp, Inbox, CRM, broadcast/blast, scheduling, knowledge base, website crawling, products/orders, REST API, webhook, and tenant/user management.
+Kirimwa is a WhatsApp business platform combining AI auto-reply, multi-agent WhatsApp, Inbox, CRM, broadcast/blast, scheduling, knowledge base, website crawling, products/orders, REST API, webhook, and tenant/user management.
 
 High-level architecture:
 
@@ -109,7 +109,7 @@ ngirimwa/
 | Path | Responsibility | Notes |
 |---|---|---|
 | `README.md` | Product + developer overview | Functional feature list and local development guide |
-| `go.mod` | Go module/dependencies | Module is `wa-assistant`, Go 1.25.8 |
+| `go.mod` | Go module/dependencies | Module is `kirimwa`, Go 1.25.8 |
 | `go.sum` | Go dependency checksums | Must stay synchronized with `go.mod` |
 | `.env.example` | Environment variable template | Production `.env` must remain outside Git |
 | `.gitignore` | Git exclusions | Prevents runtime/build/secrets from being committed |

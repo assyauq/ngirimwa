@@ -2,7 +2,7 @@ import Swal from 'sweetalert2';
 
 type ToastIcon = 'success' | 'error' | 'warning' | 'info';
 
-const LIGHTWEIGHT_TOAST_HOST_ID = 'chatloop-toast-host';
+const LIGHTWEIGHT_TOAST_HOST_ID = 'kirimwa-toast-host';
 const toastTone: Record<ToastIcon, { accent: string; background: string; glyph: string }> = {
   success: { accent: '#008069', background: '#f2fbf7', glyph: '✓' },
   error: { accent: '#c62828', background: '#fff6f6', glyph: '!' },

@@ -1,13 +1,13 @@
 import { Box, Container, Typography, Stack, Divider, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import heroLogo from '../assets/Logo-chatloop-gradients.png';
+import heroLogo from '../assets/Logo-kirimwa-gradients.png';
 
 const SECTIONS: { h: string; p: string[] }[] = [
   {
     h: '1. Pengantar',
     p: [
-      'Kebijakan Privasi ini menjelaskan bagaimana ChatLoop mengumpulkan, menggunakan, dan melindungi data kamu saat memakai layanan asisten WhatsApp bertenaga AI kami. Dengan mendaftar dan menggunakan ChatLoop, kamu menyetujui praktik yang dijelaskan di halaman ini.',
+      'Kebijakan Privasi ini menjelaskan bagaimana Kirimwa mengumpulkan, menggunakan, dan melindungi data kamu saat memakai layanan asisten WhatsApp bertenaga AI kami. Dengan mendaftar dan menggunakan Kirimwa, kamu menyetujui praktik yang dijelaskan di halaman ini.',
     ],
   },
   {
@@ -86,7 +86,7 @@ export default function Privacy() {
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
       <Box sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#fff' }}>
         <Container maxWidth="md" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
-          <Box component="img" src={heroLogo} alt="ChatLoop" sx={{ height: 34, cursor: 'pointer' }} onClick={() => navigate('/')} />
+          <Box component="img" src={heroLogo} alt="Kirimwa" sx={{ height: 34, cursor: 'pointer' }} onClick={() => navigate('/')} />
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')}>Beranda</Button>
         </Container>
       </Box>
@@ -106,7 +106,7 @@ export default function Privacy() {
           ))}
         </Stack>
         <Divider sx={{ my: 4 }} />
-        <Typography variant="caption" color="text.secondary">© {new Date().getFullYear()} ChatLoop. Seluruh hak cipta dilindungi.</Typography>
+        <Typography variant="caption" color="text.secondary">© {new Date().getFullYear()} Kirimwa. Seluruh hak cipta dilindungi.</Typography>
       </Container>
     </Box>
   );

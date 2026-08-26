@@ -201,7 +201,7 @@ function airConfigPath() {
 async function main() {
   process.chdir(ROOT);
   log('══════════════════════════════════════════════');
-  log('  Ngirimwa | ChatLoop — development (lintas OS)');
+  log('  Ngirimwa | Kirimwa — development (lintas OS)');
   log(`  Platform: ${process.platform} / ${os.arch()}`);
   log('══════════════════════════════════════════════\n');
 

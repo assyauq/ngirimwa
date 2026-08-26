@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
-	"wa-assistant/backend/services"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
+	"kirimwa/backend/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -187,7 +187,7 @@ func TestAPIMessage(c *gin.Context) {
 	}
 	text := strings.TrimSpace(req.Text)
 	if text == "" {
-		text = "Uji REST API ChatLoop — pesan ini dikirim dari dashboard."
+		text = "Uji REST API Kirimwa — pesan ini dikirim dari dashboard."
 	}
 	msgID, code, errMsg := deliverAPIMessage(id, to, apiMessageReq{To: to, Type: "text", Text: text})
 	if errMsg != "" {
@@ -216,7 +216,7 @@ func TestWebhook(c *gin.Context) {
 	}
 	body, _ := json.Marshal(gin.H{
 		"event": "webhook.test", "agent_id": agent.ID, "number": agent.Number,
-		"timestamp": time.Now().Unix(), "message": "Webhook ChatLoop berhasil terhubung.",
+		"timestamp": time.Now().Unix(), "message": "Webhook Kirimwa berhasil terhubung.",
 	})
 	req, err := newSignedWebhookRequest(agent.WebhookURL, agent.WebhookSecret, bytes.NewReader(body))
 	if err != nil {

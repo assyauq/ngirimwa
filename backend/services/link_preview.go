@@ -85,7 +85,7 @@ func FetchLinkPreview(rawURL string) (LinkPreview, error) {
 	if err != nil {
 		return LinkPreview{}, err
 	}
-	req.Header.Set("User-Agent", "ChatLoopBot/1.0 (+link-preview; customer-service)")
+	req.Header.Set("User-Agent", "KirimwaBot/1.0 (+link-preview; customer-service)")
 	req.Header.Set("Accept", "text/html,application/xhtml+xml")
 
 	resp, err := client.Do(req)

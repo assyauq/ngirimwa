@@ -3,9 +3,9 @@ package handlers
 import (
 	"log"
 
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
-	"wa-assistant/backend/services"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
+	"kirimwa/backend/services"
 )
 
 // migrateLIDSenders merapikan data lama: pengirim yang tersimpan sebagai LID diubah

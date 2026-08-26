@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 )
 
 func TestParseAgentPool(t *testing.T) {

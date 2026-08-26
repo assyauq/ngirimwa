@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 )
 
 func TestSelectAIResponsePolicy(t *testing.T) {

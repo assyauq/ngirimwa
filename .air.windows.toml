@@ -6,8 +6,8 @@ tmp_dir = ".tmp/air"
 
 [build]
   # Di Windows, go build menambahkan .exe bila output tanpa ekstensi — kita set eksplisit.
-  cmd = "go build -o ./.tmp/air/wa-assistant.exe ./backend"
-  entrypoint = ["./.tmp/air/wa-assistant.exe"]
+  cmd = "go build -o ./.tmp/air/kirimwa.exe ./backend"
+  entrypoint = ["./.tmp/air/kirimwa.exe"]
   include_dir = ["backend"]
   include_ext = ["go"]
   include_file = ["go.mod", "go.sum", ".env"]

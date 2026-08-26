@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 )
 
 func TestProductCheckoutIntent(t *testing.T) {

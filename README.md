@@ -1,6 +1,6 @@
-# ChatLoop
+# Kirimwa
 
-ChatLoop is a self-hosted WhatsApp business platform combining AI auto-reply, a multi-agent WhatsApp inbox, CRM, broadcasts, scheduling, knowledge base, website crawling, products/orders, REST API, webhooks, and tenant/user management.
+Kirimwa is a self-hosted WhatsApp business platform combining AI auto-reply, a multi-agent WhatsApp inbox, CRM, broadcasts, scheduling, knowledge base, website crawling, products/orders, REST API, webhooks, and tenant/user management.
 
 ## Features
 

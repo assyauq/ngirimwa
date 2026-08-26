@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 )
 
 func TestHistoryWithinContextBudgetIsNotLimitedToTwentyMessages(t *testing.T) {

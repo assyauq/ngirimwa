@@ -92,10 +92,10 @@ function now() {
 
 function describeElement(target: EventTarget | Element | null): string {
   if (!(target instanceof Element)) return target ? target.constructor.name : 'none';
-  const role = target.getAttribute('data-chatloop-role') || target.getAttribute('role') || '';
-  const semanticParent = target.closest<HTMLElement>('[data-chatloop-role]');
+  const role = target.getAttribute('data-kirimwa-role') || target.getAttribute('role') || '';
+  const semanticParent = target.closest<HTMLElement>('[data-kirimwa-role]');
   const parentRole = !role && semanticParent
-    ? semanticParent.getAttribute('data-chatloop-role') || ''
+    ? semanticParent.getAttribute('data-kirimwa-role') || ''
     : '';
   const id = target.id ? `#${target.id}` : '';
   const classes = Array.from(target.classList).slice(0, 3).join('.');
@@ -228,7 +228,7 @@ function ensureStallWorker() {
       }, 400);
     `;
     const workerURL = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
-    stallWorker = new Worker(workerURL, { name: 'chatloop-inbox-debug' });
+    stallWorker = new Worker(workerURL, { name: 'kirimwa-inbox-debug' });
     URL.revokeObjectURL(workerURL);
   } catch {
     stallWorker = null;

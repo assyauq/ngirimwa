@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
 )
 
 // StartMediaCleanup menghapus file media lama secara berkala agar disk VPS tidak penuh.

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 )
 
 func TestTrimPersonaForPromptShortUnchanged(t *testing.T) {

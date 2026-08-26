@@ -3,7 +3,7 @@ package handlers
 import (
 	"strings"
 
-	"wa-assistant/backend/database"
+	"kirimwa/backend/database"
 
 	"github.com/gin-gonic/gin"
 )

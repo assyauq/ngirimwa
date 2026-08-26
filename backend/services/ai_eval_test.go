@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 )
 
 // Golden set Q&A untuk regresi retrieval (tanpa panggilan network/embedding).

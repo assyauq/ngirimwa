@@ -10,8 +10,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
 
 	"github.com/gin-gonic/gin"
 )

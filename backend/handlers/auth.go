@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"wa-assistant/backend/config"
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
+	"kirimwa/backend/config"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

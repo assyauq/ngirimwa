@@ -1,4 +1,4 @@
-module wa-assistant
+module kirimwa
 
 go 1.25.8
 

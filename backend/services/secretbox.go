@@ -9,7 +9,7 @@ import (
 	"errors"
 	"strings"
 
-	"wa-assistant/backend/config"
+	"kirimwa/backend/config"
 )
 
 // secretbox menyediakan enkripsi at-rest AES-256-GCM untuk rahasia yang disimpan di DB

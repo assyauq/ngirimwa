@@ -9,10 +9,10 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"wa-assistant/backend/config"
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/handlers"
-	"wa-assistant/backend/services"
+	"kirimwa/backend/config"
+	"kirimwa/backend/database"
+	"kirimwa/backend/handlers"
+	"kirimwa/backend/services"
 
 	"github.com/gin-gonic/gin"
 )

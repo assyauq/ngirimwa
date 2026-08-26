@@ -10,7 +10,7 @@ import (
 	"time"
 	"unicode"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 )
 
 // Prompt layering v2 — prioritas fakta & anti-konflik persona/knowledge.

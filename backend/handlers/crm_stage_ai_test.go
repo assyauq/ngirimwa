@@ -3,8 +3,8 @@ package handlers
 import (
 	"testing"
 
-	"wa-assistant/backend/models"
-	"wa-assistant/backend/services"
+	"kirimwa/backend/models"
+	"kirimwa/backend/services"
 )
 
 func TestCanApplyAILeadStage(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"wa-assistant/backend/models"
+	"kirimwa/backend/models"
 
 	openai "github.com/sashabaranov/go-openai"
 )

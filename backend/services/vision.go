@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"wa-assistant/backend/database"
-	"wa-assistant/backend/models"
+	"kirimwa/backend/database"
+	"kirimwa/backend/models"
 
 	openai "github.com/sashabaranov/go-openai"
 )

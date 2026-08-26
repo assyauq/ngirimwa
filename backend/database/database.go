@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 	"time"
-	"wa-assistant/backend/config"
-	"wa-assistant/backend/models"
+	"kirimwa/backend/config"
+	"kirimwa/backend/models"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"

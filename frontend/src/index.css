@@ -1,5 +1,5 @@
-/* ============================================================
-   DESIGN TOKENS — Kirimwa
+﻿/* ============================================================
+   DESIGN TOKENS â€” Kirimwa
    Border-first. Shadow sangat halus hanya untuk membantu hierarki.
    ============================================================ */
 :root {
@@ -169,7 +169,7 @@ code {
 }
 
 /* ============================================================
-   SweetAlert2 — flat, border-first
+   SweetAlert2 â€” flat, border-first
    ============================================================ */
 .swal2-container {
   z-index: var(--z-swal) !important;
@@ -239,7 +239,7 @@ code {
   }
 }
 
-/* AI agent live indicator — subtle opacity, no expanding shadow */
+/* AI agent live indicator â€” subtle opacity, no expanding shadow */
 @keyframes ai-agent-breathe {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.82; }
@@ -265,7 +265,7 @@ code {
   }
 }
 
-/* Sidebar nav — aksen tenang, mudah dipindai, tanpa pill berlebihan */
+/* Sidebar nav â€” aksen tenang, mudah dipindai, tanpa pill berlebihan */
 .nav-item {
   border-radius: var(--radius-sm) !important;
   transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
@@ -282,4 +282,181 @@ code {
 }
 .nav-item--active .MuiButton-startIcon {
   color: var(--color-primary) !important;
+}
+
+/* =========================================================================================
+   LOGIN PAGE SCOPED STYLES (RuangKirim)
+   ========================================================================================= */
+.login-page {
+    --rk-primary: #1a56ff;
+    --rk-primary-hover: #1545cc;
+    --rk-cyan: #00e5ff;
+    --rk-text-main: #111827;
+    --rk-text-muted: #6b7280;
+    --rk-border: #e5e7eb;
+    --rk-bg-light: #f4f7fb; /* Very light blue / white background */
+}
+
+/* Base container */
+.login-page-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Desktop: 2 columns */
+    min-height: 100vh;
+    background: #ffffff;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--rk-text-main);
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Left Panel - Branding */
+.login-page-left-panel {
+    background: var(--rk-bg-light);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 60px 40px;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
+/* Subtle decorative ambient shapes on left panel */
+.login-page-left-panel::after {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(26, 86, 255, 0.05);
+    filter: blur(80px);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.login-page-left-panel::before {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(0, 229, 255, 0.05);
+    filter: blur(100px);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.item-branding, .item-features, .item-security, .item-illustration {
+    z-index: 1;
+    position: relative;
+}
+
+/* Feature Cards */
+.login-page-features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.login-page-feature-card {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.04);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.login-page-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(26, 86, 255, 0.08); /* Soft blue */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--rk-primary);
+    margin-bottom: 12px;
+}
+
+/* Right Panel - Form */
+.login-page-right-panel {
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    box-sizing: border-box;
+}
+
+.login-page-form-wrapper {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.login-page-input-label {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    color: var(--rk-text-main) !important;
+    margin-bottom: 8px !important;
+}
+
+.login-page .MuiOutlinedInput-root {
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.login-page .MuiOutlinedInput-notchedOutline {
+    border-color: var(--rk-border);
+}
+
+.login-page .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #cbd5e1;
+}
+
+.login-page .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--rk-primary);
+    border-width: 2px;
+}
+
+/* Mobile Adjustments - Flattening via display: contents */
+@media (max-width: 899px) {
+    .login-page-container {
+        display: flex;
+        flex-direction: column;
+        padding: 24px 20px;
+        align-items: center;
+    }
+    
+    .login-page-left-panel, .login-page-right-panel {
+        display: contents; /* Flatten the panels so children become direct flex items */
+    }
+
+    .login-page-form-wrapper {
+        display: contents; /* Also flatten the form wrapper to order its children */
+    }
+
+    /* Assigning flex orders to achieve the exact mobile layout */
+    .item-logo { order: 1; margin-bottom: 24px; margin-top: 16px; width: 100%; text-align: left; }
+    .item-welcome { order: 2; margin-bottom: 32px; width: 100%; text-align: left; }
+    .item-form { order: 3; width: 100%; margin-bottom: 24px; }
+    .item-features { order: 4; width: 100%; margin-bottom: 24px; }
+    .item-security { order: 5; width: 100%; margin-bottom: 24px; }
+    .item-footer { order: 6; width: 100%; margin-top: 32px; margin-bottom: 16px; text-align: center; }
+
+    /* Hide desktop-specific branding/illustration on mobile to keep it clean */
+    .item-branding, .item-illustration {
+        display: none !important;
+    }
+
+    .login-page-features-grid {
+        grid-template-columns: 1fr;
+    }
 }

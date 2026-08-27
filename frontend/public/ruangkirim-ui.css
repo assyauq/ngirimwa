@@ -15,126 +15,44 @@ html, body, #root { min-height: 100%; }
 body { background: var(--rk-bg) !important; color: var(--rk-navy); }
 
 /* ---------------- Login ---------------- */
-#root > .MuiBox-root:not(:has(aside)) {
-  background: var(--rk-bg) !important;
-  color: var(--rk-navy) !important;
-}
-
+#root > .MuiBox-root:not(:has(aside)) { background: var(--rk-bg) !important; color: var(--rk-navy) !important; }
 #root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:has(svg) {
-  background:
-    radial-gradient(circle at 72% 15%, rgba(36,107,253,.10), transparent 32%),
-    radial-gradient(circle at 20% 82%, rgba(22,196,234,.08), transparent 30%),
-    #F7FAFF !important;
+  background: radial-gradient(circle at 72% 15%, rgba(36,107,253,.10), transparent 32%), radial-gradient(circle at 20% 82%, rgba(22,196,234,.08), transparent 30%), #F7FAFF !important;
   border-right: 1px solid var(--rk-border) !important;
 }
-
-#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:has(svg) svg {
-  filter: hue-rotate(76deg) saturate(1.25) !important;
-}
-
-#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:last-child {
-  background: #fff !important;
-  border-left: 0 !important;
-}
-
-#root > .MuiBox-root:not(:has(aside)) img[alt="Kirimwa"] {
-  content: url('/ruangkirim-logo.svg') !important;
-  width: 220px !important;
-  max-width: 100% !important;
-  height: auto !important;
-}
-
+#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:has(svg) svg { filter: hue-rotate(76deg) saturate(1.25) !important; }
+#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:last-child { background: #fff !important; border-left: 0 !important; }
+#root > .MuiBox-root:not(:has(aside)) img[alt="Kirimwa"] { content: url('/ruangkirim-logo.svg') !important; width: 220px !important; max-width: 100% !important; height: auto !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiTypography-h4,
-#root > .MuiBox-root:not(:has(aside)) h1 {
-  color: var(--rk-navy) !important;
-}
-
-#root > .MuiBox-root:not(:has(aside)) .MuiTextField-root .MuiOutlinedInput-root {
-  min-height: 52px;
-  border-radius: 11px !important;
-  background: #fff !important;
-}
-#root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-notchedOutline {
-  border-color: #D9E2F1 !important;
-}
-#root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: #AFC6F7 !important;
-}
-#root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: var(--rk-blue) !important;
-  border-width: 2px !important;
-}
+#root > .MuiBox-root:not(:has(aside)) h1 { color: var(--rk-navy) !important; }
+#root > .MuiBox-root:not(:has(aside)) .MuiTextField-root .MuiOutlinedInput-root { min-height: 52px; border-radius: 11px !important; background: #fff !important; }
+#root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-notchedOutline { border-color: #D9E2F1 !important; }
+#root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline { border-color: #AFC6F7 !important; }
+#root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--rk-blue) !important; border-width: 2px !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiButton-containedPrimary,
-#root > .MuiBox-root:not(:has(aside)) button[type="submit"] {
-  min-height: 52px !important;
-  border-radius: 11px !important;
-  background: var(--rk-blue) !important;
-  box-shadow: 0 8px 18px rgba(36,107,253,.20) !important;
-  font-weight: 700 !important;
-  text-transform: none !important;
-}
+#root > .MuiBox-root:not(:has(aside)) button[type="submit"] { min-height: 52px !important; border-radius: 11px !important; background: var(--rk-blue) !important; box-shadow: 0 8px 18px rgba(36,107,253,.20) !important; font-weight: 700 !important; text-transform: none !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiButton-containedPrimary:hover,
-#root > .MuiBox-root:not(:has(aside)) button[type="submit"]:hover {
-  background: #1559DF !important;
-}
+#root > .MuiBox-root:not(:has(aside)) button[type="submit"]:hover { background: #1559DF !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiLink-root { color: var(--rk-blue) !important; }
 
 /* ---------------- Dashboard shell ---------------- */
-#root > .MuiBox-root:has(aside) {
-  background: var(--rk-bg) !important;
-  color: var(--rk-navy) !important;
-}
-
-#root > .MuiBox-root:has(aside) aside {
-  width: 300px !important;
-  min-width: 300px !important;
-  flex: 0 0 300px !important;
-  background: #fff !important;
-  border-right: 1px solid var(--rk-border) !important;
-  box-shadow: none !important;
-  color: #42547A !important;
-}
+#root > .MuiBox-root:has(aside) { background: var(--rk-bg) !important; color: var(--rk-navy) !important; }
+#root > .MuiBox-root:has(aside) aside { width: 300px !important; min-width: 300px !important; flex: 0 0 300px !important; background: #fff !important; border-right: 1px solid var(--rk-border) !important; box-shadow: none !important; color: #42547A !important; }
 
 /* Sidebar brand block: full logo + current role only. */
-#root > .MuiBox-root:has(aside) aside img[alt="Kirimwa"] {
-  content: url('/ruangkirim-logo.svg') !important;
-  width: 205px !important;
-  max-width: 205px !important;
-  height: auto !important;
-  object-fit: contain !important;
-}
+#root > .MuiBox-root:has(aside) aside img[alt="Kirimwa"] { content: url('/ruangkirim-logo.svg') !important; width: 205px !important; max-width: 205px !important; height: auto !important; object-fit: contain !important; }
 #root > .MuiBox-root:has(aside) aside .MuiAvatar-root { display: none !important; }
 #root > .MuiBox-root:has(aside) aside .MuiTypography-caption { color: #64748B !important; }
-
-#root > .MuiBox-root:has(aside) aside .MuiButton-root {
-  text-transform: none !important;
-  font-weight: 650 !important;
-}
-
-#root > .MuiBox-root:has(aside) aside .nav-item--active {
-  background: #EAF2FF !important;
-  color: var(--rk-blue) !important;
-  border-radius: 12px !important;
-}
+#root > .MuiBox-root:has(aside) aside .MuiButton-root { text-transform: none !important; font-weight: 650 !important; }
+#root > .MuiBox-root:has(aside) aside .nav-item--active { background: #EAF2FF !important; color: var(--rk-blue) !important; border-radius: 12px !important; }
 #root > .MuiBox-root:has(aside) aside .nav-item--active .MuiButton-startIcon,
 #root > .MuiBox-root:has(aside) aside .nav-item--active svg { color: var(--rk-blue) !important; }
-
 #root > .MuiBox-root:has(aside) aside .MuiDivider-root { border-color: var(--rk-border) !important; }
 
 /* Main surface */
-#root > .MuiBox-root:has(aside) > .MuiBox-root:last-child {
-  background: var(--rk-bg) !important;
-  min-width: 0 !important;
-}
-
+#root > .MuiBox-root:has(aside) > .MuiBox-root:last-child { background: var(--rk-bg) !important; min-width: 0 !important; }
 #root > .MuiBox-root:has(aside) .MuiCard-root,
-#root > .MuiBox-root:has(aside) .MuiPaper-root {
-  background: #fff !important;
-  border: 1px solid var(--rk-border) !important;
-  border-radius: 16px !important;
-  box-shadow: var(--rk-shadow) !important;
-}
-
+#root > .MuiBox-root:has(aside) .MuiPaper-root { background: #fff !important; border: 1px solid var(--rk-border) !important; border-radius: 16px !important; box-shadow: var(--rk-shadow) !important; }
 #root > .MuiBox-root:has(aside) .MuiCardContent-root { padding: 24px !important; }
 #root > .MuiBox-root:has(aside) .MuiTypography-root { color: inherit; }
 #root > .MuiBox-root:has(aside) .MuiTypography-h4,
@@ -144,26 +62,14 @@ body { background: var(--rk-bg) !important; color: var(--rk-navy); }
 #root > .MuiBox-root:has(aside) .MuiTypography-caption { color: var(--rk-muted) !important; }
 
 /* Primary actions */
-#root > .MuiBox-root:has(aside) .MuiButton-containedPrimary {
-  background: var(--rk-blue) !important;
-  border-radius: 11px !important;
-  box-shadow: 0 6px 16px rgba(36,107,253,.16) !important;
-  text-transform: none !important;
-  font-weight: 700 !important;
-}
-#root > .MuiBox-root:has(aside) .MuiButton-outlinedPrimary {
-  color: var(--rk-blue) !important;
-  border-color: #A9C5FF !important;
-  border-radius: 11px !important;
-  text-transform: none !important;
-}
+#root > .MuiBox-root:has(aside) .MuiButton-containedPrimary { background: var(--rk-blue) !important; border-radius: 11px !important; box-shadow: 0 6px 16px rgba(36,107,253,.16) !important; text-transform: none !important; font-weight: 700 !important; }
+#root > .MuiBox-root:has(aside) .MuiButton-outlinedPrimary { color: var(--rk-blue) !important; border-color: #A9C5FF !important; border-radius: 11px !important; text-transform: none !important; }
 #root > .MuiBox-root:has(aside) .MuiButton-textPrimary,
 #root > .MuiBox-root:has(aside) .MuiIconButton-colorPrimary { color: var(--rk-blue) !important; }
 
 /* Dashboard status: green is semantic only. */
 #root > .MuiBox-root:has(aside) .MuiChip-colorSuccess,
 #root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked { color: var(--rk-blue) !important; }
-
 #root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-thumb,
 #root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked + .MuiSwitch-track { background-color: var(--rk-blue) !important; }
 
@@ -172,24 +78,17 @@ body { background: var(--rk-bg) !important; color: var(--rk-navy); }
 #root > .MuiBox-root:has(aside) .MuiOutlinedInput-notchedOutline { border-color: #DCE5F3 !important; }
 #root > .MuiBox-root:has(aside) .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--rk-blue) !important; }
 
-/* Hide legacy pseudo role label injected by previous branding CSS. */
+/* The legacy index CSS hid the role block. Keep the existing dynamic role visible. */
+#root > .MuiBox-root:has(aside) aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"]) > .MuiBox-root:last-child { display: block !important; color: #64748B !important; }
 #root > .MuiBox-root:has(aside) aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"])::after { display: none !important; content: none !important; }
 
 @media (max-width: 1100px) {
-  #root > .MuiBox-root:has(aside) aside {
-    width: 250px !important;
-    min-width: 250px !important;
-    flex-basis: 250px !important;
-  }
+  #root > .MuiBox-root:has(aside) aside { width: 250px !important; min-width: 250px !important; flex-basis: 250px !important; }
   #root > .MuiBox-root:has(aside) aside img[alt="Kirimwa"] { width: 180px !important; max-width: 180px !important; }
 }
 
 @media (max-width: 767px) {
-  #root > .MuiBox-root:has(aside) aside {
-    width: min(86vw, 300px) !important;
-    min-width: min(86vw, 300px) !important;
-    flex-basis: min(86vw, 300px) !important;
-  }
+  #root > .MuiBox-root:has(aside) aside { width: min(86vw, 300px) !important; min-width: min(86vw, 300px) !important; flex-basis: min(86vw, 300px) !important; }
   #root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:has(svg) { display: none !important; }
   #root > .MuiBox-root:not(:has(aside)) img[alt="Kirimwa"] { width: 205px !important; }
   #root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:last-child { min-height: 100vh !important; padding: 24px !important; }

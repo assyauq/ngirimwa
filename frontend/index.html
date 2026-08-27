@@ -6,6 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RuangKirim — Asisten WhatsApp AI</title>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+      :root {
+        --ruangkirim-blue: #1769FF;
+        --ruangkirim-blue-dark: #123FAD;
+        --ruangkirim-cyan: #0ABFEA;
+        --ruangkirim-navy: #0B1730;
+        --ruangkirim-blue-soft: rgba(23, 105, 255, 0.10);
+      }
+      .MuiButton-containedPrimary,
+      .MuiButton-containedPrimary:hover,
+      .MuiButton-containedPrimary:active { background-color: var(--ruangkirim-blue) !important; }
+      .MuiButton-outlinedPrimary { color: var(--ruangkirim-blue) !important; border-color: rgba(23, 105, 255, 0.42) !important; }
+      .MuiButton-outlinedPrimary:hover,
+      .MuiButton-textPrimary:hover { background-color: var(--ruangkirim-blue-soft) !important; }
+      .MuiButton-textPrimary,
+      .MuiIconButton-colorPrimary,
+      .MuiLink-root { color: var(--ruangkirim-blue) !important; }
+      .MuiCheckbox-colorPrimary.Mui-checked,
+      .MuiRadio-colorPrimary.Mui-checked,
+      .MuiSwitch-colorPrimary.Mui-checked { color: var(--ruangkirim-blue) !important; }
+      .MuiLinearProgress-colorPrimary .MuiLinearProgress-bar { background-color: var(--ruangkirim-blue) !important; }
+      .MuiTabs-indicator { background-color: var(--ruangkirim-blue) !important; }
+      .Mui-selected { color: var(--ruangkirim-blue) !important; }
+      #root > .MuiBox-root > .MuiBox-root:first-child { background: linear-gradient(160deg, #0B1730 0%, #123FAD 38%, #1769FF 68%, #0ABFEA 100%) !important; }
+      img[alt="Kirimwa"][style*="42%"] { content: url('/ruangkirim-logo.svg') !important; width: 72% !important; max-width: 260px !important; height: auto !important; }
+      aside img[alt="Kirimwa"][style*="28px"] { content: url('/ruangkirim-icon.svg') !important; width: 28px !important; height: 28px !important; object-fit: contain !important; }
+      aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"]) { flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 6px !important; }
+      aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"]) > .MuiBox-root:last-child { display: none !important; }
+      aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"])::after { content: 'Admin aktif'; display: block; color: #4A5568; font-size: 11.5px; font-weight: 600; line-height: 1.3; text-align: center; }
+      .nav-item--active,
+      .nav-item--active .MuiButton-startIcon { color: var(--ruangkirim-blue) !important; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

@@ -31,8 +31,9 @@
       .Mui-selected { color: var(--ruangkirim-blue) !important; }
       #root > .MuiBox-root > .MuiBox-root:first-child { background: linear-gradient(160deg, #0B1730 0%, #123FAD 38%, #1769FF 68%, #0ABFEA 100%) !important; }
       img[alt="Kirimwa"][style*="42%"] { content: url('/ruangkirim-logo.svg') !important; width: 72% !important; max-width: 260px !important; height: auto !important; }
-      aside img[alt="Kirimwa"][style*="28px"] { content: url('/ruangkirim-icon.svg') !important; width: 28px !important; height: 28px !important; object-fit: contain !important; }
+      aside img[alt="Kirimwa"][style*="28px"] { content: url('/ruangkirim-logo.svg') !important; width: 160px !important; max-width: 160px !important; height: auto !important; object-fit: contain !important; }
       aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"]) { flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 6px !important; }
+      aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"]) > .MuiBox-root:has(> img[alt="Kirimwa"]) { width: 100% !important; max-width: 180px !important; height: auto !important; border: 0 !important; overflow: visible !important; background: transparent !important; }
       aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"]) > .MuiBox-root:last-child { display: none !important; }
       aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"])::after { content: 'Admin aktif'; display: block; color: #4A5568; font-size: 11.5px; font-weight: 600; line-height: 1.3; text-align: center; }
       .nav-item--active,

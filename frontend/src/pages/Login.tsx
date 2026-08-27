@@ -154,7 +154,9 @@ export default function Login() {
               helperText={errors.username}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               className="rk-login-input"
-              InputProps={{ startAdornment: <InputAdornment position="start"><PersonOutlineOutlinedIcon /></InputAdornment> }}
+              slotProps={{
+                input: { startAdornment: <InputAdornment position="start"><PersonOutlineOutlinedIcon /></InputAdornment> },
+              }}
             />
 
             <Box className="rk-login-field-label rk-login-password-label">Password</Box>
@@ -170,9 +172,11 @@ export default function Login() {
               helperText={errors.password}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               className="rk-login-input"
-              InputProps={{
-                startAdornment: <InputAdornment position="start"><LockOutlinedIcon /></InputAdornment>,
-                endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowPassword((v) => !v)} edge="end" aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}>{showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}</IconButton></InputAdornment>,
+              slotProps={{
+                input: {
+                  startAdornment: <InputAdornment position="start"><LockOutlinedIcon /></InputAdornment>,
+                  endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowPassword((v) => !v)} edge="end" aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}>{showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}</IconButton></InputAdornment>,
+                },
               }}
             />
 

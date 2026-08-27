@@ -54,36 +54,36 @@ const features = [
 
 function ChatMockup() {
   return (
-    <Box className="login-chat-mockup" aria-hidden="true" sx={{ width: { md: 205, lg: 245, xl: 285 }, height: { md: 285, lg: 340, xl: 390 }, flex: '0 0 auto', p: '9px', borderRadius: { md: '25px', lg: '29px' }, background: 'linear-gradient(155deg,#2f7dff 0%,#1261ee 48%,#0349d6 100%)', boxShadow: '0 22px 42px rgba(22,92,226,.22)' }}>
-      <Box sx={{ height: '100%', borderRadius: { md: '18px', lg: '22px' }, overflow: 'hidden', position: 'relative', background: 'linear-gradient(180deg,#0d62f4 0%,#0751dd 100%)', p: { md: 1.6, lg: 2 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: .8, mb: { md: 2, lg: 2.6 } }}>
-          <Box sx={{ width: { md: 23, lg: 27 }, height: { md: 23, lg: 27 }, borderRadius: '50%', bgcolor: 'rgba(255,255,255,.38)' }} />
+    <Box className="login-chat-mockup" aria-hidden="true">
+      <Box className="login-chat-mockup__screen">
+        <Box className="login-chat-mockup__header">
+          <Box className="login-chat-mockup__avatar" />
           <Box sx={{ flex: 1 }}>
-            <Box sx={{ width: '56%', height: 4, borderRadius: 4, bgcolor: 'rgba(255,255,255,.58)', mb: .6 }} />
-            <Box sx={{ width: '38%', height: 3, borderRadius: 4, bgcolor: 'rgba(255,255,255,.30)' }} />
+            <Box className="login-chat-mockup__line login-chat-mockup__line--wide" />
+            <Box className="login-chat-mockup__line login-chat-mockup__line--short" />
           </Box>
         </Box>
-        <Box sx={{ width: '82%', borderRadius: '12px 12px 12px 4px', bgcolor: 'rgba(255,255,255,.20)', p: { md: 1, lg: 1.3 }, mb: { md: 1.2, lg: 1.5 } }}>
-          <Box sx={{ width: '84%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.60)', mb: .8 }} />
-          <Box sx={{ width: '62%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.35)' }} />
-          <Typography sx={{ mt: .8, color: 'rgba(255,255,255,.60)', fontSize: { md: 6, lg: 7 } }}>09.30</Typography>
+        <Box className="login-chat-message login-chat-message--left">
+          <Box className="login-chat-message__line login-chat-message__line--wide" />
+          <Box className="login-chat-message__line login-chat-message__line--medium" />
+          <Typography>09.30</Typography>
         </Box>
-        <Box sx={{ width: '72%', ml: 'auto', borderRadius: '12px 12px 4px 12px', bgcolor: '#32ced0', p: { md: 1, lg: 1.3 }, mb: { md: 1.2, lg: 1.5 } }}>
-          <Box sx={{ width: '86%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.78)', mb: .8 }} />
-          <Box sx={{ width: '66%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.52)' }} />
-          <Typography sx={{ mt: .8, color: 'rgba(255,255,255,.70)', fontSize: { md: 6, lg: 7 }, textAlign: 'right' }}>09.31 ✓✓</Typography>
+        <Box className="login-chat-message login-chat-message--right">
+          <Box className="login-chat-message__line login-chat-message__line--wide" />
+          <Box className="login-chat-message__line login-chat-message__line--medium" />
+          <Typography>09.31 ✓✓</Typography>
         </Box>
-        <Box sx={{ width: '80%', borderRadius: '12px 12px 12px 4px', bgcolor: 'rgba(255,255,255,.19)', p: { md: 1, lg: 1.3 }, mb: { md: 1.4, lg: 1.8 } }}>
-          <Box sx={{ width: '78%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.52)', mb: .8 }} />
-          <Box sx={{ width: '48%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.32)' }} />
-          <Typography sx={{ mt: .8, color: 'rgba(255,255,255,.55)', fontSize: { md: 6, lg: 7 } }}>09.32</Typography>
+        <Box className="login-chat-message login-chat-message--left login-chat-message--last">
+          <Box className="login-chat-message__line login-chat-message__line--wide" />
+          <Box className="login-chat-message__line login-chat-message__line--shorter" />
+          <Typography>09.32</Typography>
         </Box>
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: .6, px: 1, py: .5, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,.20)' }}>
-          <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: { md: 8, lg: 10 }, lineHeight: 1 }}>AI</Typography>
-          {[0, 1, 2].map((dot) => <Box key={dot} sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: dot === 0 ? '#fff' : 'rgba(255,255,255,.45)' }} />)}
+        <Box className="login-chat-ai-badge">
+          <Typography>AI</Typography>
+          {[0, 1, 2].map((dot) => <Box key={dot} className={`login-chat-ai-dot${dot === 0 ? ' is-active' : ''}`} />)}
         </Box>
-        <Box sx={{ position: 'absolute', left: { md: 15, lg: 18 }, bottom: { md: 11, lg: 14 }, display: 'flex', gap: .6 }}>
-          {[0, 1, 2].map((dot) => <Box key={dot} sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dot === 0 ? '#fff' : 'rgba(255,255,255,.35)' }} />)}
+        <Box className="login-chat-dots">
+          {[0, 1, 2].map((dot) => <Box key={dot} />)}
         </Box>
       </Box>
     </Box>
@@ -92,13 +92,13 @@ function ChatMockup() {
 
 function FeatureList() {
   return (
-    <Box className="item-features" sx={{ width: '100%', maxWidth: 690 }}>
+    <Box className="login-feature-list">
       {features.map((feature) => (
-        <Box key={feature.title} sx={{ display: 'flex', alignItems: 'center', gap: 1.6, py: { md: 1.05, lg: 1.2 }, borderBottom: '1px solid rgba(108,128,159,.16)' }}>
-          <Box sx={{ width: 44, height: 44, flex: '0 0 auto', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#edf4ff', color: '#246bfd' }}>{feature.icon}</Box>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: { md: '.82rem', lg: '.9rem' }, color: '#132044' }}>{feature.title}</Typography>
-            <Typography sx={{ mt: .25, fontSize: { md: '.68rem', lg: '.75rem' }, lineHeight: 1.4, color: '#68768f' }}>{feature.description}</Typography>
+        <Box key={feature.title} className="login-feature-item">
+          <Box className="login-feature-icon">{feature.icon}</Box>
+          <Box className="login-feature-copy">
+            <Typography className="login-feature-title">{feature.title}</Typography>
+            <Typography className="login-feature-description">{feature.description}</Typography>
           </Box>
         </Box>
       ))}
@@ -164,9 +164,9 @@ export default function Login() {
 
   const fieldSx = {
     '& .MuiOutlinedInput-root': {
-      borderRadius: { xs: '11px', md: '12px' },
-      bgcolor: 'rgba(255,255,255,.9)',
-      minHeight: { xs: 52, md: 54 },
+      borderRadius: '11px',
+      bgcolor: 'rgba(255,255,255,.88)',
+      minHeight: 52,
       boxSizing: 'border-box',
     },
     '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e1e8f2' },
@@ -174,178 +174,126 @@ export default function Login() {
     '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#246bfd', borderWidth: 2 },
   };
 
-  const inputIcon = { width: 36, height: 36, borderRadius: '10px', bgcolor: '#edf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#246bfd' };
-
-  const formContent = (
-    <>
-      <Box className="item-logo" sx={{ mb: { xs: 3.0, md: 3.2 }, textAlign: 'left' }}>
-        <Box component="img" src={logo} alt="Ruangkirim" sx={{ width: { xs: 178, sm: 190, md: 190, lg: 210 }, maxWidth: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} />
-      </Box>
-
-      <Box className="item-welcome" sx={{ mb: { xs: 3.0, md: 3.5 } }}>
-        <Typography component="h1" sx={{ fontSize: { xs: '1.42rem', sm: '1.48rem', md: '1.22rem', lg: '1.35rem' }, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-.025em', color: '#0b1f4d' }}>Selamat datang kembali! 👋</Typography>
-        <Typography sx={{ mt: 1.0, maxWidth: 480, fontSize: { xs: '.9rem', md: '.75rem', lg: '.82rem' }, lineHeight: 1.5, color: '#68768f' }}>Masuk ke dashboard untuk mengelola WhatsApp AI Assistant kamu.</Typography>
-      </Box>
-
-      <Box className="item-form" sx={{ width: '100%', minWidth: 0 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, borderRadius: '10px', fontSize: '.8rem' }}>{error}</Alert>
-        )}
-        {needVerify && (
-          <Box sx={{ mb: 2, fontSize: '.78rem', color: '#246bfd' }}>
-            <Link component="button" underline="hover" onClick={() => navigate('/cek-email', { state: { email: username.trim() } })}>Buka halaman verifikasi email</Link>
-          </Box>
-        )}
-
-        <Typography component="label" className="login-page-input-label" sx={{ display: 'block', mb: .7, fontSize: { xs: '.82rem', md: '.72rem', lg: '.78rem' }, fontWeight: 600, color: '#0b1f4d' }}>Username</Typography>
-        <TextField
-          fullWidth
-          size="small"
-          value={username}
-          placeholder="Masukkan username"
-          disabled={loading || cooldown > 0}
-          autoComplete="username"
-          error={Boolean(errors.username)}
-          helperText={errors.username || ' '}
-          onChange={(e) => {
-            setUsername(e.target.value);
-            if (errors.username) setErrors((prev) => { const next = { ...prev }; delete next.username; return next; });
-          }}
-          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-          sx={{ ...fieldSx, mb: .25, '& .MuiFormHelperText-root': { minHeight: 15, mt: .35, fontSize: '.68rem' } }}
-          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><PersonOutlined fontSize="small" /></Box></InputAdornment> } }}
-        />
-
-        <Typography component="label" className="login-page-input-label" sx={{ display: 'block', mb: .7, mt: .4, fontSize: { xs: '.82rem', md: '.72rem', lg: '.78rem' }, fontWeight: 600, color: '#0b1f4d' }}>Password</Typography>
-        <TextField
-          fullWidth
-          size="small"
-          type={showPassword ? 'text' : 'password'}
-          value={password}
-          placeholder="Masukkan password"
-          disabled={loading || cooldown > 0}
-          autoComplete="current-password"
-          error={Boolean(errors.password)}
-          helperText={errors.password || ' '}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            if (errors.password) setErrors((prev) => { const next = { ...prev }; delete next.password; return next; });
-          }}
-          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-          sx={{ ...fieldSx, '& .MuiFormHelperText-root': { minHeight: 15, mt: .35, fontSize: '.68rem' } }}
-          slotProps={{
-            input: {
-              startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><LockOutlined fontSize="small" /></Box></InputAdornment>,
-              endAdornment: <InputAdornment position="end"><IconButton aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'} onClick={() => setShowPassword((v) => !v)} edge="end" size="small" sx={{ color: '#74839d' }}>{showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}</IconButton></InputAdornment>,
-            },
-          }}
-        />
-
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mt: .2, mb: 2.0, minWidth: 0 }}>
-          <FormControlLabel control={<Checkbox size="small" defaultChecked sx={{ p: .3, color: '#246bfd', '&.Mui-checked': { color: '#246bfd' } }} />} label="Ingat saya" sx={{ m: 0, minWidth: 0, flexShrink: 1, '& .MuiFormControlLabel-label': { fontSize: { xs: '.82rem', md: '.7rem', lg: '.76rem' }, color: '#68768f' } }} />
-          <Link component="button" variant="body2" underline="hover" onClick={() => navigate('/forgot-password')} sx={{ border: 0, background: 'none', p: 0, cursor: 'pointer', flexShrink: 0, fontWeight: 600, color: '#246bfd', fontSize: { xs: '.82rem', md: '.7rem', lg: '.76rem' } }}>Lupa password?</Link>
-        </Box>
-
-        <Button fullWidth variant="contained" onClick={handleLogin} disabled={loading || cooldown > 0} sx={{ minHeight: { xs: 52, md: 50 }, borderRadius: '11px', textTransform: 'none', fontWeight: 700, fontSize: { xs: '1rem', md: '.86rem', lg: '.92rem' }, bgcolor: '#246bfd', boxShadow: 'none', '&:hover': { bgcolor: '#155fe8', boxShadow: 'none' }, '&:active': { bgcolor: '#0f55d4' } }}>
-          {loading ? <CircularProgress size={22} sx={{ color: '#fff' }} /> : cooldown > 0 ? `Coba lagi dalam ${cooldown}s` : 'Masuk'}
-        </Button>
-
-        <Divider sx={{ my: { xs: 2.5, md: 2.3 }, '&::before, &::after': { borderColor: '#e1e7ef' }, color: '#7b879b', fontSize: { xs: '.82rem', md: '.7rem' } }}>atau</Divider>
-
-        <Button fullWidth variant="outlined" type="button" onClick={() => undefined} startIcon={<GoogleIcon />} sx={{ minHeight: { xs: 52, md: 48 }, borderRadius: '11px', textTransform: 'none', fontWeight: 600, color: '#1c2945', borderColor: '#dce5f2', bgcolor: 'rgba(255,255,255,.92)', fontSize: { xs: '.9rem', md: '.78rem', lg: '.84rem' }, '&:hover': { borderColor: '#dce5f2', bgcolor: '#fff' } }}>Masuk dengan Google</Button>
-      </Box>
-
-      <Typography className="item-footer" sx={{ mt: { xs: 5.2, md: 5 }, textAlign: 'center', fontSize: { xs: '.72rem', md: '.64rem', lg: '.7rem' }, color: '#68768f' }}>© {currentYear} Ruangkirim. Semua hak dilindungi.</Typography>
-    </>
-  );
+  const inputIcon = {
+    width: 36,
+    height: 36,
+    borderRadius: '10px',
+    bgcolor: '#edf4ff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#246bfd',
+  };
 
   return (
-    <Box
-      component="main"
-      className="login-page"
-      sx={{
-        width: '100%',
-        minHeight: '100vh',
-        minHeight: '100dvh',
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '56% 44%' },
-        bgcolor: '#f7faff',
-        background: 'linear-gradient(135deg,#f7faff 0%,#ffffff 50%,#f3f7ff 100%)',
-        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        overflowX: 'hidden',
-        position: 'relative',
-        boxSizing: 'border-box',
-      }}
-    >
-      <Box aria-hidden="true" sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: '-12%', right: '-8%', width: { md: 360, lg: 460 }, height: { md: 360, lg: 460 }, borderRadius: '50%', background: 'rgba(76,139,255,.045)', filter: 'blur(8px)', pointerEvents: 'none', zIndex: 0 }} />
-      <Box aria-hidden="true" sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', bottom: '-18%', left: '-5%', width: { md: 420, lg: 520 }, height: { md: 420, lg: 520 }, borderRadius: '50%', background: 'rgba(22,196,234,.035)', filter: 'blur(10px)', pointerEvents: 'none', zIndex: 0 }} />
+    <Box component="main" className="login-page">
+      <Box aria-hidden="true" className="login-page-decoration login-page-decoration--top" />
+      <Box aria-hidden="true" className="login-page-decoration login-page-decoration--bottom" />
 
-      <Box
-        component="section"
-        className="login-promo"
-        sx={{
-          display: { xs: 'none', md: 'flex' },
-          minWidth: 0,
-          minHeight: '100%',
-          position: 'relative',
-          zIndex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'rgba(243,247,253,.74)',
-          borderRight: { md: '1px solid #e7edf7' },
-          px: { md: 5, lg: 6, xl: 7 },
-          py: { md: 5, lg: 6 },
-          boxSizing: 'border-box',
-          overflow: 'hidden',
-        }}
-      >
-        <Box sx={{ width: '100%', maxWidth: 820, minWidth: 0, position: 'relative', zIndex: 1 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { md: '42% 58%', lg: '40% 60%' }, alignItems: 'center', gap: { md: 2, lg: 3 }, mb: { md: 3, lg: 3.5 } }}>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontSize: { md: '2rem', lg: '2.35rem', xl: '2.65rem' }, lineHeight: 1.02, fontWeight: 800, letterSpacing: '-.05em', color: '#0b1f4d' }}>WhatsApp</Typography>
-              <Typography sx={{ fontSize: { md: '2rem', lg: '2.35rem', xl: '2.65rem' }, lineHeight: 1.02, fontWeight: 800, letterSpacing: '-.05em', color: '#246bfd' }}>AI Assistant</Typography>
-              <Typography sx={{ mt: 1.8, maxWidth: 315, fontSize: { md: '.83rem', lg: '.92rem' }, lineHeight: 1.55, color: '#66748e' }}>Otomatis balasan AI, broadcast massal, dan CRM WhatsApp — semua dalam satu dashboard.</Typography>
+      <Box component="section" className="login-promo">
+        <Box className="login-promo-content">
+          <Box className="login-promo-heading">
+            <Box className="login-promo-copy">
+              <Typography component="h2" className="login-promo-title">WhatsApp</Typography>
+              <Typography component="h2" className="login-promo-title login-promo-title--accent">AI Assistant</Typography>
+              <Typography className="login-promo-description">Otomatis balasan AI, broadcast massal, dan CRM WhatsApp — semua dalam satu dashboard.</Typography>
             </Box>
-            <Box className="login-illustration" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 0 }}><ChatMockup /></Box>
+            <ChatMockup />
           </Box>
-
           <FeatureList />
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.3, mt: { md: 2.2, lg: 2.8 }, maxWidth: 610, px: 1.5, py: 1.15, borderRadius: '11px', bgcolor: 'rgba(226,238,255,.62)', border: '1px solid rgba(91,135,220,.16)' }}>
-            <Box sx={{ width: 38, height: 38, flex: '0 0 auto', borderRadius: '9px', bgcolor: '#246bfd', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShieldOutlined fontSize="small" /></Box>
-            <Box minWidth={0}><Typography sx={{ fontWeight: 700, fontSize: { md: '.8rem', lg: '.88rem' }, color: '#132044' }}>Aman &amp; Terpercaya</Typography><Typography sx={{ mt: .15, fontSize: { md: '.66rem', lg: '.72rem' }, color: '#68768f' }}>Data Anda dienkripsi dan terlindungi dengan standar keamanan tinggi.</Typography></Box>
+          <Box className="login-security">
+            <Box className="login-security-icon"><ShieldOutlined fontSize="small" /></Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography className="login-security-title">Aman &amp; Terpercaya</Typography>
+              <Typography className="login-security-description">Data Anda dienkripsi dan terlindungi dengan standar keamanan tinggi.</Typography>
+            </Box>
           </Box>
         </Box>
       </Box>
 
-      <Box
-        component="section"
-        className="login-form"
-        sx={{
-          width: '100%',
-          minWidth: 0,
-          minHeight: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          zIndex: 1,
-          px: { xs: 2.5, sm: 3, md: 5, lg: 7, xl: 9 },
-          py: { xs: 6, sm: 7, md: 5, lg: 6 },
-          boxSizing: 'border-box',
-        }}
-      >
-        <Box
-          className="login-form-content"
-          sx={{
-            width: '100%',
-            maxWidth: { xs: '100%', md: 460 },
-            minWidth: 0,
-            mx: 'auto',
-            boxSizing: 'border-box',
-          }}
-        >
-          {formContent}
+      <Box component="section" className="login-form">
+        <Box className="login-form-content">
+          <Box className="login-logo">
+            <Box component="img" src={logo} alt="Ruangkirim" />
+          </Box>
+
+          <Box className="login-welcome">
+            <Typography component="h1">Selamat datang kembali! 👋</Typography>
+            <Typography>Masuk ke dashboard untuk mengelola WhatsApp AI Assistant kamu.</Typography>
+          </Box>
+
+          <Box className="login-form-fields">
+            {error && <Alert severity="error" className="login-error">{error}</Alert>}
+            {needVerify && (
+              <Box className="login-verification-link">
+                <Link component="button" underline="hover" onClick={() => navigate('/cek-email', { state: { email: username.trim() } })}>Buka halaman verifikasi email</Link>
+              </Box>
+            )}
+
+            <Typography component="label" className="login-input-label">Username</Typography>
+            <TextField
+              fullWidth
+              size="small"
+              value={username}
+              placeholder="Masukkan username"
+              disabled={loading || cooldown > 0}
+              autoComplete="username"
+              error={Boolean(errors.username)}
+              helperText={errors.username || ' '}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                if (errors.username) setErrors((prev) => { const next = { ...prev }; delete next.username; return next; });
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              sx={{ ...fieldSx, mb: .25, '& .MuiFormHelperText-root': { minHeight: 15, mt: .35, fontSize: '.68rem' } }}
+              slotProps={{ input: { startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><PersonOutlined fontSize="small" /></Box></InputAdornment> } }}
+            />
+
+            <Typography component="label" className="login-input-label login-input-label--password">Password</Typography>
+            <TextField
+              fullWidth
+              size="small"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              placeholder="Masukkan password"
+              disabled={loading || cooldown > 0}
+              autoComplete="current-password"
+              error={Boolean(errors.password)}
+              helperText={errors.password || ' '}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) setErrors((prev) => { const next = { ...prev }; delete next.password; return next; });
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              sx={{ ...fieldSx, '& .MuiFormHelperText-root': { minHeight: 15, mt: .35, fontSize: '.68rem' } }}
+              slotProps={{
+                input: {
+                  startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><LockOutlined fontSize="small" /></Box></InputAdornment>,
+                  endAdornment: <InputAdornment position="end"><IconButton aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'} onClick={() => setShowPassword((v) => !v)} edge="end" size="small" sx={{ color: '#74839d' }}>{showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}</IconButton></InputAdornment>,
+                },
+              }}
+            />
+
+            <Box className="login-options">
+              <FormControlLabel
+                control={<Checkbox size="small" defaultChecked sx={{ p: .3, color: '#246bfd', '&.Mui-checked': { color: '#246bfd' } }} />}
+                label="Ingat saya"
+                sx={{ m: 0, minWidth: 0, flexShrink: 1, '& .MuiFormControlLabel-label': { color: '#68768f' } }}
+              />
+              <Link component="button" variant="body2" underline="hover" onClick={() => navigate('/forgot-password')} className="login-forgot">Lupa password?</Link>
+            </Box>
+
+            <Button fullWidth variant="contained" onClick={handleLogin} disabled={loading || cooldown > 0} className="login-submit">
+              {loading ? <CircularProgress size={22} sx={{ color: '#fff' }} /> : cooldown > 0 ? `Coba lagi dalam ${cooldown}s` : 'Masuk'}
+            </Button>
+
+            <Divider className="login-divider">atau</Divider>
+
+            {/* TODO: Integrate Google OAuth when the backend/provider is available. */}
+            <Button fullWidth variant="outlined" type="button" onClick={() => undefined} startIcon={<GoogleIcon />} className="login-google">Masuk dengan Google</Button>
+          </Box>
+
+          <Typography className="login-footer">© {currentYear} Ruangkirim. Semua hak dilindungi.</Typography>
         </Box>
       </Box>
     </Box>

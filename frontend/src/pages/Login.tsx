@@ -27,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { unlockInboxSound } from '../services/inboxSound';
 import logo from '../assets/logo-ruangkirim.png';
+import './Login.css';
 
 function responseStatus(error: unknown) {
   if (typeof error === 'object' && error && 'response' in error) {
@@ -278,7 +279,7 @@ export default function Login() {
               <FormControlLabel
                 control={<Checkbox size="small" defaultChecked sx={{ p: .3, color: '#246bfd', '&.Mui-checked': { color: '#246bfd' } }} />}
                 label="Ingat saya"
-                sx={{ m: 0, minWidth: 0, flexShrink: 1, '& .MuiFormControlLabel-label': { color: '#68768f' } }}
+                sx={{ m: 0, minWidth: 0, flexShrink: 1 }}
               />
               <Link component="button" variant="body2" underline="hover" onClick={() => navigate('/forgot-password')} className="login-forgot">Lupa password?</Link>
             </Box>

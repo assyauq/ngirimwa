@@ -15,31 +15,21 @@ html, body, #root { min-height: 100%; }
 body { background: var(--rk-bg) !important; color: var(--rk-navy); }
 
 /* ---------------- Login ---------------- */
-#root > .MuiBox-root:not(:has(aside)) { background: var(--rk-bg) !important; color: var(--rk-navy) !important; }
-#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:has(svg) {
-  background: radial-gradient(circle at 72% 15%, rgba(36,107,253,.10), transparent 32%), radial-gradient(circle at 20% 82%, rgba(22,196,234,.08), transparent 30%), #F7FAFF !important;
-  border-right: 1px solid var(--rk-border) !important;
-}
-#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:has(svg) svg { filter: hue-rotate(76deg) saturate(1.25) !important; }
-#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:last-child { background: #fff !important; border-left: 0 !important; }
+#root > .MuiBox-root:not(:has(aside)) { background: #EEF4FF !important; color: var(--rk-navy) !important; }
+#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:first-child { background: #F5F8FF !important; }
+#root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:last-child { background: #fff !important; border: 0 !important; }
 #root > .MuiBox-root:not(:has(aside)) img[alt="Kirimwa"] { content: url('/ruangkirim-logo.svg') !important; width: 220px !important; max-width: 100% !important; height: auto !important; }
-#root > .MuiBox-root:not(:has(aside)) .MuiTypography-h4,
-#root > .MuiBox-root:not(:has(aside)) h1 { color: var(--rk-navy) !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiTextField-root .MuiOutlinedInput-root { min-height: 52px; border-radius: 11px !important; background: #fff !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-notchedOutline { border-color: #D9E2F1 !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline { border-color: #AFC6F7 !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--rk-blue) !important; border-width: 2px !important; }
-#root > .MuiBox-root:not(:has(aside)) .MuiButton-containedPrimary,
-#root > .MuiBox-root:not(:has(aside)) button[type="submit"] { min-height: 52px !important; border-radius: 11px !important; background: var(--rk-blue) !important; box-shadow: 0 8px 18px rgba(36,107,253,.20) !important; font-weight: 700 !important; text-transform: none !important; }
-#root > .MuiBox-root:not(:has(aside)) .MuiButton-containedPrimary:hover,
-#root > .MuiBox-root:not(:has(aside)) button[type="submit"]:hover { background: #1559DF !important; }
+#root > .MuiBox-root:not(:has(aside)) button[type="submit"],
+#root > .MuiBox-root:not(:has(aside)) .MuiButton-containedPrimary { min-height: 52px !important; border-radius: 11px !important; background: var(--rk-blue) !important; font-weight: 700 !important; text-transform: none !important; }
 #root > .MuiBox-root:not(:has(aside)) .MuiLink-root { color: var(--rk-blue) !important; }
 
 /* ---------------- Dashboard shell ---------------- */
 #root > .MuiBox-root:has(aside) { background: var(--rk-bg) !important; color: var(--rk-navy) !important; }
 #root > .MuiBox-root:has(aside) aside { width: 300px !important; min-width: 300px !important; flex: 0 0 300px !important; background: #fff !important; border-right: 1px solid var(--rk-border) !important; box-shadow: none !important; color: #42547A !important; }
-
-/* Sidebar brand block: full logo + current role only. */
 #root > .MuiBox-root:has(aside) aside img[alt="Kirimwa"] { content: url('/ruangkirim-logo.svg') !important; width: 205px !important; max-width: 205px !important; height: auto !important; object-fit: contain !important; }
 #root > .MuiBox-root:has(aside) aside .MuiAvatar-root { display: none !important; }
 #root > .MuiBox-root:has(aside) aside .MuiTypography-caption { color: #64748B !important; }
@@ -48,50 +38,131 @@ body { background: var(--rk-bg) !important; color: var(--rk-navy); }
 #root > .MuiBox-root:has(aside) aside .nav-item--active .MuiButton-startIcon,
 #root > .MuiBox-root:has(aside) aside .nav-item--active svg { color: var(--rk-blue) !important; }
 #root > .MuiBox-root:has(aside) aside .MuiDivider-root { border-color: var(--rk-border) !important; }
-
-/* Main surface */
 #root > .MuiBox-root:has(aside) > .MuiBox-root:last-child { background: var(--rk-bg) !important; min-width: 0 !important; }
 #root > .MuiBox-root:has(aside) .MuiCard-root,
 #root > .MuiBox-root:has(aside) .MuiPaper-root { background: #fff !important; border: 1px solid var(--rk-border) !important; border-radius: 16px !important; box-shadow: var(--rk-shadow) !important; }
 #root > .MuiBox-root:has(aside) .MuiCardContent-root { padding: 24px !important; }
-#root > .MuiBox-root:has(aside) .MuiTypography-root { color: inherit; }
 #root > .MuiBox-root:has(aside) .MuiTypography-h4,
 #root > .MuiBox-root:has(aside) .MuiTypography-h5,
 #root > .MuiBox-root:has(aside) .MuiTypography-h6 { color: var(--rk-navy) !important; }
 #root > .MuiBox-root:has(aside) .MuiTypography-colorTextSecondary,
 #root > .MuiBox-root:has(aside) .MuiTypography-caption { color: var(--rk-muted) !important; }
-
-/* Primary actions */
 #root > .MuiBox-root:has(aside) .MuiButton-containedPrimary { background: var(--rk-blue) !important; border-radius: 11px !important; box-shadow: 0 6px 16px rgba(36,107,253,.16) !important; text-transform: none !important; font-weight: 700 !important; }
 #root > .MuiBox-root:has(aside) .MuiButton-outlinedPrimary { color: var(--rk-blue) !important; border-color: #A9C5FF !important; border-radius: 11px !important; text-transform: none !important; }
 #root > .MuiBox-root:has(aside) .MuiButton-textPrimary,
 #root > .MuiBox-root:has(aside) .MuiIconButton-colorPrimary { color: var(--rk-blue) !important; }
-
-/* Dashboard status: green is semantic only. */
-#root > .MuiBox-root:has(aside) .MuiChip-colorSuccess,
-#root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked { color: var(--rk-blue) !important; }
-#root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-thumb,
-#root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked + .MuiSwitch-track { background-color: var(--rk-blue) !important; }
-
-/* Inputs */
+#root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-thumb { background-color: var(--rk-blue) !important; }
+#root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked + .MuiSwitch-track { background-color: rgba(36,107,253,.45) !important; }
 #root > .MuiBox-root:has(aside) .MuiOutlinedInput-root { border-radius: 10px !important; background: #fff !important; }
 #root > .MuiBox-root:has(aside) .MuiOutlinedInput-notchedOutline { border-color: #DCE5F3 !important; }
 #root > .MuiBox-root:has(aside) .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--rk-blue) !important; }
 
-/* The legacy index CSS hid the role block. Keep the existing dynamic role visible. */
-#root > .MuiBox-root:has(aside) aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"]) > .MuiBox-root:last-child { display: block !important; color: #64748B !important; }
-#root > .MuiBox-root:has(aside) aside .MuiBox-root:has(> .MuiBox-root > img[alt="Kirimwa"][style*="28px"])::after { display: none !important; content: none !important; }
+/* ---------------- Final visual redesign ---------------- */
+/* The original application is component-driven. These rules intentionally style the
+   existing DOM instead of replacing any API, state, routing, or business logic. */
+
+/* Login: exact two-column SaaS composition, generous whitespace and a white form card. */
+.rk-login-page { min-height: 100vh !important; padding: 24px !important; background: #EEF4FF !important; }
+.rk-login-shell { width: 100% !important; min-height: calc(100vh - 48px) !important; max-width: 1440px !important; margin: 0 auto !important; display: flex !important; overflow: hidden !important; border-radius: 22px !important; background: #fff !important; box-shadow: 0 20px 60px rgba(28,72,140,.08) !important; }
+.rk-login-visual { position: relative !important; flex: 1.04 1 0 !important; min-width: 0 !important; overflow: hidden !important; background: radial-gradient(circle at 78% 12%, rgba(72,143,255,.18), transparent 28%), radial-gradient(circle at 18% 88%, rgba(22,196,234,.13), transparent 28%), linear-gradient(145deg,#F7FAFF 0%,#EEF5FF 62%,#F9FCFF 100%) !important; color: var(--rk-navy) !important; }
+.rk-login-visual-inner { position: relative !important; z-index: 2 !important; width: min(100%, 560px) !important; height: 100% !important; margin: 0 auto !important; padding: 72px 58px 54px !important; display: grid !important; grid-template-columns: 1fr 1fr !important; grid-template-rows: auto auto auto !important; align-content: center !important; gap: 22px 34px !important; }
+.rk-login-copy { grid-column: 1 / -1 !important; align-self: start !important; max-width: 390px !important; }
+.rk-login-eyebrow { color: var(--rk-navy) !important; font-size: 42px !important; font-weight: 800 !important; line-height: .98 !important; letter-spacing: -.04em !important; }
+.rk-login-hero-title { color: var(--rk-blue) !important; font-size: 42px !important; font-weight: 800 !important; line-height: 1 !important; letter-spacing: -.04em !important; }
+.rk-login-hero-description { margin-top: 16px !important; color: #536789 !important; font-size: 15px !important; line-height: 1.6 !important; max-width: 350px !important; }
+.rk-login-orb { position: absolute !important; border-radius: 50% !important; pointer-events: none !important; }
+.rk-login-orb-top { width: 420px !important; height: 420px !important; right: -190px !important; top: -210px !important; background: rgba(36,107,253,.07) !important; }
+.rk-login-orb-bottom { width: 420px !important; height: 420px !important; left: -250px !important; bottom: -260px !important; background: rgba(22,196,234,.06) !important; }
+.rk-chat-illustration { position: relative !important; grid-column: 2 !important; grid-row: 2 !important; width: 100% !important; min-height: 300px !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+.rk-chat-phone { position: relative !important; width: 205px !important; height: 310px !important; padding: 12px !important; border-radius: 28px !important; background: linear-gradient(150deg,#5E91FF,#1769FF 60%,#0ABFEA) !important; box-shadow: 0 20px 40px rgba(36,107,253,.20) !important; transform: rotate(2deg) !important; }
+.rk-chat-phone::before { content: '' !important; position: absolute !important; inset: 8px !important; border-radius: 21px !important; background: #0E2144 !important; }
+.rk-chat-phone > * { position: relative !important; z-index: 1 !important; }
+.rk-chat-phone-header { height: 43px !important; display: flex !important; align-items: center !important; gap: 9px !important; padding: 0 8px !important; }
+.rk-chat-avatar { width: 25px !important; height: 25px !important; border-radius: 50% !important; background: linear-gradient(135deg,#72B4FF,#1769FF) !important; }
+.rk-chat-phone-header span { display: block !important; width: 72px !important; height: 5px !important; border-radius: 10px !important; background: rgba(255,255,255,.42) !important; margin-bottom: 5px !important; }
+.rk-chat-phone-header span.short { width: 45px !important; background: rgba(255,255,255,.22) !important; }
+.rk-chat-bubble { position: relative !important; padding: 10px !important; border-radius: 12px !important; margin: 9px 7px !important; min-height: 42px !important; background: rgba(79,132,230,.28) !important; }
+.rk-chat-bubble.outgoing { margin-left: 57px !important; background: linear-gradient(135deg,#3E8BFF,#21C8E9) !important; }
+.rk-chat-bubble.lower { margin-top: 12px !important; min-height: 66px !important; }
+.rk-chat-bubble span { display: block !important; width: 82% !important; height: 4px !important; border-radius: 8px !important; margin-bottom: 6px !important; background: rgba(255,255,255,.38) !important; }
+.rk-chat-bubble span.short { width: 48% !important; margin-bottom: 0 !important; }
+.rk-ai-pill { display: inline-flex !important; margin-top: 5px !important; padding: 2px 8px !important; border-radius: 8px !important; background: #1769FF !important; color: #fff !important; font-size: 8px !important; font-weight: 800 !important; }
+.rk-chat-dots { display: flex !important; gap: 6px !important; padding: 4px 10px !important; }
+.rk-chat-dots i { width: 5px !important; height: 5px !important; border-radius: 50% !important; background: #52BFFF !important; }
+.rk-chat-spark { position: absolute !important; color: #2D7BFF !important; font-size: 28px !important; font-weight: 700 !important; }
+.rk-chat-spark-1 { left: 8% !important; top: 15% !important; }
+.rk-chat-spark-2 { right: 4% !important; top: 8% !important; color: #57C7F1 !important; }
+.rk-chat-spark-3 { right: 12% !important; bottom: 15% !important; font-size: 20px !important; }
+.rk-login-features { grid-column: 1 !important; grid-row: 2 !important; display: flex !important; flex-direction: column !important; gap: 15px !important; align-self: center !important; }
+.rk-login-features > div { display: flex !important; gap: 12px !important; align-items: flex-start !important; }
+.rk-feature-icon { width: 42px !important; height: 42px !important; flex: 0 0 42px !important; display: grid !important; place-items: center !important; border: 1px solid #DCE8FA !important; border-radius: 11px !important; background: #fff !important; color: var(--rk-blue) !important; box-shadow: 0 5px 14px rgba(36,107,253,.09) !important; font-size: 21px !important; font-weight: 700 !important; }
+.rk-login-features b, .rk-security-note b { display: block !important; color: var(--rk-navy) !important; font-size: 13px !important; margin-bottom: 3px !important; }
+.rk-login-features small, .rk-security-note small { display: block !important; color: #617394 !important; font-size: 11px !important; line-height: 1.45 !important; }
+.rk-security-note { grid-column: 1 / -1 !important; display: flex !important; align-items: center !important; gap: 13px !important; padding: 13px 16px !important; border: 1px solid #CFE0FF !important; border-radius: 12px !important; background: rgba(239,246,255,.78) !important; }
+.rk-security-note > span { color: var(--rk-blue) !important; font-size: 20px !important; }
+.rk-login-panel { flex: .86 1 0 !important; min-width: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; background: #fff !important; padding: 56px 72px !important; }
+.rk-login-form { width: min(100%, 425px) !important; }
+.rk-login-brand { display: flex !important; justify-content: flex-start !important; margin-bottom: 36px !important; }
+.rk-login-brand img { width: 250px !important; height: auto !important; display: block !important; }
+.rk-login-title { color: var(--rk-navy) !important; font-size: 28px !important; font-weight: 800 !important; line-height: 1.2 !important; letter-spacing: -.025em !important; }
+.rk-login-subtitle { margin-top: 8px !important; margin-bottom: 30px !important; color: #71809B !important; font-size: 13px !important; line-height: 1.55 !important; }
+.rk-login-field-label { color: var(--rk-navy) !important; font-size: 13px !important; font-weight: 700 !important; margin-bottom: 8px !important; }
+.rk-login-password-label { margin-top: 18px !important; }
+.rk-login-input .MuiOutlinedInput-root { min-height: 54px !important; border-radius: 11px !important; }
+.rk-login-input .MuiInputBase-input { font-size: 14px !important; padding-top: 15px !important; padding-bottom: 15px !important; }
+.rk-login-input .MuiInputAdornment-root { color: #8B9AB4 !important; }
+.rk-login-options { display: flex !important; align-items: center !important; justify-content: space-between !important; margin: 14px 0 24px !important; color: #6C7B96 !important; font-size: 12px !important; }
+.rk-login-options label { display: inline-flex !important; align-items: center !important; gap: 7px !important; cursor: pointer !important; }
+.rk-login-options input { accent-color: var(--rk-blue) !important; width: 15px !important; height: 15px !important; }
+.rk-login-options a { color: var(--rk-blue) !important; font-weight: 700 !important; }
+.rk-login-submit { min-height: 54px !important; border-radius: 11px !important; background: var(--rk-blue) !important; box-shadow: 0 10px 22px rgba(36,107,253,.20) !important; font-size: 15px !important; font-weight: 800 !important; text-transform: none !important; }
+.rk-login-submit:hover { background: #1559DF !important; }
+.rk-login-divider { display: flex !important; align-items: center !important; gap: 12px !important; margin: 26px 0 18px !important; color: #91A0B7 !important; font-size: 12px !important; }
+.rk-login-divider span { height: 1px !important; flex: 1 !important; background: #E5EBF4 !important; }
+.rk-login-divider em { font-style: normal !important; }
+.rk-google-button { min-height: 50px !important; border-radius: 11px !important; border-color: #DDE5F0 !important; color: #53617A !important; background: #fff !important; text-transform: none !important; font-weight: 700 !important; }
+.rk-google-mark { color: #4285F4 !important; font-size: 17px !important; font-weight: 800 !important; margin-right: 8px !important; }
+.rk-login-footer { margin-top: 42px !important; text-align: center !important; color: #91A0B7 !important; font-size: 11px !important; }
+
+/* Dashboard: spacious reference proportions and blue-first hierarchy. */
+#root > .MuiBox-root:has(aside) { font-size: 14px !important; }
+#root > .MuiBox-root:has(aside) aside { padding: 24px 20px !important; }
+#root > .MuiBox-root:has(aside) aside img[alt="Kirimwa"] { width: 215px !important; max-width: 215px !important; }
+#root > .MuiBox-root:has(aside) aside .MuiButton-root { min-height: 44px !important; font-size: 14px !important; }
+#root > .MuiBox-root:has(aside) aside .nav-item--active { box-shadow: none !important; }
+#root > .MuiBox-root:has(aside) > .MuiBox-root:last-child { padding: 30px 34px 42px !important; }
+#root > .MuiBox-root:has(aside) > .MuiBox-root:last-child .MuiTypography-h4 { font-size: 28px !important; font-weight: 800 !important; letter-spacing: -.03em !important; }
+#root > .MuiBox-root:has(aside) > .MuiBox-root:last-child .MuiTypography-body1 { color: #536789 !important; }
+#root > .MuiBox-root:has(aside) .MuiCard-root { border-radius: 18px !important; border-color: #E4EBF7 !important; box-shadow: 0 8px 28px rgba(32,74,140,.045) !important; }
+#root > .MuiBox-root:has(aside) .MuiCardContent-root { padding: 26px !important; }
+#root > .MuiBox-root:has(aside) .MuiCard-root .MuiTypography-h6 { font-size: 18px !important; font-weight: 800 !important; }
+#root > .MuiBox-root:has(aside) .MuiCard-root .MuiTypography-h5 { font-size: 17px !important; }
+#root > .MuiBox-root:has(aside) .MuiCard-root .MuiTypography-h4 { font-size: 30px !important; font-weight: 800 !important; color: var(--rk-blue) !important; }
+#root > .MuiBox-root:has(aside) .MuiChip-root { border-radius: 999px !important; }
+#root > .MuiBox-root:has(aside) .MuiChip-colorSuccess { color: #0B9A67 !important; background: #E8FAF2 !important; }
+#root > .MuiBox-root:has(aside) .MuiButton-containedSuccess { background: var(--rk-blue) !important; }
+#root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked { color: var(--rk-blue) !important; }
+#root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked .MuiSwitch-thumb { background-color: var(--rk-blue) !important; }
+#root > .MuiBox-root:has(aside) .MuiSwitch-colorPrimary.Mui-checked + .MuiSwitch-track { background-color: rgba(36,107,253,.42) !important; }
 
 @media (max-width: 1100px) {
+  .rk-login-page { padding: 14px !important; }
+  .rk-login-shell { min-height: calc(100vh - 28px) !important; }
+  .rk-login-visual-inner { padding: 48px 34px !important; }
+  .rk-login-panel { padding: 44px 38px !important; }
+  .rk-login-eyebrow, .rk-login-hero-title { font-size: 34px !important; }
   #root > .MuiBox-root:has(aside) aside { width: 250px !important; min-width: 250px !important; flex-basis: 250px !important; }
-  #root > .MuiBox-root:has(aside) aside img[alt="Kirimwa"] { width: 180px !important; max-width: 180px !important; }
 }
 
 @media (max-width: 767px) {
+  .rk-login-page { padding: 0 !important; background: #fff !important; }
+  .rk-login-shell { min-height: 100vh !important; border-radius: 0 !important; box-shadow: none !important; }
+  .rk-login-visual { display: none !important; }
+  .rk-login-panel { min-height: 100vh !important; padding: 32px 24px !important; }
+  .rk-login-brand { justify-content: center !important; margin-bottom: 28px !important; }
+  .rk-login-brand img { width: 220px !important; }
+  .rk-login-title { font-size: 25px !important; }
   #root > .MuiBox-root:has(aside) aside { width: min(86vw, 300px) !important; min-width: min(86vw, 300px) !important; flex-basis: min(86vw, 300px) !important; }
-  #root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:has(svg) { display: none !important; }
-  #root > .MuiBox-root:not(:has(aside)) img[alt="Kirimwa"] { width: 205px !important; }
-  #root > .MuiBox-root:not(:has(aside)) > .MuiBox-root:last-child { min-height: 100vh !important; padding: 24px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

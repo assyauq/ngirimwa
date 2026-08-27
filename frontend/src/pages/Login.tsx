@@ -54,35 +54,54 @@ const features = [
 
 function ChatMockup() {
   return (
-    <Box className="login-chat-mockup" aria-hidden="true" sx={{ position: 'relative', width: { md: 220, lg: 250, xl: 270 }, height: { md: 300, lg: 335, xl: 365 }, borderRadius: '28px', p: '10px', background: 'linear-gradient(145deg,#2f79ff 0%,#0755e9 55%,#0049d8 100%)', boxShadow: '0 22px 45px rgba(30,91,220,.20)', transform: 'translateY(4px)' }}>
-      <Box sx={{ position: 'absolute', inset: 10, borderRadius: '20px', overflow: 'hidden', background: 'linear-gradient(180deg,#0b5bf0 0%,#0b57e9 100%)', p: { md: 2, lg: 2.4 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.4 }}>
-          <Box sx={{ width: 26, height: 26, borderRadius: '50%', bgcolor: 'rgba(255,255,255,.35)' }} />
+    <Box className="login-chat-mockup" aria-hidden="true" sx={{ width: { md: 205, lg: 245, xl: 285 }, height: { md: 285, lg: 340, xl: 390 }, flex: '0 0 auto', p: '9px', borderRadius: { md: '25px', lg: '29px' }, background: 'linear-gradient(155deg,#2f7dff 0%,#1261ee 48%,#0349d6 100%)', boxShadow: '0 22px 42px rgba(22,92,226,.22)' }}>
+      <Box sx={{ height: '100%', borderRadius: { md: '18px', lg: '22px' }, overflow: 'hidden', position: 'relative', background: 'linear-gradient(180deg,#0d62f4 0%,#0751dd 100%)', p: { md: 1.6, lg: 2 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: .8, mb: { md: 2, lg: 2.6 } }}>
+          <Box sx={{ width: { md: 23, lg: 27 }, height: { md: 23, lg: 27 }, borderRadius: '50%', bgcolor: 'rgba(255,255,255,.38)' }} />
           <Box sx={{ flex: 1 }}>
-            <Box sx={{ width: '58%', height: 5, borderRadius: 5, bgcolor: 'rgba(255,255,255,.55)', mb: .7 }} />
-            <Box sx={{ width: '42%', height: 4, borderRadius: 5, bgcolor: 'rgba(255,255,255,.28)' }} />
+            <Box sx={{ width: '56%', height: 4, borderRadius: 4, bgcolor: 'rgba(255,255,255,.58)', mb: .6 }} />
+            <Box sx={{ width: '38%', height: 3, borderRadius: 4, bgcolor: 'rgba(255,255,255,.30)' }} />
           </Box>
         </Box>
-        <Box sx={{ width: '82%', minHeight: 48, borderRadius: '13px 13px 13px 4px', bgcolor: 'rgba(255,255,255,.20)', p: 1.4, mb: 1.6 }}>
-          <Box sx={{ width: '80%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.50)', mb: 1 }} />
-          <Box sx={{ width: '58%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.34)' }} />
+        <Box sx={{ width: '82%', borderRadius: '12px 12px 12px 4px', bgcolor: 'rgba(255,255,255,.20)', p: { md: 1, lg: 1.3 }, mb: { md: 1.2, lg: 1.5 } }}>
+          <Box sx={{ width: '84%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.60)', mb: .8 }} />
+          <Box sx={{ width: '62%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.35)' }} />
+          <Typography sx={{ mt: .8, color: 'rgba(255,255,255,.60)', fontSize: { md: 6, lg: 7 } }}>09.30</Typography>
         </Box>
-        <Box sx={{ width: '70%', ml: 'auto', minHeight: 44, borderRadius: '13px 13px 4px 13px', bgcolor: '#39cfd0', p: 1.35, mb: 1.6 }}>
-          <Box sx={{ width: '72%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.75)', mb: 1 }} />
-          <Box sx={{ width: '48%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.52)' }} />
+        <Box sx={{ width: '72%', ml: 'auto', borderRadius: '12px 12px 4px 12px', bgcolor: '#32ced0', p: { md: 1, lg: 1.3 }, mb: { md: 1.2, lg: 1.5 } }}>
+          <Box sx={{ width: '86%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.78)', mb: .8 }} />
+          <Box sx={{ width: '66%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.52)' }} />
+          <Typography sx={{ mt: .8, color: 'rgba(255,255,255,.70)', fontSize: { md: 6, lg: 7 }, textAlign: 'right' }}>09.31 ✓✓</Typography>
         </Box>
-        <Box sx={{ width: '88%', minHeight: 60, borderRadius: '13px 13px 13px 4px', bgcolor: 'rgba(255,255,255,.19)', p: 1.4, mb: 1.8 }}>
-          <Box sx={{ width: '84%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.50)', mb: 1 }} />
-          <Box sx={{ width: '68%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.35)', mb: 1 }} />
-          <Box sx={{ width: '34%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.28)' }} />
+        <Box sx={{ width: '80%', borderRadius: '12px 12px 12px 4px', bgcolor: 'rgba(255,255,255,.19)', p: { md: 1, lg: 1.3 }, mb: { md: 1.4, lg: 1.8 } }}>
+          <Box sx={{ width: '78%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.52)', mb: .8 }} />
+          <Box sx={{ width: '48%', height: 5, borderRadius: 4, bgcolor: 'rgba(255,255,255,.32)' }} />
+          <Typography sx={{ mt: .8, color: 'rgba(255,255,255,.55)', fontSize: { md: 6, lg: 7 } }}>09.32</Typography>
         </Box>
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: .6, px: 1.1, py: .55, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,.22)' }}>
-          <Typography sx={{ color: '#fff', fontSize: { md: 9, lg: 10 }, fontWeight: 800, lineHeight: 1 }}>AI</Typography>
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: .6, px: 1, py: .5, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,.20)' }}>
+          <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: { md: 8, lg: 10 }, lineHeight: 1 }}>AI</Typography>
+          {[0, 1, 2].map((dot) => <Box key={dot} sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: dot === 0 ? '#fff' : 'rgba(255,255,255,.45)' }} />)}
         </Box>
-        <Box sx={{ position: 'absolute', left: 18, bottom: 13, display: 'flex', gap: .7 }}>
+        <Box sx={{ position: 'absolute', left: { md: 15, lg: 18 }, bottom: { md: 11, lg: 14 }, display: 'flex', gap: .6 }}>
           {[0, 1, 2].map((dot) => <Box key={dot} sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dot === 0 ? '#fff' : 'rgba(255,255,255,.35)' }} />)}
         </Box>
       </Box>
+    </Box>
+  );
+}
+
+function FeatureList({ mobile = false }: { mobile?: boolean }) {
+  return (
+    <Box className="item-features" sx={{ width: '100%', maxWidth: mobile ? 390 : 690 }}>
+      {features.map((feature) => (
+        <Box key={feature.title} sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 1.6 }, py: { xs: 1.35, md: 1.05, lg: 1.2 }, borderBottom: '1px solid rgba(108,128,159,.16)' }}>
+          <Box sx={{ width: { xs: 42, md: 44 }, height: { xs: 42, md: 44 }, flex: '0 0 auto', borderRadius: { xs: '11px', md: '10px' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#edf4ff', color: '#1764ff' }}>{feature.icon}</Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: { xs: '.86rem', md: '.82rem', lg: '.9rem' }, color: '#132044' }}>{feature.title}</Typography>
+            <Typography sx={{ mt: .25, fontSize: { xs: '.69rem', md: '.68rem', lg: '.75rem' }, lineHeight: 1.4, color: '#68768f' }}>{feature.description}</Typography>
+          </Box>
+        </Box>
+      ))}
     </Box>
   );
 }
@@ -143,103 +162,126 @@ export default function Login() {
   };
 
   const fieldSx = {
+    '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#fff', minHeight: { xs: 54, md: 54 } },
     '& .MuiOutlinedInput-notchedOutline': { borderColor: '#dfe5ee' },
-    '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#fff' },
     '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
     '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1764ff', borderWidth: 2 },
   };
 
-  const adornmentSx = { width: { xs: 40, md: 40 }, height: { xs: 40, md: 40 }, borderRadius: '10px', bgcolor: '#edf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1764ff', ml: .25 };
+  const inputIcon = { width: 38, height: 38, borderRadius: '10px', bgcolor: '#edf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1764ff' };
+
+  const formContent = (
+    <>
+      <Box className="item-logo" sx={{ mb: { xs: 2.5, md: 3.2 }, textAlign: 'left' }}>
+        <Box component="img" src={logo} alt="Ruangkirim" sx={{ width: { xs: 190, md: 190, lg: 210 }, height: 'auto', display: 'block', objectFit: 'contain' }} />
+      </Box>
+
+      <Box className="item-welcome" sx={{ mb: { xs: 3.1, md: 3.5 } }}>
+        <Typography sx={{ fontSize: { xs: '1.32rem', md: '1.22rem', lg: '1.35rem' }, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-.02em', color: '#111b40' }}>Selamat datang kembali! 👋</Typography>
+        <Typography sx={{ mt: 1.05, maxWidth: 480, fontSize: { xs: '.88rem', md: '.75rem', lg: '.82rem' }, lineHeight: 1.5, color: '#68768f' }}>Masuk ke dashboard untuk mengelola WhatsApp AI Assistant kamu.</Typography>
+      </Box>
+
+      <Box className="item-form">
+        {error && (
+          <Alert severity="error" sx={{ mb: 2, borderRadius: '10px', fontSize: '.8rem' }}>{error}</Alert>
+        )}
+        {needVerify && (
+          <Box sx={{ mb: 2, fontSize: '.78rem', color: '#1764ff' }}>
+            <Link component="button" underline="hover" onClick={() => navigate('/cek-email', { state: { email: username.trim() } })}>Buka halaman verifikasi email</Link>
+          </Box>
+        )}
+
+        <Typography component="label" className="login-page-input-label" sx={{ display: 'block', mb: .75, fontSize: { xs: '.8rem', md: '.72rem', lg: '.78rem' }, fontWeight: 600, color: '#111b40' }}>Username</Typography>
+        <TextField
+          fullWidth
+          size="small"
+          value={username}
+          placeholder="Masukkan username"
+          error={Boolean(errors.username)}
+          helperText={errors.username || ' '}
+          onChange={(e) => { setUsername(e.target.value); if (errors.username) setErrors((prev) => ({ ...prev, username: undefined })); }}
+          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          sx={{ ...fieldSx, mb: .45, '& .MuiFormHelperText-root': { minHeight: 17, mt: .45, fontSize: '.68rem' } }}
+          InputProps={{ startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><PersonOutlined fontSize="small" /></Box></InputAdornment> }}
+        />
+
+        <Typography component="label" className="login-page-input-label" sx={{ display: 'block', mb: .75, mt: .55, fontSize: { xs: '.8rem', md: '.72rem', lg: '.78rem' }, fontWeight: 600, color: '#111b40' }}>Password</Typography>
+        <TextField
+          fullWidth
+          size="small"
+          type={showPassword ? 'text' : 'password'}
+          value={password}
+          placeholder="Masukkan password"
+          error={Boolean(errors.password)}
+          helperText={errors.password || ' '}
+          onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors((prev) => ({ ...prev, password: undefined })); }}
+          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          sx={{ ...fieldSx, '& .MuiFormHelperText-root': { minHeight: 17, mt: .45, fontSize: '.68rem' } }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><LockOutlined fontSize="small" /></Box></InputAdornment>,
+            endAdornment: <InputAdornment position="end"><IconButton aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'} onClick={() => setShowPassword((v) => !v)} edge="end" size="small" sx={{ color: '#74839d' }}>{showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}</IconButton></InputAdornment>,
+          }}
+        />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: .25, mb: 2.2 }}>
+          <FormControlLabel control={<Checkbox size="small" defaultChecked sx={{ p: .3, color: '#1764ff', '&.Mui-checked': { color: '#1764ff' } }} />} label="Ingat saya" sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: { xs: '.8rem', md: '.7rem', lg: '.76rem' }, color: '#68768f' } }} />
+          <Link component="button" variant="body2" underline="hover" onClick={() => navigate('/forgot-password')} sx={{ border: 0, background: 'none', p: 0, cursor: 'pointer', fontWeight: 600, color: '#1764ff', fontSize: { xs: '.8rem', md: '.7rem', lg: '.76rem' } }}>Lupa password?</Link>
+        </Box>
+
+        <Button fullWidth variant="contained" onClick={handleLogin} disabled={loading || cooldown > 0} sx={{ minHeight: { xs: 54, md: 50 }, borderRadius: '12px', textTransform: 'none', fontWeight: 700, fontSize: { xs: '1rem', md: '.86rem', lg: '.92rem' }, bgcolor: '#1764ff', boxShadow: 'none', '&:hover': { bgcolor: '#0e56e8', boxShadow: 'none' } }}>
+          {loading ? <CircularProgress size={22} sx={{ color: '#fff' }} /> : cooldown > 0 ? `Coba lagi dalam ${cooldown}s` : 'Masuk'}
+        </Button>
+
+        <Divider sx={{ my: { xs: 2.6, md: 2.3 }, '&::before, &::after': { borderColor: '#e4e8ee' }, color: '#7b879b', fontSize: { xs: '.8rem', md: '.7rem' } }}>atau</Divider>
+
+        {/* TODO: Google Login — visual placeholder only; no authentication behavior yet. */}
+        <Button fullWidth variant="outlined" type="button" onClick={() => undefined} startIcon={<GoogleIcon />} sx={{ minHeight: { xs: 54, md: 48 }, borderRadius: '12px', textTransform: 'none', fontWeight: 600, color: '#1c2945', borderColor: '#dfe5ee', bgcolor: '#fff', fontSize: { xs: '.9rem', md: '.78rem', lg: '.84rem' }, '&:hover': { borderColor: '#dfe5ee', bgcolor: '#fff' } }}>Masuk dengan Google</Button>
+      </Box>
+
+      <Box className="item-features-mobile" sx={{ display: { xs: 'block', md: 'none' }, mt: 3.6 }}>
+        <FeatureList mobile />
+      </Box>
+
+      <Box className="item-security-mobile" sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.4, mt: 1.2, p: 1.5, border: '1px solid #e6eaf0', borderRadius: '18px' }}>
+        <Box sx={{ width: 42, height: 42, flex: '0 0 auto', borderRadius: '11px', bgcolor: '#edf4ff', color: '#1764ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShieldOutlined /></Box>
+        <Box><Typography sx={{ fontWeight: 700, fontSize: '.86rem', color: '#132044' }}>Aman &amp; Terpercaya</Typography><Typography sx={{ mt: .2, fontSize: '.69rem', lineHeight: 1.45, color: '#68768f' }}>Data Anda dienkripsi dan terlindungi dengan standar keamanan tinggi.</Typography></Box>
+      </Box>
+
+      <Typography className="item-footer" sx={{ mt: { xs: 5, md: 5 }, textAlign: 'center', fontSize: { xs: '.68rem', md: '.64rem', lg: '.7rem' }, color: '#68768f' }}>© 2024 Ruangkirim. Semua hak dilindungi.</Typography>
+    </>
+  );
 
   return (
     <Box className="login-page" sx={{ minHeight: '100svh', width: '100%', bgcolor: '#f4f7fc', p: { xs: 0, md: 3 }, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', overflowX: 'hidden', position: 'relative' }}>
       <Box sx={{ position: 'absolute', top: -180, right: -180, width: 430, height: 430, borderRadius: '50%', bgcolor: 'rgba(76,139,255,.055)', pointerEvents: 'none' }} />
       <Box sx={{ position: 'absolute', bottom: -230, left: { xs: -180, md: 150 }, width: 440, height: 440, borderRadius: '50%', bgcolor: 'rgba(76,139,255,.045)', pointerEvents: 'none' }} />
 
-      <Box className="login-page-container" sx={{ width: '100%', maxWidth: 1360, minHeight: { xs: '100svh', md: 'calc(100svh - 48px)' }, mx: 'auto', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '56% 44%' }, bgcolor: '#fff', borderRadius: { xs: 0, md: '24px' }, overflow: 'hidden', boxShadow: { xs: 'none', md: '0 8px 32px rgba(31,64,112,.08)' }, position: 'relative', zIndex: 1 }}>
-        <Box className="login-page-left-panel" sx={{ display: { xs: 'none', md: 'flex' }, position: 'relative', overflow: 'hidden', flexDirection: 'column', bgcolor: '#f3f7fd', px: { md: 5.5, lg: 6.5 }, py: { md: 5, lg: 6 }, justifyContent: 'center' }}>
-          <Box sx={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 720, mx: 'auto' }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '44% 56%', alignItems: 'center', gap: 2, mb: { md: 3, lg: 4 } }}>
-              <Box>
-                <Typography sx={{ fontSize: { md: '2rem', lg: '2.25rem', xl: '2.45rem' }, lineHeight: 1.03, fontWeight: 800, letterSpacing: '-.045em', color: '#111b40' }}>WhatsApp</Typography>
-                <Typography sx={{ fontSize: { md: '2rem', lg: '2.25rem', xl: '2.45rem' }, lineHeight: 1.03, fontWeight: 800, letterSpacing: '-.045em', color: '#1764ff' }}>AI Assistant</Typography>
-                <Typography sx={{ mt: 2, maxWidth: 320, fontSize: { md: '.86rem', lg: '.94rem' }, lineHeight: 1.55, color: '#66748e' }}>Otomatis balasan AI, broadcast massal, dan CRM WhatsApp — semua dalam satu dashboard.</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <ChatMockup />
-              </Box>
-            </Box>
-
-            <Box className="login-feature-list" sx={{ width: '100%', maxWidth: 620 }}>
-              {features.map((feature) => (
-                <Box key={feature.title} sx={{ display: 'flex', alignItems: 'center', gap: 1.6, py: { md: 1.05, lg: 1.25 }, borderBottom: '1px solid rgba(112,133,166,.18)' }}>
-                  <Box sx={{ width: 44, height: 44, flex: '0 0 44px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '11px', bgcolor: 'rgba(255,255,255,.78)', color: '#1764ff' }}>{feature.icon}</Box>
-                  <Box>
-                    <Typography sx={{ fontWeight: 700, fontSize: { md: '.82rem', lg: '.9rem' }, color: '#132044' }}>{feature.title}</Typography>
-                    <Typography sx={{ mt: .2, fontSize: { md: '.68rem', lg: '.75rem' }, lineHeight: 1.35, color: '#6b7891' }}>{feature.description}</Typography>
-                  </Box>
+      <Box className="login-page-container" sx={{ width: '100%', maxWidth: 1360, minHeight: { xs: '100svh', md: 'calc(100svh - 48px)' }, mx: 'auto', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '58% 42%' }, bgcolor: '#fff', borderRadius: { xs: 0, md: '24px' }, overflow: 'hidden', boxShadow: { xs: 'none', md: '0 8px 32px rgba(31,64,112,.08)' }, position: 'relative', zIndex: 1 }}>
+        <Box className="login-page-left-panel" sx={{ display: { xs: 'flex', md: 'flex' }, position: 'relative', overflow: 'hidden', flexDirection: 'column', justifyContent: 'center', bgcolor: '#f3f7fd', px: { md: 5, lg: 6, xl: 7 }, py: { md: 5, lg: 6 }, '&::before': { content: '""', position: 'absolute', width: 430, height: 430, borderRadius: '50%', top: -250, right: -170, bgcolor: 'rgba(86,143,255,.06)' }, '&::after': { content: '""', position: 'absolute', width: 430, height: 430, borderRadius: '50%', bottom: -300, left: -80, bgcolor: 'rgba(86,143,255,.055)' } }}>
+          <Box sx={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 790, mx: 'auto' }}>
+            <Box className="item-branding" sx={{ display: { xs: 'none', md: 'block' } }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { md: '42% 58%', lg: '40% 60%' }, alignItems: 'center', gap: { md: 2, lg: 3 }, mb: { md: 3, lg: 3.5 } }}>
+                <Box>
+                  <Typography sx={{ fontSize: { md: '2rem', lg: '2.35rem', xl: '2.65rem' }, lineHeight: 1.02, fontWeight: 800, letterSpacing: '-.05em', color: '#111b40' }}>WhatsApp</Typography>
+                  <Typography sx={{ fontSize: { md: '2rem', lg: '2.35rem', xl: '2.65rem' }, lineHeight: 1.02, fontWeight: 800, letterSpacing: '-.05em', color: '#1764ff' }}>AI Assistant</Typography>
+                  <Typography sx={{ mt: 1.8, maxWidth: 315, fontSize: { md: '.83rem', lg: '.92rem' }, lineHeight: 1.55, color: '#66748e' }}>Otomatis balasan AI, broadcast massal, dan CRM WhatsApp — semua dalam satu dashboard.</Typography>
                 </Box>
-              ))}
+                <Box className="item-illustration" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><ChatMockup /></Box>
+              </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.4, mt: { md: 2.3, lg: 2.8 }, px: 1.6, py: 1.15, maxWidth: 520, borderRadius: '10px', bgcolor: 'rgba(224,237,255,.62)', border: '1px solid rgba(91,135,220,.18)' }}>
-              <Box sx={{ width: 38, height: 38, flex: '0 0 38px', borderRadius: '9px', bgcolor: '#1764ff', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShieldOutlined fontSize="small" /></Box>
-              <Box><Typography sx={{ fontWeight: 700, fontSize: '.8rem', color: '#14234b' }}>Aman &amp; Terpercaya</Typography><Typography sx={{ mt: .15, fontSize: '.68rem', lineHeight: 1.3, color: '#687590' }}>Data Anda dienkripsi dan terlindungi dengan standar keamanan tinggi.</Typography></Box>
+            <Box className="item-features-desktop" sx={{ display: { xs: 'none', md: 'block' } }}><FeatureList /></Box>
+
+            <Box className="item-security" sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.3, mt: { md: 2.2, lg: 2.8 }, maxWidth: 610, px: 1.5, py: 1.15, borderRadius: '11px', bgcolor: 'rgba(226,238,255,.62)', border: '1px solid rgba(91,135,220,.16)' }}>
+              <Box sx={{ width: 38, height: 38, flex: '0 0 auto', borderRadius: '9px', bgcolor: '#1764ff', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShieldOutlined fontSize="small" /></Box>
+              <Box><Typography sx={{ fontWeight: 700, fontSize: { md: '.8rem', lg: '.88rem' }, color: '#132044' }}>Aman &amp; Terpercaya</Typography><Typography sx={{ mt: .15, fontSize: { md: '.66rem', lg: '.72rem' }, color: '#68768f' }}>Data Anda dienkripsi dan terlindungi dengan standar keamanan tinggi.</Typography></Box>
             </Box>
           </Box>
         </Box>
 
-        <Box className="login-page-right-panel" sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: { xs: 'flex-start', md: 'center' }, bgcolor: '#fff', px: { xs: 'clamp(24px, 14vw, 120px)', sm: 'clamp(32px, 10vw, 96px)', md: 6.5, lg: 7.5 }, py: { xs: 'clamp(34px, 6vw, 52px)', sm: 6, md: 5 } }}>
-          <Box className="login-page-form-wrapper" sx={{ width: '100%', maxWidth: { xs: 590, md: 425 }, mx: 'auto' }}>
-            <Box className="item-logo" sx={{ display: 'flex', justifyContent: 'flex-start', mb: { xs: 'clamp(28px, 5vw, 50px)', md: 3.2 } }}><Box component="img" src={logo} alt="RuangKirim" sx={{ width: { xs: 'clamp(160px, 36.5vw, 310px)', md: 185 }, height: 'auto', display: 'block' }} /></Box>
-
-            <Box className="item-welcome" sx={{ mb: { xs: 'clamp(28px, 4.5vw, 40px)', md: 3.2 } }}>
-              <Typography component="h1" sx={{ fontSize: { xs: 'clamp(22px, 3.6vw, 30px)', md: '1.42rem' }, lineHeight: 1.2, fontWeight: 800, letterSpacing: '-.035em', color: '#111a3a' }}>Selamat datang kembali! 👋</Typography>
-              <Typography sx={{ mt: 1.25, fontSize: { xs: 'clamp(14px, 2.2vw, 18px)', md: '.8rem' }, lineHeight: 1.55, color: '#687590' }}>Masuk ke dashboard untuk mengelola WhatsApp AI Assistant kamu.</Typography>
-            </Box>
-
-            {error && <Alert severity={cooldown > 0 ? 'warning' : 'error'} sx={{ mb: 2.5, borderRadius: '12px' }}>{error}</Alert>}
-            {needVerify && <Typography sx={{ mb: 2, fontSize: '.82rem' }}><Link component="button" type="button" underline="hover" onClick={() => navigate('/cek-email', { state: { email: username.trim() } })} sx={{ fontWeight: 600, color: '#1764ff' }}>Kirim ulang link verifikasi</Link></Typography>}
-
-            <Box className="item-form" component="form" onSubmit={(event) => { event.preventDefault(); void handleLogin(); }}>
-              <Box sx={{ mb: { xs: 'clamp(18px, 3.2vw, 28px)', md: 2.25 } }}>
-                <Typography sx={{ mb: 1.05, fontSize: { xs: 'clamp(14px, 2.35vw, 20px)', md: '.82rem' }, fontWeight: 700, color: '#111a3a' }}>Username</Typography>
-                <TextField fullWidth placeholder="Masukkan username" value={username} disabled={loading || cooldown > 0} autoComplete="username" onChange={(e) => { setUsername(e.target.value); if (errors.username) setErrors((p) => ({ ...p, username: '' })); }} error={!!errors.username} helperText={errors.username} sx={fieldSx} slotProps={{ input: { sx: { height: { xs: 'clamp(48px, 9.4vw, 80px)', md: 62 }, borderRadius: '12px', fontSize: { xs: 'clamp(14px, 2.1vw, 18px)', md: '.92rem' }, fontWeight: 500 }, startAdornment: <InputAdornment position="start"><Box sx={adornmentSx}><PersonOutlined fontSize="small" /></Box></InputAdornment> } }} />
-              </Box>
-
-              <Box sx={{ mb: { xs: 'clamp(16px, 2.8vw, 24px)', md: 1.55 } }}>
-                <Typography sx={{ mb: 1.05, fontSize: { xs: 'clamp(14px, 2.35vw, 20px)', md: '.82rem' }, fontWeight: 700, color: '#111a3a' }}>Password</Typography>
-                <TextField fullWidth placeholder="Masukkan password" type={showPassword ? 'text' : 'password'} value={password} disabled={loading || cooldown > 0} autoComplete="current-password" onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors((p) => ({ ...p, password: '' })); }} error={!!errors.password} helperText={errors.password} sx={fieldSx} slotProps={{ input: { sx: { height: { xs: 'clamp(48px, 9.4vw, 80px)', md: 62 }, borderRadius: '12px', fontSize: { xs: 'clamp(14px, 2.1vw, 18px)', md: '.92rem' }, fontWeight: 500 }, startAdornment: <InputAdornment position="start"><Box sx={adornmentSx}><LockOutlined fontSize="small" /></Box></InputAdornment>, endAdornment: <InputAdornment position="end"><IconButton type="button" onClick={() => setShowPassword((value) => !value)} edge="end" size="small" aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}><Box sx={{ display: 'flex', color: '#71809c' }}>{showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}</Box></IconButton></InputAdornment> } }} />
-              </Box>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: { xs: 'clamp(22px, 3.8vw, 32px)', md: 2.45 } }}>
-                <FormControlLabel control={<Checkbox defaultChecked size="small" sx={{ p: .35, color: '#1764ff', '&.Mui-checked': { color: '#1764ff' } }} />} label="Ingat saya" sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: { xs: 'clamp(14px, 2.2vw, 18px)', md: '.82rem' }, color: '#66728c' } }} />
-                <Link component="button" type="button" underline="hover" onClick={() => navigate('/forgot-password')} sx={{ fontSize: { xs: 'clamp(14px, 2.2vw, 18px)', md: '.82rem' }, fontWeight: 700, color: '#1764ff' }}>Lupa password?</Link>
-              </Box>
-
-              <Button fullWidth type="submit" variant="contained" size="large" disabled={loading || cooldown > 0} startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null} sx={{ height: { xs: 'clamp(48px, 9.4vw, 80px)', md: 54 }, borderRadius: '12px', bgcolor: '#1764ff', textTransform: 'none', fontSize: { xs: 'clamp(15px, 2.4vw, 20px)', md: '.95rem' }, fontWeight: 700, boxShadow: 'none', '&:hover': { bgcolor: '#1056e3', boxShadow: 'none' } }}>{loading ? 'Masuk…' : cooldown > 0 ? `Coba lagi ${cooldown}d` : 'Masuk'}</Button>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: { xs: 'clamp(20px, 3.8vw, 32px)', md: 2.5 } }}><Divider sx={{ flex: 1, borderColor: '#e0e5ed' }} /><Typography sx={{ color: '#77829a', fontSize: { xs: 'clamp(14px, 2.1vw, 18px)', md: '.8rem' } }}>atau</Typography><Divider sx={{ flex: 1, borderColor: '#e0e5ed' }} /></Box>
-
-              {/* TODO: Google Login — visual placeholder only; OAuth will be implemented later. */}
-              <Button fullWidth type="button" variant="outlined" size="large" startIcon={<GoogleIcon />} onClick={() => undefined} sx={{ height: { xs: 'clamp(48px, 9.4vw, 80px)', md: 54 }, borderRadius: '12px', borderColor: '#dfe5ee', color: '#17203f', textTransform: 'none', fontSize: { xs: 'clamp(14px, 2.2vw, 18px)', md: '.92rem' }, fontWeight: 600, boxShadow: 'none', '&:hover': { borderColor: '#cbd5e1', bgcolor: '#fafcff' } }}>Masuk dengan Google</Button>
-            </Box>
-
-            <Box className="item-features" sx={{ display: { xs: 'block', md: 'none' }, mt: 4, border: '1px solid #edf0f5', borderRadius: '28px', px: 2.2, py: 1.4 }}>
-              {features.map((feature, index) => (
-                <Box key={feature.title} sx={{ display: 'flex', alignItems: 'center', gap: 1.8, py: 1.7, borderBottom: index < features.length - 1 ? '1px solid #edf0f5' : 'none' }}>
-                  <Box sx={{ width: 48, height: 48, flex: '0 0 48px', borderRadius: '14px', bgcolor: '#edf4ff', color: '#1764ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{feature.icon}</Box>
-                  <Box><Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#132044' }}>{feature.title}</Typography><Typography sx={{ mt: .25, fontSize: '.82rem', lineHeight: 1.45, color: '#687590' }}>{feature.description}</Typography></Box>
-                </Box>
-              ))}
-            </Box>
-
-            <Box className="item-security" sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.8, mt: 2.2, px: 2.2, py: 2, border: '1px solid #edf0f5', borderRadius: '24px' }}>
-              <Box sx={{ width: 48, height: 48, flex: '0 0 48px', borderRadius: '14px', bgcolor: '#edf4ff', color: '#1764ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShieldOutlined /></Box>
-              <Box><Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#132044' }}>Aman &amp; Terpercaya</Typography><Typography sx={{ mt: .25, fontSize: '.82rem', lineHeight: 1.45, color: '#687590' }}>Data Anda dienkripsi dan terlindungi dengan standar keamanan tinggi.</Typography></Box>
-            </Box>
-
-            <Typography className="item-footer" sx={{ mt: { xs: 4.5, md: 5 }, textAlign: 'center', color: '#6c7891', fontSize: { xs: '.82rem', md: '.78rem' } }}>© 2024 Ruangkirim. Semua hak dilindungi.</Typography>
+        <Box className="login-page-right-panel" sx={{ bgcolor: '#fff', display: { xs: 'contents', md: 'flex' }, alignItems: 'center', justifyContent: 'center', px: { md: 4, lg: 6, xl: 8 }, py: { md: 5, lg: 6 } }}>
+          <Box className="login-page-form-wrapper" sx={{ width: '100%', maxWidth: { xs: 390, md: 500 }, mx: 'auto' }}>
+            {formContent}
           </Box>
         </Box>
       </Box>

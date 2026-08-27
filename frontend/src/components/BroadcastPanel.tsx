@@ -723,10 +723,10 @@ export default function BroadcastPanel({ agentId, seed }: { agentId: number; see
                         <Alert severity="warning" icon={false} sx={{ mt: 1.25 }}>
                           <Typography variant="body2" sx={{ fontWeight: 800, mb: 0.5 }}>Dijeda oleh WhatsApp</Typography>
                           <Typography variant="body2" sx={{ mb: 0.5 }}>
-                            Pengiriman Blast ini dihentikan sementara oleh WhatsApp, bukan oleh Kirimwa. Saat Kirimwa mengirim pesan Anda, WhatsApp menolaknya dan meminta pengiriman dihentikan, lalu Kirimwa langsung menjeda Blast agar nomor Anda tetap aman. Nomor Anda tidak terblokir permanen.
+                            Pengiriman Blast ini dihentikan sementara oleh WhatsApp, bukan oleh ChatLoop. Saat ChatLoop mengirim pesan Anda, WhatsApp menolaknya dan meminta pengiriman dihentikan, lalu ChatLoop langsung menjeda Blast agar nomor Anda tetap aman. Nomor Anda tidak terblokir permanen.
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                            {at ? `Keputusan ini diberikan langsung oleh WhatsApp pada ${at}. ` : ''}Kirimwa tidak memblokir pesan Anda.
+                            {at ? `Keputusan ini diberikan langsung oleh WhatsApp pada ${at}. ` : ''}ChatLoop tidak memblokir pesan Anda.
                           </Typography>
                           <Typography variant="body2" sx={{ fontWeight: 700 }}>Kenapa ini terjadi?</Typography>
                           <Box component="ul" sx={{ pl: 2.5, m: 0, mb: 1 }}>

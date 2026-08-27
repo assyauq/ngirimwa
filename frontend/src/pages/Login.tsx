@@ -199,10 +199,13 @@ export default function Login() {
           placeholder="Masukkan username"
           error={Boolean(errors.username)}
           helperText={errors.username || ' '}
-          onChange={(e) => { setUsername(e.target.value); if (errors.username) setErrors((prev) => ({ ...prev, username: undefined })); }}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            if (errors.username) setErrors((prev) => { const next = { ...prev }; delete next.username; return next; });
+          }}
           onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
           sx={{ ...fieldSx, mb: .45, '& .MuiFormHelperText-root': { minHeight: 17, mt: .45, fontSize: '.68rem' } }}
-          InputProps={{ startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><PersonOutlined fontSize="small" /></Box></InputAdornment> }}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><PersonOutlined fontSize="small" /></Box></InputAdornment> } }}
         />
 
         <Typography component="label" className="login-page-input-label" sx={{ display: 'block', mb: .75, mt: .55, fontSize: { xs: '.8rem', md: '.72rem', lg: '.78rem' }, fontWeight: 600, color: '#111b40' }}>Password</Typography>
@@ -214,12 +217,17 @@ export default function Login() {
           placeholder="Masukkan password"
           error={Boolean(errors.password)}
           helperText={errors.password || ' '}
-          onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors((prev) => ({ ...prev, password: undefined })); }}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (errors.password) setErrors((prev) => { const next = { ...prev }; delete next.password; return next; });
+          }}
           onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
           sx={{ ...fieldSx, '& .MuiFormHelperText-root': { minHeight: 17, mt: .45, fontSize: '.68rem' } }}
-          InputProps={{
-            startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><LockOutlined fontSize="small" /></Box></InputAdornment>,
-            endAdornment: <InputAdornment position="end"><IconButton aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'} onClick={() => setShowPassword((v) => !v)} edge="end" size="small" sx={{ color: '#74839d' }}>{showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}</IconButton></InputAdornment>,
+          slotProps={{
+            input: {
+              startAdornment: <InputAdornment position="start"><Box sx={inputIcon}><LockOutlined fontSize="small" /></Box></InputAdornment>,
+              endAdornment: <InputAdornment position="end"><IconButton aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'} onClick={() => setShowPassword((v) => !v)} edge="end" size="small" sx={{ color: '#74839d' }}>{showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}</IconButton></InputAdornment>,
+            },
           }}
         />
 
@@ -234,7 +242,6 @@ export default function Login() {
 
         <Divider sx={{ my: { xs: 2.6, md: 2.3 }, '&::before, &::after': { borderColor: '#e4e8ee' }, color: '#7b879b', fontSize: { xs: '.8rem', md: '.7rem' } }}>atau</Divider>
 
-        {/* TODO: Google Login — visual placeholder only; no authentication behavior yet. */}
         <Button fullWidth variant="outlined" type="button" onClick={() => undefined} startIcon={<GoogleIcon />} sx={{ minHeight: { xs: 54, md: 48 }, borderRadius: '12px', textTransform: 'none', fontWeight: 600, color: '#1c2945', borderColor: '#dfe5ee', bgcolor: '#fff', fontSize: { xs: '.9rem', md: '.78rem', lg: '.84rem' }, '&:hover': { borderColor: '#dfe5ee', bgcolor: '#fff' } }}>Masuk dengan Google</Button>
       </Box>
 

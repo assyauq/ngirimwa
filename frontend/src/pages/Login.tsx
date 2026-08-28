@@ -57,34 +57,42 @@ function ChatMockup() {
   return (
     <Box className="login-chat-mockup" aria-hidden="true">
       <Box className="login-chat-mockup__screen">
+        <Box className="login-chat-mockup__statusbar">
+          <Typography>09.31</Typography>
+          <Box className="login-chat-mockup__status-icons"><span /><span /><span /></Box>
+        </Box>
+
         <Box className="login-chat-mockup__header">
-          <Box className="login-chat-mockup__avatar" />
-          <Box sx={{ flex: 1 }}>
-            <Box className="login-chat-mockup__line login-chat-mockup__line--wide" />
-            <Box className="login-chat-mockup__line login-chat-mockup__line--short" />
+          <Box className="login-chat-mockup__avatar">AI</Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography className="login-chat-mockup__name">Ruangkirim AI</Typography>
+            <Typography className="login-chat-mockup__online">Online • siap membantu</Typography>
+          </Box>
+          <Box className="login-chat-mockup__menu"><span /><span /><span /></Box>
+        </Box>
+
+        <Box className="login-chat-mockup__messages">
+          <Box className="login-chat-bubble login-chat-bubble--received">
+            <Typography>Halo! Ada yang bisa saya bantu? 👋</Typography>
+            <small>09.30</small>
+          </Box>
+          <Box className="login-chat-bubble login-chat-bubble--sent">
+            <Typography>Saya ingin cek status pesanan.</Typography>
+            <small>09.31 ✓✓</small>
+          </Box>
+          <Box className="login-chat-bubble login-chat-bubble--received login-chat-bubble--typing">
+            <span /><span /><span />
           </Box>
         </Box>
-        <Box className="login-chat-message login-chat-message--left">
-          <Box className="login-chat-message__line login-chat-message__line--wide" />
-          <Box className="login-chat-message__line login-chat-message__line--medium" />
-          <Typography>09.30</Typography>
-        </Box>
-        <Box className="login-chat-message login-chat-message--right">
-          <Box className="login-chat-message__line login-chat-message__line--wide" />
-          <Box className="login-chat-message__line login-chat-message__line--medium" />
-          <Typography>09.31 ✓✓</Typography>
-        </Box>
-        <Box className="login-chat-message login-chat-message--left login-chat-message--last">
-          <Box className="login-chat-message__line login-chat-message__line--wide" />
-          <Box className="login-chat-message__line login-chat-message__line--shorter" />
-          <Typography>09.32</Typography>
-        </Box>
+
         <Box className="login-chat-ai-badge">
-          <Typography>AI</Typography>
-          {[0, 1, 2].map((dot) => <Box key={dot} className={`login-chat-ai-dot${dot === 0 ? ' is-active' : ''}`} />)}
+          <Box className="login-chat-ai-badge__spark">✦</Box>
+          <Typography>AI Assistant aktif</Typography>
         </Box>
-        <Box className="login-chat-dots">
-          {[0, 1, 2].map((dot) => <Box key={dot} />)}
+
+        <Box className="login-chat-composer">
+          <Box className="login-chat-composer__input">Ketik pesan...</Box>
+          <Box className="login-chat-composer__send"><SendOutlined /></Box>
         </Box>
       </Box>
     </Box>

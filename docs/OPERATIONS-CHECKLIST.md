@@ -2,9 +2,9 @@
 
 Dokumen ini menjadi checkpoint operasional untuk pemisahan Ruangkirim dari ChatLoop dan deployment production secara bertahap.
 
-> **Current checkpoint:** Phase 1G.6C.16 — production binary installed, systemd service belum dibuat.
+> **Current checkpoint:** Phase 1G.6C.20 — systemd production runtime active and HTTP smoke test passed.
 >
-> **Do not continue to Phase 1G.6C.17** until the current checkpoint has been verified locally and the checklist is updated.
+> **Do not continue to the WhatsApp session/QR phase** until the current checkpoint has been verified locally and the checklist is updated.
 
 ## Before Clone
 
@@ -86,6 +86,6 @@ Manual runtime verification passed:
 - invalid login returns `401`
 - login throttle writes `NULL` to `locked_until` correctly
 
-**Next planned step:** Phase 1G.6C.17 — systemd service preparation/deployment.
+**Next planned step:** WhatsApp session/QR isolation verification.
 
 Do not modify or stop `chatloop.service` during Ruangkirim deployment.

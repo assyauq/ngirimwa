@@ -1,0 +1,45 @@
+:root {
+  /* Ruangkirim Phase 2 design foundation */
+  --rk-font-sans: Inter, Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --rk-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --rk-primary: #168A4A;
+  --rk-primary-hover: #0C5C30;
+  --rk-primary-soft: rgba(22, 138, 74, 0.10);
+  --rk-success: #148F45;
+  --rk-warning: #C2410C;
+  --rk-danger: #D32F2F;
+  --rk-info: #1565C0;
+
+  --rk-bg: #F6F7F6;
+  --rk-surface: #FFFFFF;
+  --rk-surface-soft: #F0F3F1;
+  --rk-border: #D7E0D9;
+  --rk-border-strong: #C5CFC8;
+
+  --rk-text: #111814;
+  --rk-text-secondary: #4A554F;
+  --rk-text-muted: #8A948D;
+
+  --rk-space-1: 4px;
+  --rk-space-2: 8px;
+  --rk-space-3: 12px;
+  --rk-space-4: 16px;
+  --rk-space-5: 20px;
+  --rk-space-6: 24px;
+  --rk-space-8: 32px;
+  --rk-space-10: 40px;
+  --rk-space-12: 48px;
+  --rk-space-16: 64px;
+
+  --rk-radius-sm: 8px;
+  --rk-radius-md: 10px;
+  --rk-radius-lg: 14px;
+  --rk-radius-xl: 18px;
+
+  --rk-shadow-sm: 0 1px 2px rgba(17, 24, 20, 0.035);
+  --rk-shadow-md: 0 4px 20px rgba(17, 24, 20, 0.06);
+
+  --rk-transition-fast: 140ms ease;
+  --rk-transition-normal: 220ms ease;
+}

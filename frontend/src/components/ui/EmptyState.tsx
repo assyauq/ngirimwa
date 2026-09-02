@@ -11,11 +11,11 @@ type EmptyStateProps = {
 
 export default function EmptyState({ title, description, action, icon, minHeight = 220 }: EmptyStateProps) {
   return (
-    <Box minHeight={minHeight} display="flex" flexDirection="column" alignItems="center" justifyContent="center" textAlign="center" gap={1.5} px={3}>
+    <Box sx={{ minHeight, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 1.5, px: 3 }}>
       {icon && <Box color="text.secondary">{icon}</Box>}
       <Typography variant="h6">{title}</Typography>
-      {description && <Typography variant="body2" color="text.secondary" maxWidth={420}>{description}</Typography>}
-      {action && <Box mt={0.5}>{action}</Box>}
+      {description && <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>{description}</Typography>}
+      {action && <Box sx={{ mt: 0.5 }}>{action}</Box>}
     </Box>
   );
 }

@@ -1,0 +1,35 @@
+.rk-page-title {
+  margin: 0;
+  color: var(--rk-text);
+  font-size: clamp(1.75rem, 2.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.rk-section-title {
+  margin: 0;
+  color: var(--rk-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.rk-card-title {
+  margin: 0;
+  color: var(--rk-text);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.rk-body {
+  color: var(--rk-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.rk-muted {
+  color: var(--rk-text-muted);
+}

@@ -17,6 +17,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check SSH secret exists
+        run: |
+          if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then
+            echo "VPS_SSH_KEY IS EMPTY"
+            exit 1
+          fi
+
+          echo "VPS_SSH_KEY EXISTS"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -25,6 +34,5 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script_stop: true
-
           script: |
             /usr/local/bin/deploy-ruangkirim.sh

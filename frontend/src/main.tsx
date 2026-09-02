@@ -4,13 +4,16 @@
  */
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import './styles/tokens.css'
+import './styles/globals.css'
+import './styles/typography.css'
 import './index.css'
 import App from './App.tsx'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30_000,      // anggap data segar 30 detik (kurangi refetch)
+      staleTime: 30_000,
       retry: 1,
       refetchOnWindowFocus: false,
     },

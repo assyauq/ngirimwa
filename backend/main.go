@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"kirimwa/backend/config"
+	"kirimwa/backend/database"
+	"kirimwa/backend/handlers"
+	"kirimwa/backend/services"
 	"log"
 	"net/http"
 	"os"
@@ -9,10 +13,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"kirimwa/backend/config"
-	"kirimwa/backend/database"
-	"kirimwa/backend/handlers"
-	"kirimwa/backend/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -54,6 +54,11 @@ func main() {
 	handlers.StartLoginThrottleSweeper()
 
 	r := gin.Default()
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
+	})
 	maxRequestMB := config.EnvInt("MAX_REQUEST_MB", 64)
 	staticDir := config.Env("STATIC_DIR", "frontend/dist")
 	if _, err := os.Stat(staticDir); err == nil {

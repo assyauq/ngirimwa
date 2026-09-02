@@ -1,0 +1,48 @@
+name: Deploy Ruangkirim Dev
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+concurrency:
+  group: ruangkirim-dev-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy to dev
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.RUANGKIRIM_DEV_HOST }}
+          username: ${{ secrets.RUANGKIRIM_DEV_USER }}
+          key: ${{ secrets.RUANGKIRIM_DEV_SSH_KEY }}
+          port: ${{ secrets.RUANGKIRIM_DEV_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            cd /var/www/ruangkirim-staging
+
+            git fetch origin develop
+            git checkout develop
+            git reset --hard origin/develop
+
+            npm --prefix frontend ci
+            npm --prefix frontend run build
+
+            cd backend
+            go mod download
+            go build -o ../ruangkirim-staging-server .
+
+            sudo systemctl restart ruangkirim-staging.service
+            sudo systemctl is-active --quiet ruangkirim-staging.service
+
+            echo "Deployment completed successfully"

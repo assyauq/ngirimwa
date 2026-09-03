@@ -26,3 +26,8 @@ frontend/dist/
 Thumbs.db
 *.backup*
 *backup-*
+
+# WhatsApp runtime database
+wa-assistant.db
+wa-assistant.db-wal
+wa-assistant.db-shm

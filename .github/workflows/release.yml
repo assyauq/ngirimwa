@@ -35,7 +35,7 @@ jobs:
         run: go test ./...
 
       - name: Build backend
-        run: mkdir -p dist && go build -o dist/chatloop-server ./backend
+        run: mkdir -p dist && go build -o dist/ruangkirim-server ./backend
 
       - name: Build frontend
         run: npm --prefix frontend run build
@@ -46,16 +46,16 @@ jobs:
       - name: Upload source artifact
         uses: actions/upload-artifact@v4
         with:
-          name: chatloop-build
+          name: ruangkirim-build
           path: |
-            dist/chatloop-source.zip
-            dist/chatloop-server
+            dist/ruangkirim-source.zip
+            dist/ruangkirim-server
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/chatloop-source.zip
-            dist/chatloop-server
+            dist/ruangkirim-source.zip
+            dist/ruangkirim-server
           generate_release_notes: true

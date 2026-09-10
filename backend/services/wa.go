@@ -9,12 +9,14 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+	"kirimwa/backend/config"
 	"kirimwa/backend/database"
 	"kirimwa/backend/models"
 
@@ -256,6 +258,7 @@ var (
 	instances           = make(map[uint]*waInstance)
 	globalMu            sync.Mutex
 	legacyDBPath        = "./wa-assistant.db"
+	testSessionDir      = "" // hanya digunakan untuk unit testing terisolasi via SetSessionDirForTesting
 	onMessage           MessageHandler
 	onOwnMessage        OutgoingMessageHandler
 	onLinked            DeviceLinkedHandler
@@ -269,10 +272,104 @@ var (
 	waLogger            waLog.Logger = waLog.Noop // logger whatsmeow (default senyap; diaktifkan via WA_LOG_LEVEL)
 )
 
+// SetSessionDirForTesting menyetel direktori sesi sementara KHUSUS untuk unit testing terisolasi.
+// Tidak boleh digunakan sebagai mekanisme konfigurasi produksi utama.
+func SetSessionDirForTesting(dir string) {
+	globalMu.Lock()
+	defer globalMu.Unlock()
+	testSessionDir = strings.TrimSpace(dir)
+}
+
+// CheckSessionDirConfig memvalidasi kelayakan konfigurasi session directory.
+// Pada lingkungan production, WA_SESSION_DIR wajib diset dan tidak boleh kosong.
+func CheckSessionDirConfig() error {
+	globalMu.Lock()
+	tDir := testSessionDir
+	globalMu.Unlock()
+	if tDir != "" {
+		return nil
+	}
+	dir := strings.TrimSpace(config.Env("WA_SESSION_DIR", ""))
+	if dir != "" {
+		return nil
+	}
+	appEnv := strings.ToLower(strings.TrimSpace(config.Env("APP_ENV", "development")))
+	if appEnv == "production" {
+		return errors.New("WA_SESSION_DIR wajib diset di .env pada lingkungan production (contoh: /var/lib/ruangkirim/whatsapp)")
+	}
+	return nil
+}
+
+// ResolveSessionDir menentukan direktori penyimpanan sesi WhatsApp secara deterministik.
+// Aturan keselamatan:
+// 1. Jika testSessionDir diset (oleh unit test), gunakan testSessionDir.
+// 2. Jika WA_SESSION_DIR diset di konfigurasi/env, gunakan path tersebut (di-clean).
+// 3. Jika WA_SESSION_DIR tidak diset:
+//    - Jika APP_ENV == "production", fail fast (log.Fatalf) agar produksi tidak diam-diam menulis ke ./data.
+//    - Pada development / testing lokal, fallback aman ke "./data/whatsapp".
+func ResolveSessionDir() string {
+	globalMu.Lock()
+	tDir := testSessionDir
+	globalMu.Unlock()
+	if tDir != "" {
+		return filepath.Clean(tDir)
+	}
+
+	if err := CheckSessionDirConfig(); err != nil {
+		log.Fatalf("FATAL: %v", err)
+	}
+
+	dir := strings.TrimSpace(config.Env("WA_SESSION_DIR", ""))
+	if dir != "" {
+		return filepath.Clean(dir)
+	}
+
+	return filepath.Clean("./data/whatsapp")
+}
+
+// SessionFilePath mengembalikan path file SQLite database untuk agentID tertentu.
+// Menerapkan penamaan deterministik: wa-session-agent-{agentID}.db di dalam direktori sesi.
+// Tetap menjaga kompatibilitas sesi legacy untuk agent 1 dan penamaan historis jika ada.
+func SessionFilePath(agentID uint) string {
+	dir := ResolveSessionDir()
+	_ = os.MkdirAll(dir, 0o750)
+
+	target := filepath.Join(dir, fmt.Sprintf("wa-session-agent-%d.db", agentID))
+
+	// Kompatibilitas Agent 1: Jika wa-session-agent-1.db belum ada di direktori sesi:
+	if agentID == 1 {
+		// Periksa apakah wa-assistant.db ada di dalam dir sesi
+		legacyInDir := filepath.Join(dir, "wa-assistant.db")
+		if _, err := os.Stat(target); os.IsNotExist(err) {
+			if _, errLeg := os.Stat(legacyInDir); errLeg == nil {
+				return legacyInDir
+			}
+			// Atau jika file legacyDBPath lama ada dan dir adalah fallback dev lokal
+			if _, errOld := os.Stat(legacyDBPath); errOld == nil && dir == filepath.Clean("./data/whatsapp") {
+				return legacyDBPath
+			}
+		}
+	}
+
+	// Kompatibilitas historis: Jika file wa-session-agent-{agentID}.db belum ada,
+	// namun ada file ruangkirim-agent-{agentID}.db (misal backup historis Fase 1G.6), gunakan nama tersebut.
+	if _, err := os.Stat(target); os.IsNotExist(err) {
+		altFile := filepath.Join(dir, fmt.Sprintf("ruangkirim-agent-%d.db", agentID))
+		if _, errAlt := os.Stat(altFile); errAlt == nil {
+			return altFile
+		}
+	}
+
+	return target
+}
+
 func InitWA(dbPath string) {
 	if dbPath != "" {
 		legacyDBPath = dbPath
 	}
+	// Fail fast jika di production WA_SESSION_DIR belum diset
+	_ = ResolveSessionDir()
+
 	// Aktifkan log whatsmeow (disconnect/stream-error/reconnect) untuk diagnosa koneksi.
 	// WA_LOG_LEVEL: WARN (default), INFO untuk lebih detail, atau NONE/OFF untuk senyap.
 	if lvl := strings.ToUpper(strings.TrimSpace(os.Getenv("WA_LOG_LEVEL"))); lvl == "" || (lvl != "NONE" && lvl != "OFF") {
@@ -414,23 +511,20 @@ func RemoveWA(agentID uint) {
 	if ok {
 		_ = w.Logout() // putus client + lepas koneksi/goroutine
 	}
-	// Hapus file sesi SQLite per-agent. Agent 1 memakai file lama bersama — jangan dihapus.
-	if agentID != 1 {
-		base := fmt.Sprintf("data/wa-session-agent-%d.db", agentID)
+	// Hapus file sesi SQLite per-agent.
+	// Jika file sesi sama dengan legacyDBPath lama yang dipakai bersama, jangan hapus.
+	path := SessionFilePath(agentID)
+	if path != "" && path != legacyDBPath {
 		for _, suffix := range []string{"", "-wal", "-shm"} {
-			os.Remove(base + suffix)
+			_ = os.Remove(path + suffix)
 		}
 	}
 }
 
 // sessionDSN: tiap agent punya file sesi SQLite sendiri (di-key per-agent, bukan per-JID
-// yang mengandung ':'/'@'). Agent 1 memakai file lama agar sesi yang sudah login tidak hilang.
+// yang mengandung ':'/'@'). Menggunakan SessionFilePath deterministik.
 func sessionDSN(agentID uint) string {
-	path := legacyDBPath
-	if agentID != 1 {
-		os.MkdirAll("data", 0o755)
-		path = fmt.Sprintf("data/wa-session-agent-%d.db", agentID)
-	}
+	path := SessionFilePath(agentID)
 	return "file:" + path + "?_foreign_keys=on&_journal_mode=WAL&_busy_timeout=5000"
 }
 

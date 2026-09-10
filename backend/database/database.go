@@ -233,7 +233,7 @@ func normalizeSenderFields() {
 	seen := make(map[string]struct{})
 	for _, table := range []string{
 		"chat_histories", "inbox_read_states", "handoffs",
-		"conversation_memories", "ai_turns", "follow_ups",
+		"conversation_memories", "ai_turns",
 	} {
 		var values []string
 		DB.Table(table).Distinct("sender").Where("sender LIKE ?", "%@%").Pluck("sender", &values)
@@ -268,7 +268,6 @@ func normalizeSenderFields() {
 		"handoffs":              "sender",
 		"conversation_memories": "sender",
 		"ai_turns":              "sender",
-		"follow_ups":            "sender",
 		"contacts":              "number",
 	}
 	var total int64

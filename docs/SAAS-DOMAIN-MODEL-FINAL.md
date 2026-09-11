@@ -2,7 +2,7 @@
 **Project:** Ruangkirim
 **Repository:** `mrifatsyauqi/ruangkirim`
 **Document:** Final SaaS Domain Model
-**Phase:** 2B.1
+**Phase:** 2B.1.1 Refinement
 **Status:** APPROVED DESIGN SPECIFICATION (ZERO IMPLEMENTATION / READ-ONLY)
 **Date:** September 11, 2026
 
@@ -10,19 +10,20 @@
 
 ## 1. Executive Summary
 
-This document establishes the canonical SaaS domain model for Ruangkirim, evolving the platform from an internal single-tenant company deployment into a robust, multi-tenant subscription SaaS.
+This document establishes the canonical SaaS domain model for Ruangkirim, evolving the platform from an internal single-tenant company deployment into a structured multi-tenant subscription SaaS.
 
 The architecture is designed to fulfill strict commercial and operational requirements:
-1. **Multi-Tenancy:** True workspace isolation where each customer company operates within an independent Tenant boundary.
-2. **Data & Session Integrity:** Total preservation of existing production data (Tenant 1, User 1, Agent 3, 29,941 chat history records) and live WhatsApp sessions (`/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db`).
+1. **Multi-Tenancy:** Workspace isolation where each customer company operates within an independent Tenant boundary.
+2. **Data & Session Integrity:** Designed to preserve existing production data (Tenant 1, User 1, Agent 3, 29,941 chat history records) without intentional downtime. WhatsApp session files must not be relocated or modified (`/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db`).
 3. **SaaS Commercial Lifecycle:** Database-driven plans, entitlements, 30-day self-service trials, strict 1-sender trial caps, and usage tracking.
-4. **Security Boundaries:** Strict cryptographic and database separation between platform administration (Super Admin) and tenant administration (Tenant Owner/Admin/CS).
+4. **Security Boundaries:** Cryptographic and database separation between platform administration (Super Admin) and tenant administration (Tenant Owner/Admin/CS).
+5. **Operational Safety:** Staging-first migration, backup verification, and rollback procedures minimize operational risk.
 
 ---
 
 ## 2. Product SaaS Model
 
-Ruangkirim is a multi-tenant WhatsApp AI Assistant and CRM platform for Indonesian businesses.
+Ruangkirim is a multi-tenant WhatsApp AI Assistant and CRM platform for businesses in Indonesia.
 
 ### Commercial Tiering:
 - **Free Trial:** 30-day duration, strictly limited to 1 active WhatsApp sender, core Inbox, and baseline AI capabilities.
@@ -40,12 +41,12 @@ The `Tenant` entity represents a customer workspace, business account, and comme
 - `id` (bigint, unsigned, PK): Unique system identifier.
 - `name` (varchar(128), NOT NULL): Business / company name.
 - `slug` (varchar(64), NOT NULL, UNIQUE): URL-safe tenant identifier (e.g. `jt-batang`, `toko-berkah`).
-- `status` (varchar(24), NOT NULL, DEFAULT 'active'): Operational state.
-- `trial_ends_at` (datetime, NULL): Timestamp when the trial period concludes.
+- `status` (varchar(24), NOT NULL, DEFAULT 'active'): Workspace operational state (`trialing`, `active`, `past_due`, `suspended`, `cancelled`).
+- `trial_ends_at` (datetime, NULL): Cached convenience timestamp reflecting trial expiration from the active subscription.
 - `created_at` (datetime, NOT NULL)
 - `updated_at` (datetime, NOT NULL)
 
-### Tenant State Machine:
+### Tenant Operational State Machine:
 ```text
 [ Registration ]
        â”‚
@@ -62,9 +63,9 @@ The `Tenant` entity represents a customer workspace, business account, and comme
 
 - `trialing`: Workspace in active 30-day trial mode. Limited to 1 sender.
 - `active`: Workspace on an active paid subscription or grandfathered internal tier.
-- `past_due`: Subscription renewal failed; entering 3-day grace period.
-- `suspended`: Workspace blocked from sending outbound messages due to non-payment.
-- `cancelled`: Workspace explicitly terminated by owner or superadmin. Data retained in read-only mode.
+- `past_due`: Subscription renewal overdue; operating within grace period.
+- `suspended`: Workspace blocked from sending outbound messages due to non-payment or administrative lock.
+- `cancelled`: Workspace explicitly terminated. Data retained in read-only mode.
 
 ### Grandfathered Baseline:
 Existing production Tenant (`id = 1`) is assigned `slug = 'default'`, `status = 'active'`, and `trial_ends_at = NULL`. It is not subject to trial expiration.
@@ -75,20 +76,30 @@ Existing production Tenant (`id = 1`) is assigned `slug = 'default'`, `status = 
 
 The `User` entity represents human authentication identity across the platform.
 
-### Architectural Evolution:
-- **Current Limitation:** `users.tenant_id` ties a user to at most one tenant, and `users.username` has a global unique constraint preventing common usernames (e.g. `cs1`, `admin`) across tenants.
-- **Target Architecture:** Identity is anchored globally by `email` and `id`. Multi-tenant association is established via `tenant_members`.
-- **Phase 2B Backward Compatibility:** To prevent breaking existing logins, `users.username` remains unique globally during Phase 2B, but application authentication decouples tenant context from `users.tenant_id`.
+### Staged Email Compatibility Strategy:
+To guarantee that existing production accounts continue functioning without disruption, user identity migration follows a strict three-phase plan:
+
+1. **Phase A (Preservation & Backward Compatibility â€” Current Phase 2B):**
+   - Preserve existing `users` table schema and authentication behavior.
+   - `users.username` remains the primary unique login identifier (`username VARCHAR(64) UNIQUE NOT NULL`).
+   - `users.email` remains nullable and non-unique at the database level (`email VARCHAR(255) NULL`).
+   - Multi-tenant workspace association is decoupled from `users.tenant_id` and moved to `tenant_members`.
+   - Existing single-tenant accounts log in with existing usernames without breakage.
+2. **Phase B (Data Normalization & Audit):**
+   - Background audit of all user records to ensure every active user has an authentic, verified email address.
+   - Resolve any empty, duplicate, or placeholder emails before attempting schema constraints.
+3. **Phase C (Constraint Enforcement â€” Future Release):**
+   - Apply `NOT NULL` and `UNIQUE` constraints to `users.email` only after Phase B validation confirms zero data conflicts.
 
 ### Entity Attributes:
 - `id` (bigint, unsigned, PK): System user ID.
-- `email` (varchar(255), NOT NULL, UNIQUE): Canonical identity and communications anchor.
-- `username` (varchar(64), NOT NULL, UNIQUE): Login username.
+- `username` (varchar(64), NOT NULL, UNIQUE): Login identifier.
+- `email` (varchar(255), NULL): User email address (staged compatibility).
 - `password` (varchar(255), NOT NULL): Bcrypt password hash.
 - `name` (varchar(128), NOT NULL): Display name.
 - `phone` (varchar(32), NULL): Contact phone number.
 - `is_super_admin` (boolean, NOT NULL, DEFAULT false): Platform-level operator flag.
-- `active` (boolean, NOT NULL, DEFAULT true): Account enable/disable switch.
+- `active` (boolean, NOT NULL, DEFAULT true): Account active status.
 - `email_verified` (boolean, NOT NULL, DEFAULT false)
 - `created_at` / `updated_at` (datetime)
 
@@ -96,7 +107,7 @@ The `User` entity represents human authentication identity across the platform.
 
 ## 5. Tenant Membership
 
-The `TenantMember` entity represents the relationship between a `User` and a `Tenant`, defining the user's role and permissions within that specific workspace.
+The `TenantMember` entity links a `User` to a `Tenant`, defining the user's role and operational scope within that specific workspace.
 
 ### Entity Attributes:
 - `id` (bigint, unsigned, PK)
@@ -107,7 +118,7 @@ The `TenantMember` entity represents the relationship between a `User` and a `Te
 - `created_at` / `updated_at` (datetime)
 
 ### Uniqueness:
-- `UNIQUE KEY uk_tenant_user (tenant_id, user_id)`: A user can belong to a given tenant at most once.
+- `UNIQUE KEY uk_tenant_members_tenant_user (tenant_id, user_id)`: A user can belong to a given tenant at most once.
 
 ### Role Hierarchy:
 1. `owner`: Full control over workspace, billing, plan changes, team management, and agent deletion. Cannot be deleted without transferring ownership.
@@ -118,14 +129,12 @@ The `TenantMember` entity represents the relationship between a `User` and a `Te
 
 ## 6. Authentication & Tenant Context
 
-To avoid multi-tenant data leakage while supporting users who belong to multiple workspaces, the system uses a **Cryptographically Bound Active Tenant Context**.
+To prevent multi-tenant data leakage while supporting users who belong to multiple workspaces, the system uses a **Cryptographically Bound Active Tenant Context**.
 
 ### Authentication Flow:
-1. **User Login (`POST /api/login`):** User submits credentials (`username`/`email` + `password`).
-2. **Tenant Membership Discovery:** Backend queries `tenant_members` for all active memberships associated with `user.ID`.
+1. **User Login (`POST /api/login`):** User submits credentials (`username` + `password`).
+2. **Tenant Membership Discovery:** Backend queries `tenant_members` for active memberships associated with `user.ID`.
 3. **Token Minting:**
-   - If user has 1 tenant, that tenant is selected automatically.
-   - If user has multiple tenants, the last accessed tenant or specified tenant is selected.
    - JWT claims include:
      ```json
      {
@@ -149,7 +158,7 @@ To avoid multi-tenant data leakage while supporting users who belong to multiple
    - Backend verifies membership in `target_tenant_id`.
    - Issues fresh JWT minted with the new `active_tenant_id`.
 
-**Rule:** The client CANNOT manipulate `tenant_id` via HTTP headers or body; it is strictly derived from the verified JWT and live database membership check.
+**Rule:** The client cannot manipulate `tenant_id` via HTTP headers or body; it is strictly derived from the verified JWT and live database membership check.
 
 ---
 
@@ -228,38 +237,50 @@ Defines the explicit permissions and numeric quotas granted by each plan.
 
 Represents a tenant's historical and currently active commercial entitlement period.
 
-### Entity Attributes:
-- `id` (bigint, unsigned, PK)
-- `tenant_id` (bigint, unsigned, NOT NULL, FK -> `tenants.id`)
-- `plan_id` (bigint, unsigned, NOT NULL, FK -> `plans.id`)
-- `status` (varchar(24), NOT NULL): `trialing`, `active`, `past_due`, `cancelled`, `expired`.
-- `current_period_start` (datetime, NOT NULL)
-- `current_period_end` (datetime, NOT NULL)
-- `trial_ends_at` (datetime, NULL)
-- `cancel_at_period_end` (boolean, NOT NULL, DEFAULT false)
-- `payment_provider` (varchar(32), NULL): `manual`, `tripay`, `midtrans`, `xendit`.
-- `external_reference` (varchar(128), NULL): External payment/subscription identifier.
-- `created_at` / `updated_at` (datetime)
+### Source of Truth Architecture:
+- **`subscriptions` = Commercial Source of Truth:** Authoritative ledger of commercial contracts, plan tiers, billing cycles, and current validity.
+- **`tenants.status` = Operational Workspace State:** Operational availability flag (`active`, `suspended`, `cancelled`).
+- **`tenants.trial_ends_at` = Read Cache:** Cached copy of `subscriptions.trial_ends_at` for high-speed indexing without joins.
+- **Consistency Enforcement:** `SubscriptionService` is the sole service authorized to transition subscription states. Any state update synchronizes `subscriptions` and `tenants` within a single database transaction.
 
-### Active Subscription Invariant:
-A tenant can have at most **one** subscription in `trialing` or `active` state at any given moment.
+### Current-Record Database Enforcement (`is_current`):
+To enforce that a tenant has **exactly one current subscription** at the database level:
+- Column: `subscriptions.is_current TINYINT(1) NULL DEFAULT NULL`
+- Constraint: `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)`
+- **MySQL Invariant Mechanism:** In MySQL InnoDB, `NULL` values are treated as distinct in unique indexes. Setting `is_current = 1` for the current subscription and `is_current = NULL` for all historical/expired/cancelled subscriptions guarantees that the database engine rejects any attempt to have more than one current subscription per tenant.
+
+### Transactional Transition Example:
+```sql
+START TRANSACTION;
+-- Demote existing active subscription to historical
+UPDATE subscriptions
+SET is_current = NULL, status = 'expired', updated_at = NOW()
+WHERE tenant_id = ? AND is_current = 1;
+
+-- Insert new current subscription
+INSERT INTO subscriptions (
+    tenant_id, plan_id, status, is_current,
+    current_period_start, current_period_end, trial_ends_at,
+    created_at, updated_at
+) VALUES (?, ?, 'active', 1, NOW(), NOW() + INTERVAL 30 DAY, NULL, NOW(), NOW());
+COMMIT;
+```
 
 ---
 
 ## 12. Trial
 
-### Specifications:
-1. **Creation:** Upon self-service registration, a Tenant is created with `status = 'trialing'` and `trial_ends_at = NOW() + 30 days`.
-2. **Initial Subscription:** A subscription is created linking Tenant to the `trial` plan (`status = 'trialing'`).
-3. **Expiration:** When `NOW() > trial_ends_at`:
-   - Subscription transitions to `expired`.
-   - Tenant transitions to `expired`.
-4. **Behavior on Expiration:**
-   - **Login & Dashboard:** Remains accessible (READ-ONLY).
-   - **Existing Data:** 100% preserved; no customer, chat, or knowledge data is deleted.
-   - **WhatsApp Session:** Remains linked but background message processing & AI replies are paused.
-   - **Outbound Sending:** Blocked (UI displays upgrade paywall modal).
-   - **New Agent Creation:** Blocked.
+### Trial State Transitions:
+1. **Provisioning:** On registration, Tenant is created with `status = 'trialing'`, `trial_ends_at = NOW() + 30 days`.
+2. **Initial Subscription:** A subscription row is inserted with `plan_id = trial_plan_id`, `status = 'trialing'`, `is_current = 1`.
+3. **Expiration Handling (Phase 2B Pragmatic Model):**
+   - **Request-Time Entitlement Evaluation:** When an authenticated request arrives, `EntitlementService` checks if `status == 'trialing' AND NOW() > trial_ends_at`. If expired, it triggers an in-transaction status update to `expired`.
+   - **Scheduled Reconciliation Sweeper:** A periodic background job (`ReconcileSubscriptions`) checks for expired trials daily and flags them without waiting for user traffic.
+   - **Behavior on Expiration:**
+     - Dashboard remains accessible in read-only mode.
+     - Customer data, chat histories, and knowledge items are preserved.
+     - Outbound message sending and AI replies are paused.
+     - Creation of new agents is blocked.
 
 ---
 
@@ -287,13 +308,13 @@ Lightweight, predictable quota tracking per billing period without heavyweight e
 - `id` (bigint, unsigned, PK)
 - `tenant_id` (bigint, unsigned, NOT NULL, FK -> `tenants.id`)
 - `metric_key` (varchar(64), NOT NULL): e.g. `monthly_messages`, `monthly_ai_turns`.
-- `period_start` (date, NOT NULL): Start of billing cycle (e.g. `2026-09-01`).
-- `period_end` (date, NOT NULL): End of billing cycle (e.g. `2026-09-30`).
-- `used_value` (int, NOT NULL, DEFAULT 0): Current count.
+- `period_start` (date, NOT NULL): Start date of billing cycle (e.g. `2026-09-01`).
+- `period_end` (date, NOT NULL): End date of billing cycle (e.g. `2026-09-30`).
+- `used_value` (int unsigned, NOT NULL, DEFAULT 0): Accumulated count.
 - `updated_at` (datetime, NOT NULL)
 
 ### Uniqueness:
-- `UNIQUE KEY uk_tenant_metric_period (tenant_id, metric_key, period_start, period_end)`
+- `UNIQUE KEY uk_usage_counters_tenant_metric_period (tenant_id, metric_key, period_start, period_end)`
 
 ---
 
@@ -327,18 +348,16 @@ type EntitlementService interface {
 
 ### Architecture Decision:
 - **Decision:** Dual-Scope Knowledge Base (`Tenant` primary scope, optional `Agent` override).
-- **Rationale:** Most businesses have 1 canonical FAQ, catalog, and company profile shared across all CS agents. However, specific agents may require customized prompts or specialized knowledge.
-- **Model:** Table `knowledges` receives `tenant_id` (NOT NULL). `agent_id` becomes optional/nullable.
-  - If `agent_id IS NULL`: Knowledge is tenant-global (accessible by all agents of that tenant).
-  - If `agent_id IS NOT NULL`: Knowledge is specific to that particular agent.
+- **Rationale:** Businesses typically share a central product catalog and FAQ across all customer service lines, with optional per-agent customizations.
+- **Model:** Table `knowledges` receives `tenant_id` (NOT NULL). `agent_id` becomes optional (`NULL` for tenant-wide shared knowledge).
 
 ---
 
 ## 17. Contact Ownership
 
 ### Architecture Decision:
-- **Decision:** Retain Agent-Scoped Contacts for Phase 2B, with additive `tenant_id` index.
-- **Rationale:** Rewriting the contact/CRM system into a shared multi-agent address book requires complex contact-merging logic, deduplication, and thread ownership transfer. For Phase 2B isolation, scoping via `agent_id` (where agent belongs to tenant) provides complete security with zero regression risk.
+- **Decision:** Retain Agent-Scoped Contacts for Phase 2B, with additive `tenant_id` indexing.
+- **Rationale:** Retaining agent scoping avoids complex multi-agent contact merging and thread deduplication in Phase 2B, while `tenant_id` enables tenant-level contact volume checks.
 
 ---
 
@@ -358,15 +377,15 @@ type EntitlementService interface {
 - `APIKeyMiddleware` verifies:
   1. `agent.APIKey` matches.
   2. Agent's owning tenant has an active subscription allowing `api_access`.
-  3. Sets `tenant_id` in context to ensure all downstream operations respect tenant boundaries.
+  3. Sets `tenant_id` in context to ensure downstream operations respect tenant boundaries.
 
 ---
 
 ## 20. Settings
 
 - **Platform Settings (`app_settings`):** Global AI provider keys (OpenRouter, Gemini) and system presets managed exclusively by Super Admin.
-- **Tenant Settings:** Future table for business profile, branding, and billing notifications.
-- **Agent Settings (`agents`):** Tone, greeting messages, business hours, and persona prompts remain on the `Agent` entity.
+- **Tenant Settings:** Reserved for business profile, branding, and notification configurations.
+- **Agent Settings (`agents`):** Persona, tone, greeting message, and business hours remain on `Agent`.
 - **Legacy `settings` table:** Obsolete; marked for formal deprecation.
 
 ---
@@ -390,13 +409,13 @@ Audit trail for administrative, security, and subscription events.
 
 ## 22. Billing Readiness
 
-The subscription model is abstracted from third-party payment gateways (Tripay, Midtrans, Stripe). Future payment integration requires only a webhook handler mapping gateway events to subscription state transitions (`trialing -> active`, `active -> past_due`).
+Phase 2B focuses strictly on the internal subscription and entitlement state machine. Payment gateway integrations (Tripay, Midtrans, Stripe) are decoupled and deferred to future billing phases.
 
 ---
 
 ## 23. Security Invariants
 
-1. **Isolation Invariant:** A request authenticated under `tenant_id = X` shall **never** observe, mutate, or delete records belonging to `tenant_id = Y`.
+1. **Isolation Invariant:** A request authenticated under `tenant_id = X` shall never observe, mutate, or delete records belonging to `tenant_id = Y`.
 2. **Path Traversal Invariant:** When accessing a sub-resource via `/agents/:id/resource/:rid`, the backend must assert:
    `agent.tenant_id == ctx.tenant_id AND resource.agent_id == agent.id`.
 3. **Session Invariant:** WhatsApp engine instances `services.WA(agentID)` are partitioned by global `agentID`. No cross-tenant session lookup is possible.
@@ -430,8 +449,8 @@ erDiagram
 
     USERS {
         bigint id PK
-        varchar email UK
         varchar username UK
+        varchar email
         varchar password
         varchar name
         boolean is_super_admin
@@ -470,6 +489,7 @@ erDiagram
         bigint tenant_id FK
         bigint plan_id FK
         varchar status
+        tinyint is_current UK
         datetime current_period_start
         datetime current_period_end
         datetime trial_ends_at
@@ -556,7 +576,7 @@ erDiagram
 - **Decision:** Derive active `tenant_id` strictly from JWT claims verified against live database membership; do not trust client query parameters or request body for tenant identification.
 - **Reason:** Guarantees zero cross-tenant spoofing.
 - **Alternatives Considered:** Passing `X-Tenant-ID` header. Rejected as unsafe without per-request DB validation.
-- **Impact:** Eliminates an entire class of authorization bypass vulnerabilities.
+- **Impact:** Eliminates authorization bypass vulnerabilities.
 
 ### ADR-03: Plan & Subscription Ownership
 - **Decision:** Subscriptions are owned by Tenants, not individual Users.
@@ -564,7 +584,7 @@ erDiagram
 - **Impact:** If the owner leaves or changes, the workspace and senders remain uninterrupted.
 
 ### ADR-04: Trial Model Architecture
-- **Decision:** 30-day trial recorded in `tenants.trial_ends_at` and backed by a `trialing` subscription row.
+- **Decision:** 30-day trial recorded in `subscriptions.trial_ends_at` with `is_current = 1`, and cached on `tenants.trial_ends_at`.
 - **Reason:** Dual-recording allows fast workspace status checks on `tenants` while maintaining strict subscription audit trails.
 - **Impact:** Clean trial enforcement and straightforward upgrade path.
 
@@ -581,7 +601,7 @@ erDiagram
 ### ADR-07: Indirect Agent Ownership for Large Tables
 - **Decision:** Retain indirect tenant scoping for `chat_histories` (29,941 rows) and `inbox_read_states` (5,163 rows) via `agent_id -> agents.tenant_id`.
 - **Reason:** Modifying 30,000+ rows during startup or synchronous migration risks severe table locks, timeouts, and production downtime. Handlers already enforce `resolveAgent()`.
-- **Impact:** 100% production safety and zero migration downtime.
+- **Impact:** High operational safety and avoidance of intentional downtime.
 
 ### ADR-08: Knowledge Base Scope
 - **Decision:** Transition `knowledges` to direct Tenant ownership with an optional `agent_id` override.
@@ -595,18 +615,18 @@ erDiagram
 
 ### ADR-10: AutoMigrate Governance
 - **Decision:** Govern GORM `AutoMigrate` so production schema changes are strictly controlled, additive, and executed only through pre-tested scripts.
-- **Reason:** Uncontrolled AutoMigrate on startup is a P0 crash hazard for production.
+- **Reason:** Uncontrolled AutoMigrate on startup is a crash hazard for production.
 - **Impact:** Predictable, reversible deployments.
 
 ### ADR-11: Existing Tenant 1 Migration
 - **Decision:** Grandfather Tenant 1 as active internal company tenant (`slug = 'default'`, `status = 'active'`).
 - **Reason:** Preserves existing live business operations without forcing artificial trial or payment states.
-- **Impact:** Seamless continuity for live Agent 3 WhatsApp operations.
+- **Impact:** Continuity for live Agent 3 WhatsApp operations.
 
 ### ADR-12: WhatsApp Session Preservation
-- **Decision:** Never alter, relocate, or re-namespace WhatsApp SQLite session files on disk (`wa-session-agent-{id}.db`).
+- **Decision:** WhatsApp session files must not be relocated or modified on disk (`wa-session-agent-{id}.db`).
 - **Reason:** Preserves active WhatsApp authentication keys and prevents user re-login/QR requirements.
-- **Impact:** 100% session persistence across the migration.
+- **Impact:** Session persistence across the migration.
 
 ---
 
@@ -635,4 +655,4 @@ erDiagram
 ## 29. Final Domain Model Verdict
 
 **CANONICAL DOMAIN MODEL: APPROVED FOR SPECIFICATION**
-The proposed architecture fully satisfies all multi-tenant SaaS requirements, eliminates historical documentation contradictions, strictly protects live production operations, and provides a clear, safe path for Phase 2B database migration.
+The refined architecture satisfies all multi-tenant SaaS requirements, guarantees backward compatibility for existing user logins, establishes strong database-level subscription constraints, and provides a safe path for Phase 2B database migration.

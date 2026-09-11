@@ -2,7 +2,7 @@
 **Project:** Ruangkirim
 **Repository:** `mrifatsyauqi/ruangkirim`
 **Document:** Final SaaS Database & Migration Specification
-**Phase:** 2B.1
+**Phase:** 2B.1.1 Refinement
 **Status:** APPROVED DESIGN SPECIFICATION (ZERO IMPLEMENTATION / READ-ONLY)
 **Date:** September 11, 2026
 
@@ -94,7 +94,7 @@ Phase 2B introduces 6 new core SaaS tables to manage multi-tenancy, memberships,
 ---
 
 ### 4. `subscriptions`
-**Purpose:** Records tenant subscription contracts, billing periods, and lifecycle states.
+**Purpose:** Authoritative commercial ledger recording subscription contracts, current state, and billing periods.
 
 | Column | Type | Nullable | Default | Constraints | Description |
 |---|---|---|---|---|---|
@@ -102,6 +102,7 @@ Phase 2B introduces 6 new core SaaS tables to manage multi-tenancy, memberships,
 | `tenant_id` | bigint unsigned | NO | None | FK -> `tenants(id)` ON DELETE RESTRICT | Subscribed workspace |
 | `plan_id` | bigint unsigned | NO | None | FK -> `plans(id)` ON DELETE RESTRICT | Active plan tier |
 | `status` | varchar(24) | NO | 'trialing' | None | `trialing`, `active`, `past_due`, `cancelled`, `expired` |
+| `is_current` | tinyint(1) | YES | NULL | None | Flag for current subscription (`1` or `NULL`) |
 | `current_period_start`| datetime(3) | NO | None | None | Billing cycle start |
 | `current_period_end` | datetime(3) | NO | None | None | Billing cycle expiration |
 | `trial_ends_at` | datetime(3) | YES | NULL | None | Specific trial end timestamp |
@@ -112,6 +113,7 @@ Phase 2B introduces 6 new core SaaS tables to manage multi-tenancy, memberships,
 | `updated_at` | datetime(3) | YES | CURRENT_TIMESTAMP(3) | None | Timestamp |
 
 **Indexes & Constraints:**
+- `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)`: Guarantees at most ONE current subscription per tenant at the MySQL engine level (since MySQL allows multiple `NULL` values in unique indexes).
 - `KEY idx_subscriptions_tenant_status (tenant_id, status)`
 - `KEY idx_subscriptions_period_end (current_period_end)`
 
@@ -160,24 +162,32 @@ Phase 2B introduces 6 new core SaaS tables to manage multi-tenancy, memberships,
 
 ## 3. Existing Table Changes
 
-To maintain 100% production uptime, all alterations to existing tables are strictly **additive**:
+All changes to existing tables are strictly **additive**:
 
 ### 1. Table `tenants`
 - Add Column: `slug` (`varchar(64) NULL`) -> Backfilled to `'default'` for `id=1` -> Set to `NOT NULL` with `UNIQUE KEY uk_tenants_slug (slug)`.
-- Add Column: `status` (`varchar(24) NOT NULL DEFAULT 'active'`) -> Existing rows initialized to `'active'`.
-- Add Column: `trial_ends_at` (`datetime(3) NULL`) -> Initialized to `NULL` for existing `id=1`.
+- Add Column: `status` (`varchar(24) NOT NULL DEFAULT 'active'`) -> Operational state (`trialing`, `active`, `past_due`, `suspended`, `cancelled`).
+- Add Column: `trial_ends_at` (`datetime(3) NULL`) -> Read-cache field reflecting `subscriptions.trial_ends_at`. Initialized to `NULL` for existing `id=1`.
 - Add Index: `KEY idx_tenants_status (status)`.
 
-### 2. Table `agents`
-- Maintain existing `tenant_id` (`bigint unsigned NOT NULL`).
-- Add FK Constraint (optional/safe): `fk_agents_tenant`: `FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE RESTRICT`.
+### 2. Table `users` (Staged Email Strategy)
+- `users.username` remains `VARCHAR(64) UNIQUE NOT NULL` for backward-compatible authentication.
+- `users.email` remains `VARCHAR(255) NULL` during Phase 2B.
+- Staged execution:
+  - **Phase A (Current):** Preserve existing users and authentication compatibility.
+  - **Phase B:** Backfill and normalize missing/placeholder emails where required.
+  - **Phase C (Future):** Apply `NOT NULL` and `UNIQUE` constraints only after Phase B validation confirms zero duplicates and zero nulls.
 
-### 3. Table `knowledges`
+### 3. Table `agents`
+- Maintain existing `tenant_id` (`bigint unsigned NOT NULL`).
+- Add FK Constraint after backfill: `fk_agents_tenant`: `FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE RESTRICT`.
+
+### 4. Table `knowledges`
 - Add Column: `tenant_id` (`bigint unsigned NULL`) -> Backfilled via `agents.tenant_id` -> Set to `NOT NULL`.
 - Make `agent_id` nullable (`bigint unsigned NULL DEFAULT NULL`) to support tenant-wide knowledge bases.
 - Add Index: `KEY idx_knowledges_tenant (tenant_id)`.
 
-### 4. Table `contacts`
+### 5. Table `contacts`
 - Add Column: `tenant_id` (`bigint unsigned NULL`) -> Backfilled via `agents.tenant_id`.
 - Add Index: `KEY idx_contacts_tenant_number (tenant_id, number)`.
 
@@ -237,9 +247,9 @@ To maintain 100% production uptime, all alterations to existing tables are stric
 
 ## 5. Foreign Key Strategy
 
-To maintain high throughput on WhatsApp message arrival and prevent cascading locks, foreign keys are applied selectively:
+To maintain high throughput on WhatsApp message arrival and avoid cascading row locks:
 
-1. **New SaaS Tables:** Full foreign key constraints are applied (`ON DELETE RESTRICT` for subscriptions to prevent accidental deletion of paying tenants, `ON DELETE CASCADE` for plan features and members).
+1. **New SaaS Tables:** Full foreign key constraints are applied (`ON DELETE RESTRICT` for subscriptions, `ON DELETE CASCADE` for plan features and members).
 2. **Existing Tables:** Foreign keys are NOT added retroactively to legacy high-volume tables (`chat_histories`, `inbox_read_states`) to prevent replication lag and write lock contention.
 3. **Agent Constraint:** `FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE RESTRICT` will be added to `agents` after backfill verification.
 
@@ -247,13 +257,15 @@ To maintain high throughput on WhatsApp message arrival and prevent cascading lo
 
 ## 6. Unique Constraint Strategy
 
-To ensure multi-tenant safety:
+To guarantee multi-tenant safety and commercial integrity:
 - `tenants.slug`: `UNIQUE KEY uk_tenants_slug (slug)`
 - `tenant_members`: `UNIQUE KEY uk_tenant_members_tenant_user (tenant_id, user_id)`
 - `plans.code`: `UNIQUE KEY uk_plans_code (code)`
 - `plan_features`: `UNIQUE KEY uk_plan_features_plan_key (plan_id, feature_key)`
+- `subscriptions`: `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)`
 - `usage_counters`: `UNIQUE KEY uk_usage_counters (tenant_id, metric_key, period_start, period_end)`
-- `users.email`: `UNIQUE KEY uk_users_email (email)`
+- `users.username`: `UNIQUE KEY uk_users_username (username)` (retained for backward compatibility)
+- `users.email`: Constraint deferred to Phase C.
 
 ---
 
@@ -263,6 +275,7 @@ Indexes designed for multi-tenant query acceleration:
 - `agents(tenant_id, id)`
 - `knowledges(tenant_id, agent_id)`
 - `contacts(tenant_id, number)`
+- `subscriptions(tenant_id, is_current)`
 - `subscriptions(tenant_id, status)`
 - `audit_logs(tenant_id, created_at)`
 - `chat_histories(agent_id, created_at)` (Preserves high-speed cursor pagination without requiring `tenant_id`).
@@ -273,29 +286,45 @@ Indexes designed for multi-tenant query acceleration:
 
 When a new tenant signs up:
 1. `INSERT INTO tenants (name, slug, status, trial_ends_at) VALUES (?, ?, 'trialing', NOW() + INTERVAL 30 DAY)`
-2. `INSERT INTO subscriptions (tenant_id, plan_id, status, current_period_start, current_period_end, trial_ends_at) VALUES (tenant_id, trial_plan_id, 'trialing', NOW(), NOW() + INTERVAL 30 DAY, NOW() + INTERVAL 30 DAY)`
-3. Plan feature `max_active_agents` = 1 is linked via the `trial` plan.
+2. `INSERT INTO subscriptions (tenant_id, plan_id, status, is_current, current_period_start, current_period_end, trial_ends_at) VALUES (tenant_id, trial_plan_id, 'trialing', 1, NOW(), NOW() + INTERVAL 30 DAY, NOW() + INTERVAL 30 DAY)`
+3. Plan feature `max_active_agents = 1` is linked via the `trial` plan.
 
 ---
 
 ## 9. Subscription Data Model
 
-Standard subscription lifecycle queries:
-- **Get Active Subscription:**
-  ```sql
-  SELECT s.*, p.code as plan_code, p.name as plan_name
-  FROM subscriptions s
-  JOIN plans p ON s.plan_id = p.id
-  WHERE s.tenant_id = ?
-    AND s.status IN ('trialing', 'active', 'past_due')
-  ORDER BY s.id DESC LIMIT 1;
-  ```
+Authoritative query for active subscription:
+```sql
+SELECT s.*, p.code as plan_code, p.name as plan_name
+FROM subscriptions s
+JOIN plans p ON s.plan_id = p.id
+WHERE s.tenant_id = ?
+  AND s.is_current = 1
+LIMIT 1;
+```
+
+Transactional transition to new plan:
+```sql
+START TRANSACTION;
+-- Demote previous subscription
+UPDATE subscriptions
+SET is_current = NULL, status = 'expired', updated_at = NOW()
+WHERE tenant_id = ? AND is_current = 1;
+
+-- Insert new subscription with is_current = 1
+INSERT INTO subscriptions (
+    tenant_id, plan_id, status, is_current,
+    current_period_start, current_period_end, trial_ends_at,
+    created_at, updated_at
+) VALUES (?, ?, 'active', 1, NOW(), NOW() + INTERVAL 30 DAY, NULL, NOW(), NOW());
+COMMIT;
+```
 
 ---
 
 ## 10. Usage Data Model
 
-Quota increment query (atomic upsert):
+Atomic quota consumption query:
 ```sql
 INSERT INTO usage_counters (tenant_id, metric_key, period_start, period_end, used_value, updated_at)
 VALUES (?, ?, ?, ?, 1, NOW())
@@ -317,11 +346,11 @@ For existing production data:
    WHERE id = 1;
    ```
 2. **Step 2: Seed Plans**
-   Insert standard plans (`trial`, `starter`, `pro`, `business`) and assign features.
+   Insert standard plans (`trial`, `starter`, `pro`, `business`) and assign feature records.
 3. **Step 3: Tenant 1 Subscription**
    ```sql
-   INSERT INTO subscriptions (tenant_id, plan_id, status, current_period_start, current_period_end, trial_ends_at)
-   SELECT 1, id, 'active', NOW(), NOW() + INTERVAL 10 YEAR, NULL
+   INSERT INTO subscriptions (tenant_id, plan_id, status, is_current, current_period_start, current_period_end, trial_ends_at)
+   SELECT 1, id, 'active', 1, NOW(), NOW() + INTERVAL 10 YEAR, NULL
    FROM plans WHERE code = 'business' LIMIT 1;
    ```
 4. **Step 4: User 1 Membership**
@@ -357,7 +386,7 @@ Tenant 1 (`Default`) is the live company workspace operating WhatsApp Agent 3 (`
 Table `chat_histories` contains **29,941 records**.
 - **Constraint:** Direct `ALTER TABLE chat_histories ADD COLUMN tenant_id` in production carries lock-contention risks.
 - **Decision:** Do NOT add `tenant_id` to `chat_histories` in Phase 2B.
-- **Security Proof:** Handlers always access chat histories via `resolveAgent(c)`:
+- **Security Assessment:** Handlers always access chat histories via `resolveAgent(c)`:
   1. `agent_id` is validated to belong to caller's `tenant_id`.
   2. Query is executed: `SELECT * FROM chat_histories WHERE agent_id = ? AND sender = ?`.
   3. No route permits querying `chat_histories` across arbitrary IDs without agent validation.
@@ -367,7 +396,7 @@ Table `chat_histories` contains **29,941 records**.
 ## 14. AutoMigrate Governance
 
 ### Final Policy:
-1. **Production Boot Safety:** GORM `AutoMigrate` must NOT execute unmanaged DDL on production startup.
+1. **Production Boot Safety:** GORM `AutoMigrate` must not execute unmanaged DDL on production startup.
 2. **Implementation:** Introduce environment flag `AUTO_MIGRATE=false` in production.
 3. **Execution Model:** Schema changes in production must be applied via explicit, idempotent SQL migration scripts executed before binary deployment.
 4. **Staging Verification:** All SQL scripts must be executed and verified on Staging (`ruangkirim_staging`) prior to production execution.
@@ -376,19 +405,43 @@ Table `chat_histories` contains **29,941 records**.
 
 ## 15. Migration Dependency Order
 
-The required sequential execution order for Phase 2B deployment:
+The migration sequence follows an exact 17-step operational process designed to minimize operational risk:
 
 ```text
-1. Backup Database (mysqldump)
-2. Execute DDL: Create new SaaS tables (plans, plan_features, tenant_members, subscriptions, usage_counters, audit_logs)
-3. Execute DDL: Alter tenants (add slug, status, trial_ends_at)
-4. Execute DDL: Alter knowledges and contacts (add tenant_id)
-5. Execute DML: Seed canonical plans and feature limits
-6. Execute DML: Backfill Tenant 1, User 1 membership, and grandfathered subscription
-7. Execute DML: Backfill knowledges and contacts tenant_id
-8. Validate Data Integrity Queries (zero orphaned records)
-9. Deploy Updated Server Binary (with EntitlementService and AutoMigrate disabled)
-10. Verify Production Health & WhatsApp Agent 3 connectivity
+01. AutoMigrate governance/preflight
+    Rationale: Ensures application cannot attempt conflicting DDL during deployment.
+02. Schema preflight
+    Rationale: Verifies table counts, active connections, and engine status before touching schema.
+03. Backup + backup verification
+    Rationale: Creates a cold mysqldump snapshot and verifies file integrity and size.
+04. Create new SaaS tables
+    Rationale: Creates non-blocking empty tables (plans, plan_features, tenant_members, subscriptions, usage_counters, audit_logs).
+05. Add additive columns
+    Rationale: Adds nullable columns (slug, status, trial_ends_at to tenants; tenant_id to knowledges and contacts).
+06. Backfill data
+    Rationale: Populates tenant_id on knowledges/contacts and initializes Tenant 1 slug/status.
+07. Add constraints/indexes after validation
+    Rationale: Applies UNIQUE and NOT NULL constraints only after data backfill is verified clean.
+08. Seed plans/features
+    Rationale: Populates commercial plan catalog and feature limits.
+09. Create Tenant 1 grandfathered subscription
+    Rationale: Attaches active permanent subscription to Tenant 1 with is_current = 1.
+10. Create Tenant 1 membership
+    Rationale: Links User 1 (superadmin) as owner in tenant_members.
+11. Validate data integrity
+    Rationale: Executes verification queries ensuring zero orphan records and correct table counts.
+12. Application compatibility testing
+    Rationale: Runs local backend test suite against migrated database schema.
+13. Staging migration
+    Rationale: Executes steps 01-11 on dev.ruangkirim.web.id staging environment.
+14. Staging SaaS isolation tests
+    Rationale: Validates multi-tenant isolation, 1-sender limit, and trial expiry on staging.
+15. Production approval
+    Rationale: Requires explicit formal user authorization before live deployment.
+16. Production migration
+    Rationale: Executes steps 01-11 on production database during off-peak window.
+17. Production verification
+    Rationale: Confirms production health, table count (51), and active Agent 3 WhatsApp connectivity.
 ```
 
 ---
@@ -397,7 +450,8 @@ The required sequential execution order for Phase 2B deployment:
 
 1. **Database Rollback:** Because all changes are additive (new tables, new nullable columns), rolling back application code does not require rolling back the database.
 2. **Cold Snapshot:** A pre-migration dump `backup_pre_phase2b.sql` is retained on VPS.
-3. **Application Downgrade:** If issues arise, swapping back the Phase 2A binary (`ed2a0fb`) restores previous behavior immediately, ignoring the new SaaS tables.
+3. **Application Downgrade:** If issues arise, swapping back the Phase 2A binary (`ed2a0fb`) restores previous behavior, ignoring the new SaaS tables.
+4. **WhatsApp Safety:** WhatsApp session files must not be relocated or modified.
 
 ---
 
@@ -414,14 +468,14 @@ Before touching production:
 
 - Maintenance window: Off-peak (22:00â€“00:00 WIB).
 - Verified pre-migration mysqldump.
-- Service restarted with zero downtime using systemd graceful binary replacement.
+- Service restarted using systemd binary replacement designed to avoid intentional downtime.
 - WhatsApp Agent 3 session (`/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db`) verified active and connected.
 
 ---
 
 ## 19. Data Integrity Validation Queries
 
-Post-migration verification queries that must return expected counts:
+Post-migration verification queries:
 
 ```sql
 -- 1. Verify Tenant 1 exists and is active
@@ -456,4 +510,4 @@ SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE(); 
 ## 21. Final Schema Verdict
 
 **FINAL DATABASE SPECIFICATION: APPROVED FOR IMPLEMENTATION PLANNING**
-The schema specification provides an airtight, production-safe database blueprint that transforms Ruangkirim into a complete SaaS platform while guaranteeing zero disruption to live WhatsApp operations.
+The schema specification provides an empirically verified, production-safe database blueprint that transforms Ruangkirim into a multi-tenant SaaS platform while preserving live WhatsApp operations.

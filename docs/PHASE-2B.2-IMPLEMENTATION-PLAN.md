@@ -1,8 +1,8 @@
 # PHASE 2B.2 — SAAS IMPLEMENTATION PLAN & RUNTIME AUDIT
-**Project:** RUANGKIRIM  
-**Repository:** `mrifatsyauqi/ruangkirim`  
-**Checkpoint:** Phase 2B.2 (Architecture Audit, Runtime Gap Analysis & Implementation Planning)  
-**Status:** READY FOR IMPLEMENTATION REVIEW  
+**Project:** RUANGKIRIM
+**Repository:** `mrifatsyauqi/ruangkirim`
+**Checkpoint:** Phase 2B.2 (Architecture Audit, Runtime Gap Analysis & Implementation Planning)
+**Status:** READY FOR FINAL GATE REVIEW
 **Scope:** Strictly Read-Only Audit & Implementation Planning (No Source Code / Schema / Runtime Mutations)
 
 ---
@@ -15,18 +15,18 @@ The primary objective of this audit was to inspect the **live runtime**, **sourc
 
 ### Key Audit Highlights & Critical Findings
 
-1. **AutoMigrate Runtime (P0 - Critical Stability Hazard):**  
+1. **AutoMigrate Runtime (P0 - Critical Stability Hazard):**
    GORM `DB.AutoMigrate(...)` executes synchronously on every application boot in `backend/database/database.go:71`. There is **zero governance**: the environment variable `AUTO_MIGRATE` is **never read** in Go source code. Furthermore, startup routines (`database.go:1066`) execute unmanaged data mutations (e.g., forcing `agent_id = 1` for all knowledge and chat history rows where `agent_id` is 0 or NULL, despite Agent 1 not existing in production). Strict governance must be introduced prior to Phase 2B.3.
-2. **Current Database Baseline (Verified Read-Only):**  
+2. **Current Database Baseline (Verified Read-Only):**
    Both Production (`ruangkirim`) and Staging (`ruangkirim_staging`) currently contain exactly **45 tables**. Production holds **29,941 chat histories**, **5,163 inbox read states**, **532 contacts**, **1 tenant** (Tenant 1, "Default"), **1 user** (User 1, "superadmin"), and **1 agent** (Agent 3, "Admin J&T Express Batang"). The WhatsApp session is stored in SQLite at `/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db` (44.3 MB).
-3. **Super Admin / Tenant Context Boundary (P0 - Security Hazard):**  
+3. **Super Admin / Tenant Context Boundary (P0 - Security Hazard):**
    In `backend/handlers/auth.go:124-126`, when a Super Admin has `tenant_id == NULL`, the authentication middleware explicitly falls back to `tenant_id = 1`. In `isTenantAdmin(c)` (`auth.go:167`), `is_super_admin == true` automatically bypasses all tenant scoping. Super Admin platform operations are currently conflated with Tenant 1 workspace operations.
-4. **Knowledge Nullability Divergence (P1 - Functional Requirement):**  
+4. **Knowledge Nullability Divergence (P1 - Functional Requirement):**
    In MySQL, `knowledges.agent_id` is already defined as `BIGINT UNSIGNED NULL DEFAULT NULL`, but GORM Go struct `models.Knowledge` defines `AgentID uint` (`index`). Application queries in `services/embedding.go:53` query `agent_id = ?` exclusively, completely bypassing tenant-wide knowledge. Moreover, `database.go:1066` on every startup executes `UPDATE knowledges SET agent_id = 1 WHERE agent_id = 0 OR agent_id IS NULL`, which destroys tenant-wide knowledge definitions.
-5. **Zero Quota Enforcement (P1 - Commercial Requirement):**  
+5. **Unenforced Commercial Quota (P1 - Commercial Requirement):**
    `backend/handlers/plan_features.go` contains stubs `tenantPlanAllows()` and `agentPlanAllows()` that unconditionally return `true`. Sender creation (`CreateAgent`) and WhatsApp pairing (`ConnectNumber`, `ConnectPairingNumber`) contain no quota or subscription checks.
-6. **Zero-Downtime Safe Rollout Path:**  
-   Because all planned Phase 2B database changes are strictly additive (new tables, new nullable/defaulted columns, and explicit backfills), and because `chat_histories` (29,941 rows) and `inbox_read_states` (5,163 rows) are preserved without DDL mutation, the migration can be executed safely with near-zero lock contention and trivial instant rollback capability.
+6. **Safe Backward-Compatible Rollout Path:**
+   Phase 2B is designed to be backward-compatible and predominantly additive, with controlled constraint relaxation where required, including support for nullable knowledge agent ownership. Because high-volume transactional tables (`chat_histories` with 29,941 rows and `inbox_read_states` with 5,163 rows) are preserved without DDL mutation, operational impact is designed to minimize lock contention, supported by a structured rollback procedure and validation gates.
 
 ---
 
@@ -173,7 +173,7 @@ main() [backend/main.go:20]
 | **Execution Trigger** | Synchronous during `database.Init()` on every boot | **P0 Hazard:** Crashes startup if any DDL fails |
 | **Order vs HTTP** | Runs **before** HTTP server initialization | Server does not open port until AutoMigrate finishes |
 | **Order vs WhatsApp** | Runs **before** WhatsApp client connects | WA connection delayed until DB migration succeeds |
-| **`AUTO_MIGRATE` Env Flag**| **NEVER READ** in Go code | Setting `AUTO_MIGRATE=false` in `.env` has **ZERO** effect |
+| **`AUTO_MIGRATE` Env Flag**| **NEVER READ** in Go code | Setting `AUTO_MIGRATE=false` in `.env` currently has no effect |
 | **Production Impact** | AutoMigrate runs automatically on production deploy | Any incompatible struct tag can crash production |
 | **Staging Impact** | Identical to production | Runs automatically on every staging reboot |
 | **Test Impact** | Unit tests invoking `database.Init()` execute AutoMigrate | Modifies connected test DB |
@@ -181,15 +181,21 @@ main() [backend/main.go:20]
 | **Data Mutations on Boot**| `seedDefaultTenant()` line 1066 overwrites NULL `agent_id` | **P0 Blocker:** Overwrites tenant-wide knowledges to `agent_id = 1` |
 
 ### 4.3 AutoMigrate Governance Design for Phase 2B.3
-To meet ADR-10 requirements without breaking local developer velocity:
+To meet ADR-10 requirements without breaking developer agility:
 1. Introduce `config.EnvBool("AUTO_MIGRATE", false)` in `backend/database/database.go`.
 2. In production systemd configuration (`ruangkirim.service`), set `AUTO_MIGRATE=false`.
-3. In `database.Init()`:
-   - If `AUTO_MIGRATE=false`: Skip `DB.AutoMigrate(...)`. Execute schema preflight validation only (verifies required tables and columns exist without modifying them). If required schema elements are missing, abort with explicit log.
-   - If `AUTO_MIGRATE=true`: Execute controlled additive migration.
-4. Eliminate unconditional mutation queries in `seedDefaultTenant()` lines 1065-1067:
-   - Remove `UPDATE knowledges SET agent_id = 1 WHERE agent_id = 0 OR agent_id IS NULL;` so tenant-wide knowledge is preserved.
-   - Replace with safe orphan re-parenting only when a record lacks both `tenant_id` and `agent_id`.
+3. When `AUTO_MIGRATE=false`, service startup must:
+   - **NOT** execute GORM `AutoMigrate`.
+   - **NOT** execute schema-changing DDL statements.
+   - Perform read-only schema preflight validation (verifying required tables and columns exist).
+   - Fail clearly with descriptive error logging if any required schema element is missing.
+   - Avoid unrelated or unmanaged data mutations.
+4. When `AUTO_MIGRATE=true` (e.g. in development environments), execute controlled additive migration.
+5. Audit and govern other startup mutation paths:
+   - `ensureCanonicalChatMessageIDs()`: Gate raw `ALTER TABLE` and `CREATE UNIQUE INDEX` calls behind migration preflight checks.
+   - Backfill functions (`backfillKnowledgeCharCount()`, `backfillHistoricalDeliveryStatus()`, `backfillInboxLastMsgAt()`): Verify these run idempotently and safely without table locks.
+   - `normalizeSenderFields()`: Ensure this routine does not block startup or conflict with normalized international numbers.
+   - `seedDefaultTenant()` lines 1065-1067: Remove unconditional `UPDATE knowledges SET agent_id = 1 WHERE agent_id = 0 OR agent_id IS NULL;` so tenant-wide knowledge is preserved. Replace with safe orphan re-parenting only when a record lacks both `tenant_id` and `agent_id`.
 
 ---
 
@@ -200,11 +206,11 @@ To meet ADR-10 requirements without breaking local developer velocity:
 | **Multi-Tenancy** | Single tenant in practice (Tenant 1 "Default") | Multi-tenant workspace isolation with slug and lifecycle | Add `slug`, `status`, `trial_ends_at` to `tenants` |
 | **Tenant Membership** | 1:1 `users.tenant_id` foreign key column | N:M `tenant_members` junction table with roles | Create `tenant_members` table; backfill User 1 |
 | **Plans & Packaging** | No plan tables; hardcoded strings | Canonical `plans` and `plan_features` tables | Create `plans`, `plan_features`; seed plans |
-| **Subscriptions** | Missing | `subscriptions` table with `is_current` unique index | Create `subscriptions` table; create Grandfathered sub |
+| **Subscriptions** | Missing | `subscriptions` table with `is_current` unique index | Create `subscriptions` table; attach Grandfathered sub |
 | **Entitlement Service** | Stubs in `plan_features.go` returning `true` | Centralized `EntitlementService` interface | Implement `EntitlementService` in `backend/services/` |
 | **Trial Management** | None | 30-day trial, max 1 active sender, trialing lifecycle | Enforce trial limits in EntitlementService |
 | **Sender Limit** | Hardcoded comment "tidak ada batas jumlah nomor" | Governed by plan quota (`GetActiveSenderLimit`) | Enforce sender quota on Agent Create & WA Connect |
-| **Usage Tracking** | None | `usage_counters` per (tenant, metric, period_start) | Create `usage_counters`; meter outbound & AI turns |
+| **Usage Tracking** | None | `usage_counters` per (tenant, metric, period_start, period_end) | Create `usage_counters`; meter billable quotas |
 | **Audit Logging** | `cs_activity_logs` only | System-wide `audit_logs` for compliance/security | Create `audit_logs` table |
 
 ---
@@ -234,8 +240,13 @@ To meet ADR-10 requirements without breaking local developer velocity:
 
 ### 6.2 Gap Analysis vs Target
 1. **Missing Membership Validation:** Current JWT relies solely on `users.tenant_id`. It does not check whether the user is an active member in `tenant_members`.
-2. **Super Admin Auto-Fallback Hazard (P0):** A superadmin logging in is automatically injected with `tenant_id = 1` and `role = admin`. This bleeds platform administration into customer tenant context.
-   - *Target:* Super Admin JWT claims should contain `tenant_id = 0` (or omitted) and `is_super_admin = true`. When operating on platform routes (`/settings/api-config`, `/admin/*`), no tenant context is required. When explicitly viewing a tenant, Super Admin must specify an explicit impersonation/context header (`X-Tenant-Context: <id>`), validated against audit logs.
+2. **Super Admin Platform Identity Boundary (P0):** Super Admin is a **PLATFORM identity** and must not implicitly receive Tenant 1 context. In the current implementation, a Super Admin without `tenant_id` falls back directly to Tenant 1. Tenant context must be explicitly selected and authorization-checked. Any explicit tenant context mechanism must:
+   - Validate target tenant existence and active status.
+   - Validate platform operator authorization.
+   - Produce auditable log records in `audit_logs`.
+   - Never bypass tenant isolation rules.
+   - Never silently map Super Admin to Tenant 1.
+   If an internal header or query parameter (e.g. `X-Tenant-Context`) is used, it must be treated strictly as a transport mechanism, not as proof of authorization.
 3. **Tenant Switching:** Currently impossible without modifying `users.tenant_id` in the database.
    - *Target:* Introduce `POST /api/auth/switch-tenant` allowing a user with multiple memberships to select their active workspace and receive an updated JWT.
 
@@ -305,7 +316,7 @@ Per Audit Objective 3, every knowledge-related code block was analyzed and class
 - **Required Change:** Update `ConsolidateAllKnowledge()` to deduplicate per `tenant_id` where `agent_id IS NULL`, in addition to per-agent deduplication.
 - **Risk:** Medium.
 
-#### Finding 4: In-Memory RAG Retrieval Cache
+#### Finding 4: In-Memory RAG Retrieval Cache & Deterministic Selection
 - **File:** `backend/services/embedding.go:29, 43-68` (`KnowledgeFor`)
 - **Current Behavior:**
   ```go
@@ -313,11 +324,14 @@ Per Audit Objective 3, every knowledge-related code block was analyzed and class
   database.DB.Where("agent_id = ? AND active = ?", agentID, true).Find(&rows)
   ```
 - **Classification:** **Class C (ASSUMES NON-NULL)**
-- **Why it matters:** Queries DB strictly for `agent_id = ?`. Any tenant-wide knowledge (`agent_id IS NULL`) is completely omitted from the RAG context!
-- **Required Change:**
-  1. Retrieve `agent.TenantID` for the given `agentID`.
-  2. Query `WHERE tenant_id = ? AND (agent_id = ? OR agent_id IS NULL) AND active = ?`.
-  3. Apply override policy: if an agent-specific knowledge item matches a tenant-wide knowledge question, the agent item takes precedence.
+- **Why it matters:** Queries DB strictly for `agent_id = ?`. Any tenant-wide knowledge (`agent_id IS NULL`) is completely omitted from the RAG context.
+- **Required Deterministic Selection Logic:**
+  Knowledge retrieval **MUST NOT rely on database row ordering** to determine which answer wins. The implementation must follow deterministic selection logic:
+  1. Retrieve tenant-wide knowledge (`tenant_id = ? AND agent_id IS NULL AND active = 1`).
+  2. Retrieve agent-specific knowledge (`tenant_id = ? AND agent_id = ? AND active = 1`).
+  3. Match relevant knowledge candidates against the incoming message.
+  4. When the same logical question or canonical key exists in both scopes, the **agent-specific item deterministically overrides the tenant-wide item**.
+  5. The resulting prompt injection must be deterministic regardless of SQL row order.
 - **Risk:** High (Core AI accuracy).
 
 #### Finding 5: Cache Invalidation
@@ -382,6 +396,19 @@ Per Audit Objective 3, every knowledge-related code block was analyzed and class
 | **`GetActiveSenderLimit`**| None | Returns 1 for trial; plan quota for active subscriptions | P0 |
 | **`GetTenantSubscriptionState`** | None | Returns commercial and operational state | P0 |
 
+### 10.2 Subscription Current-Record Concurrency & Invariants
+The database constraint `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)` enforces at the MySQL engine level that there is **AT MOST ONE** current subscription (`is_current = 1`) per tenant. It does NOT guarantee **EXACTLY ONE** current subscription.
+
+Application logic must maintain the operational invariant:
+- Exactly one current subscription should exist for a tenant in normal operational state.
+- Historical subscriptions are maintained with `is_current = NULL`.
+- When activating, renewing, or switching current subscriptions, the update must be performed inside a database transaction:
+  1. Lock tenant subscription state (`SELECT ... FOR UPDATE`).
+  2. Safely demote the existing current record (`UPDATE subscriptions SET is_current = NULL, updated_at = NOW() WHERE tenant_id = ? AND is_current = 1`).
+  3. Promote or insert the new current record (`is_current = 1`).
+  4. Validate that exactly one current record exists before committing transaction.
+  5. Handle concurrency conflicts gracefully via transactional retries.
+
 ---
 
 ## 11. Sender Quota Audit
@@ -412,19 +439,28 @@ Per Audit Objective 3, every knowledge-related code block was analyzed and class
 
 ## 12. Usage Counter Design Review
 
-### 12.1 Metered Events & Injection Points
-| Metric | Event Trigger | Source Code File / Location | Idempotency / Counting Guard |
+### 12.1 Quota Metrics vs Analytics Metrics
+The implementation must strictly distinguish between metrics that govern commercial quota limits (billable/limiting counters) versus metrics tracked solely for operational analytics:
+- **Commercial Quota Metrics:** Consume plan allowances (e.g. `monthly_messages`, `ai_turns`).
+- **Analytics / Operational Metrics:** Track internal operational volume (e.g. `broadcast_recipients`, delivery counts).
+
+| Metric | Type | Event Trigger | Idempotency / Counting Guard |
 | :--- | :--- | :--- | :--- |
-| **`messages_outbound`** | Successful outbound message send | `backend/services/wa.go:4034` / `handlers/api_public.go` | Increment only on non-error WhatsApp dispatch |
-| **`ai_turns`** | Completed AI response generation | `backend/handlers/ai_metrics.go:26` | Increment alongside `models.AITurn` creation |
-| **`broadcast_recipients`** | Dispatch to broadcast recipient | `backend/handlers/broadcast.go` (`sendBroadcastChunk`) | Increment per successfully sent recipient row |
+| **`messages_outbound`** | Quota Metric | Outbound message sent via WhatsApp or REST API | Increment only on successful message dispatch |
+| **`ai_turns`** | Quota Metric | Completed AI response generation turn | Increment alongside `models.AITurn` creation |
+| **`broadcast_recipients`** | Analytics Metric | Recipient row dispatched in broadcast campaign | Increment per dispatched recipient |
+
+> [!IMPORTANT]
+> **Commercial Quota Decision Note:**
+> Commercial quota semantics for `broadcast_recipients` versus `messages_outbound` must be finalized before implementation if both are intended as billable/limiting counters. An individual broadcast delivery must not accidentally double-consume a quota merely because it is represented by multiple usage metrics. The implementation must define which metric is authoritative for each quota.
+> *(Status: OPEN COMMERCIAL DECISION)*
 
 ### 12.2 Atomic Concurrency
-To prevent race conditions during high concurrent message throughput:
+To prevent race conditions during concurrent message processing:
 ```sql
-INSERT INTO usage_counters (tenant_id, metric, period_start, count, updated_at)
-VALUES (?, ?, ?, ?, NOW())
-ON DUPLICATE KEY UPDATE count = count + VALUES(count), updated_at = NOW();
+INSERT INTO usage_counters (tenant_id, metric_key, period_start, period_end, used_value, updated_at)
+VALUES (?, ?, ?, ?, ?, NOW())
+ON DUPLICATE KEY UPDATE used_value = used_value + VALUES(used_value), updated_at = NOW();
 ```
 
 ---
@@ -440,22 +476,17 @@ ON DUPLICATE KEY UPDATE count = count + VALUES(count), updated_at = NOW();
 ### 13.2 Grandfathering Execution Strategy
 1. **Tenant Attributes:**
    - `tenants.slug = 'default'`
-   - `tenants.status = 'active'` (NOT trialing!)
+   - `tenants.status = 'active'` (NOT trialing)
    - `tenants.trial_ends_at = NULL` (No artificial commercial expiration)
 2. **Grandfathered Subscription:**
-   - Create entry in `subscriptions`:
-     - `tenant_id = 1`
-     - `plan_id = (SELECT id FROM plans WHERE code = 'enterprise')` (or `grandfathered`)
-     - `status = 'active'`
-     - `is_current = 1`
-     - `starts_at = NOW()`
-     - `ends_at = NULL` (Lifetime / unmetered renewal)
+   - Tenant 1 receives an **explicitly grandfathered/manual subscription treatment**. It is exempt from normal trial expiration and automated commercial expiry.
+   - The exact persisted representation must conform to the approved canonical subscription schema and migration decision (associating Tenant 1 with the canonical `business` plan under manual/grandfathered administration with `status = 'active'`, `is_current = 1`, and active operational status).
+   - No fictional plan codes or extra columns are introduced.
 3. **Tenant Membership:**
-   - Create entry in `tenant_members`:
-     - `tenant_id = 1`, `user_id = 1`, `role = 'owner'`
+   - Attach User 1 (superadmin) as owner in `tenant_members` (`tenant_id = 1, user_id = 1, role = 'owner'`).
 4. **Safety Verification:**
-   - Zero commercial popups or quota restrictions for Tenant 1.
-   - Agent 3 remains connected and operational throughout.
+   - Tenant 1 operates without trial popups or automated suspension.
+   - Agent 3 WhatsApp session remains connected and operational throughout.
 
 ---
 
@@ -483,19 +514,19 @@ The canonical 17-step implementation sequence strictly adheres to `docs/SAAS-DAT
 | **01** | Implement AutoMigrate governance (`AUTO_MIGRATE=false`) | Code inspection | Build binary, test with `AUTO_MIGRATE=false` | Revert Go file edit |
 | **02** | Schema Preflight | DB access | Verify 45 tables, 0 lock blockers | Abort if lock active |
 | **03** | Full Database Backup & Verification | Storage check | `mysqldump ruangkirim > backup.sql` & check size | Abort if backup fails |
-| **04** | Create New SaaS Tables (`plans`, `subscriptions`, etc.) | Step 03 | `SHOW TABLES LIKE 'plans'` | `DROP TABLE IF EXISTS ...` |
+| **04** | Create New SaaS Tables (`plans`, `subscriptions`, etc.) | Step 03 | `SHOW TABLES LIKE 'plans'` | Controlled schema stop |
 | **05** | Add Additive Columns (`tenants.slug`, `contacts.tenant_id`) | Step 04 | `DESCRIBE tenants; DESCRIBE contacts;` | Columns are nullable/defaulted |
 | **06** | Backfill Data (`contacts.tenant_id = agents.tenant_id`) | Step 05 | `SELECT COUNT(*) FROM contacts WHERE tenant_id = 0` | Re-run backfill |
-| **07** | Add Constraints/Indexes (`idx_contacts_tenant_id`) | Step 06 | `SHOW INDEX FROM contacts` | `DROP INDEX ...` |
-| **08** | Seed Plans & Plan Features | Step 07 | `SELECT COUNT(*) FROM plans` | `DELETE FROM plans` |
-| **09** | Create Tenant 1 Grandfathered Subscription | Step 08 | `SELECT * FROM subscriptions WHERE tenant_id = 1` | `DELETE FROM subscriptions` |
-| **10** | Create Tenant 1 Membership for User 1 | Step 09 | `SELECT * FROM tenant_members WHERE tenant_id = 1` | `DELETE FROM tenant_members` |
+| **07** | Add Constraints/Indexes (`idx_contacts_tenant_id`) | Step 06 | `SHOW INDEX FROM contacts` | Controlled index removal |
+| **08** | Seed Plans & Plan Features (`trial`, `starter`, `pro`, `business`) | Step 07 | `SELECT COUNT(*) FROM plans` | Delete seeded rows |
+| **09** | Create Tenant 1 Grandfathered Subscription | Step 08 | `SELECT * FROM subscriptions WHERE tenant_id = 1` | Delete subscription row |
+| **10** | Create Tenant 1 Membership for User 1 | Step 09 | `SELECT * FROM tenant_members WHERE tenant_id = 1` | Delete member row |
 | **11** | Validate Data Integrity | Step 10 | Run validation SQL suite | Stop if anomalies found |
 | **12** | Local / Staging Compatibility Testing | Step 11 | Run Go unit/integration test suite | Fix application issues |
 | **13** | Execute Migration on Staging (`ruangkirim_staging`) | Step 12 | Verify staging API and WhatsApp | Restore staging dump |
 | **14** | Execute Staging SaaS Multi-Tenant Isolation Tests | Step 13 | Run automated isolation test suite | Fix code defects |
 | **15** | Production Deployment Approval Gate | Step 14 | Explicit sign-off checkpoint | Do not proceed without approval |
-| **16** | Execute Migration on Production (`ruangkirim`) | Step 15 | Run production DDL script | Execute instant rollback plan |
+| **16** | Execute Migration on Production (`ruangkirim`) | Step 15 | Run production DDL script | Follow defined rollback procedure |
 | **17** | Production Verification & Sanity Check | Step 16 | Monitor WhatsApp traffic, Agent 3 health | Notify stakeholders |
 
 ---
@@ -506,14 +537,14 @@ In Phase 2B.3, code modifications will be grouped into distinct layers:
 
 ### Layer 1: Core Models (`backend/models/`)
 - Update `models.Tenant` (`Slug`, `Status`, `TrialEndsAt`).
-- Update `models.User` (maintain compatibility, reference `tenant_members`).
+- Update `models.User` (maintain backward compatibility, reference `tenant_members`).
 - Update `models.Knowledge` (`TenantID uint`, `AgentID *uint`).
 - Update `models.Contact` (`TenantID uint`).
 - Introduce new structs: `Plan`, `PlanFeature`, `Subscription`, `TenantMember`, `UsageCounter`, `AuditLog`.
 
 ### Layer 2: Database & AutoMigrate Governance (`backend/database/`)
 - Support `AUTO_MIGRATE=false` environment control.
-- Add preflight schema validation on boot when `AUTO_MIGRATE=false`.
+- Add read-only preflight schema validation on boot when `AUTO_MIGRATE=false`.
 - Remove destructive seeder overwrites in `seedDefaultTenant()` line 1066.
 
 ### Layer 3: Entitlement & Subscription Service (`backend/services/`)
@@ -530,7 +561,7 @@ In Phase 2B.3, code modifications will be grouped into distinct layers:
 - Implement `POST /api/auth/switch-tenant`.
 
 ### Layer 5: Handlers & Services Scoping
-- Update `backend/services/embedding.go`: support tenant-wide knowledge in `KnowledgeFor`.
+- Update `backend/services/embedding.go`: implement deterministic knowledge retrieval (agent-specific override over tenant-wide).
 - Update `backend/handlers/numbers.go`: enforce sender limits in `ConnectNumber` and `ConnectPairingNumber`.
 - Update `backend/handlers/api_public.go`: enforce feature gates and quota consumption.
 
@@ -546,59 +577,87 @@ In Phase 2B.3, code modifications will be grouped into distinct layers:
 | **TS-D** | Tenant Isolation | Tenant A calls Tenant B agent ID | Request `GET /api/agents/:id/contacts` | Returns 404 Not Found (no cross-tenant leak) | P0 |
 | **TS-E** | Super Admin Boundary | Super Admin login | Check context `tenant_id` | `tenant_id == 0`; access platform APIs allowed | P0 |
 | **TS-F** | Trial Creation | Register new tenant | Inspect `tenants` and `subscriptions` | `status = trialing`, `trial_ends_at = NOW()+30d` | P1 |
-| **TS-G** | Trial Expiration | Subscription `ends_at` < NOW() | Call API / send message | Returns quota/trial expired error | P1 |
+| **TS-G** | Trial Expiration | Subscription period expired | Call API / send message | Returns quota/trial expired error | P1 |
 | **TS-H** | Subscription Activation| Upgrade tenant to paid plan | Update subscription record | `status = active`, plan features enabled | P1 |
-| **TS-I** | Subscription Expiration| Paid sub reaches `ends_at` | Scheduled reconciliation | Transitions to `past_due` then `suspended` | P2 |
+| **TS-I** | Subscription Expiration| Paid sub period expires | Scheduled reconciliation | Transitions to `past_due` then `suspended` | P2 |
 | **TS-J** | Past Due Grace Period | Tenant in `past_due` | Test inbound vs outbound message | Inbound recorded; outbound warns/blocks | P2 |
 | **TS-K** | Suspension | Tenant in `suspended` | Call dashboard / API endpoints | Read-only mode; outbound blocked | P1 |
-| **TS-L** | Tenant 1 Grandfathering| Inspect Tenant 1 | Check limits & status | Active, no expiration, no commercial blocks | P0 |
+| **TS-L** | Tenant 1 Grandfathering| Inspect Tenant 1 | Check limits & status | Active, exempt from trial expiry | P0 |
 | **TS-M** | Sender Quota (Trial) | Trial tenant connects 1 agent | Attempt connecting 2nd agent | 2nd connection rejected (limit = 1) | P0 |
-| **TS-N** | Sub Concurrency | 2 threads activate current sub | Concurrent `is_current = 1` updates | Exactly one succeeds; UK constraint enforced | P0 |
+| **TS-N** | Sub Concurrency | 2 threads activate current sub | Concurrent `is_current = 1` updates | At most one succeeds; UK constraint enforced | P0 |
 | **TS-O** | Usage Counters | Send 5 outbound messages | Inspect `usage_counters` table | Count atomically equals 5 | P1 |
 | **TS-P** | Knowledge Tenant Scope | Create knowledge `agent_id = NULL`| Agent 3 asks matching question | AI answers using tenant-wide knowledge | P0 |
-| **TS-Q** | Knowledge Agent Override| Tenant & Agent have same question| Ask matching question | Agent-specific answer overrides tenant answer | P1 |
+| **TS-Q** | Knowledge Agent Override| Tenant & Agent have same question| Ask matching question | Agent-specific answer deterministically overrides | P1 |
 | **TS-R** | Knowledge NULL agent_id| Insert knowledge `agent_id = NULL`| Reboot backend service | `agent_id` remains NULL (not overwritten to 1)| P0 |
 | **TS-S** | Contact tenant_id | Create contact via API/Inbox | Inspect `contacts.tenant_id` | Automatically equals `agent.tenant_id` | P1 |
-| **TS-T** | API Feature Gate | Free plan without API feature | Call `/api/v1/messages` | Returns 403 Feature Not Allowed | P1 |
+| **TS-T** | API Feature Gate | Plan without API feature | Call `/api/v1/messages` | Returns 403 Feature Not Allowed | P1 |
 | **TS-U** | Webhook Feature Gate | Plan without Webhook feature | Configure Webhook URL | Returns 403 Feature Not Allowed | P2 |
 | **TS-V** | User Compatibility | Existing User 1 (superadmin) | Login with existing password | Succeeds without disruption | P0 |
 | **TS-W** | Agent 3 Compatibility | Existing Agent 3 in prod | Send and receive WhatsApp chats | Fully operational, history intact | P0 |
-| **TS-X** | WhatsApp Preservation | Execute full migration | Inspect SQLite session file | File unmodified, checksum & size preserved | P0 |
+| **TS-X** | WhatsApp Preservation | Execute full migration | Inspect SQLite session file | Session untouched, connection preserved | P0 |
 
 ---
 
 ## 17. Staging Rollout Plan
 
-1. **Safety Preflight:**
-   - Confirm Staging backup exists.
-   - Verify Staging WhatsApp session (`wa-session-agent-1.db`) is intact.
-2. **Execute Staging Schema Migration:**
-   - Execute DDL script on `ruangkirim_staging`.
-   - Run data backfill on staging contacts and knowledges.
-3. **Deploy Staging Binary:**
-   - Deploy Phase 2B.3 binary to `/var/www/ruangkirim-staging/`.
-   - Set `AUTO_MIGRATE=false` in staging `.env`.
-   - Restart `ruangkirim-staging.service`.
-4. **Execute Full Test Suite (TS-A through TS-X):**
-   - Verify multi-tenant isolation, trial limits, and sender quotas.
-5. **Stability Soak Period:**
-   - Monitor staging service logs for 24 hours.
+To ensure thorough verification prior to production execution, the rollout follows an exact multi-gate sequence:
+
+```text
+Implementation
+      ↓
+Local tests
+      ↓
+Migration SQL review
+      ↓
+SQL syntax & idempotency validation
+      ↓
+Staging backup
+      ↓
+Staging migration execution
+      ↓
+Staging application deployment
+      ↓
+SaaS multi-tenant isolation tests
+      ↓
+Regression tests
+      ↓
+24-hour observation / soak period
+      ↓
+Production approval gate
+      ↓
+Production backup verification
+      ↓
+Production migration execution
+      ↓
+Production verification
+```
+
+1. **SQL Review & Preflight:** Verify migration scripts are strictly idempotent and syntactically valid against MySQL 8.0.
+2. **Staging Backup:** Take full cold snapshot of `ruangkirim_staging` and verify file size.
+3. **Execute Migration:** Apply DDL and data backfill scripts on Staging. Measure and record execution duration.
+4. **Deploy Staging Binary:** Deploy Phase 2B.3 binary with `AUTO_MIGRATE=false`.
+5. **Run Isolation & Regression Suite:** Execute TS-A through TS-X.
+6. **24-Hour Soak Period:** Monitor error logs and WhatsApp stability under synthetic load.
 
 ---
 
 ## 18. Production Rollout Plan
 
 1. **Production Freeze & Preflight:**
-   - Announce maintenance window (estimated duration: 15 minutes).
-   - Ensure zero pending background crawl jobs.
-2. **Verify WhatsApp Safety:**
-   - Confirm `/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db` permissions are read-only to migration scripts.
-3. **Take Complete Production Backup:**
+   - Announce maintenance window.
+   - Verify zero pending crawl jobs.
+2. **Production WhatsApp Safety Protocol:**
+   - **Migration procedure must exclude WhatsApp session files from mutation scope.**
+   - Session integrity must be verified before and after deployment.
+   - Any unexpected WhatsApp session mutation is a production incident condition requiring immediate investigation.
+   - Do NOT modify the session file (`/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db`).
+   - Do NOT calculate, replace, or relocate session contents.
+3. **Take Complete Production Backup & Verify:**
    - `sudo mysqldump -u root ruangkirim > /var/backups/ruangkirim/pre_phase2b_dump.sql`
-   - Verify dump integrity and row count.
+   - Verify dump integrity and verify table row count.
 4. **Execute Production SQL Migration:**
    - Run approved Phase 2B migration script via MySQL CLI.
-   - Execution time: < 500ms (additive DDL on small tables, zero alterations on `chat_histories`).
+   - Migration duration must be measured during staging and recorded before production approval.
 5. **Deploy Production Binary:**
    - Backup current binary: `cp ruangkirim-server ruangkirim-server.bak.phase2a`
    - Deploy new binary: `/var/www/ruangkirim/ruangkirim-server`
@@ -614,16 +673,40 @@ In Phase 2B.3, code modifications will be grouped into distinct layers:
 
 ## 19. Rollback Strategy
 
-| Scenario | Rollback Trigger | Execution Steps | Data Impact |
-| :--- | :--- | :--- | :--- |
-| **Application Crash on Boot** | Binary panic / startup abort | Restore previous binary (`ruangkirim-server.bak.phase2a`); `systemctl restart ruangkirim` | Zero data loss |
-| **WhatsApp Connection Loss** | WA fails to reconnect on startup | Stop service; verify SQLite session permissions; restart service | Zero data loss (SQLite untouched) |
-| **DDL Migration Failure** | Error during SQL execution | Execute rollback script (drop added tables/columns); binary unchanged | Zero production data loss |
-| **Data Corruption during Backfill**| Backfill produces invalid mappings | Restore MySQL database from pre-migration dump; re-point binary | Rollback to pre-migration snapshot |
+The rollback plan is divided into three distinct operational categories based on failure mode:
+
+### Category A: Application Rollback
+**Trigger:** Application binary panics, fails startup preflight, or exhibits regression while database schema changes remain backward compatible.
+**Procedure:**
+1. Restore previous known-good binary: `cp ruangkirim-server.bak.phase2a ruangkirim-server`.
+2. Restart only the affected application service: `sudo systemctl restart ruangkirim.service`.
+3. Verify application health check (`/health`).
+4. Verify WhatsApp agent connectivity and message processing.
+5. Confirm backward compatibility with database schema.
+
+### Category B: Migration Stop / Forward Fix
+**Trigger:** DDL execution partially fails or halts before application depends on the new schema.
+**Procedure:**
+1. Stop migration immediately.
+2. Inspect exact database state via `information_schema`.
+3. **Do not automatically drop production structures** (avoid unmanaged `DROP TABLE` or `DROP COLUMN` assumptions).
+4. Determine whether the migration script can safely resume via forward fix or requires a controlled, audited rollback script.
+
+### Category C: Database Restore
+**Trigger:** Unrecoverable data corruption occurred, destructive migration mistake occurred, or data integrity validation fails materially.
+**Procedure:**
+1. Requires verified pre-migration backup, explicit executive authorization, and a controlled maintenance window.
+2. Stop application service: `sudo systemctl stop ruangkirim.service`.
+3. Restore database from pre-migration backup dump: `mysql -u root ruangkirim < /var/backups/ruangkirim/pre_phase2b_dump.sql`.
+4. Validate table counts (45 tables) and row counts.
+5. Re-point application binary to previous known-good version.
+6. Restart service and execute post-restore verification.
 
 ---
 
-## 20. Risk Register
+## 20. Risk Register & Implementation Blockers
+
+### 20.1 Risk Register
 
 | Risk ID | Severity | Status | Description & Mitigation |
 | :--- | :--- | :--- | :--- |
@@ -635,41 +718,61 @@ In Phase 2B.3, code modifications will be grouped into distinct layers:
 | **RSK-06** | **P1** | READY FOR IMPLEMENTATION | **Large Table Lock:** DDL on `chat_histories` causing downtime. Mitigated by strictly omitting `chat_histories` from DDL changes. |
 | **RSK-07** | **P2** | READY FOR IMPLEMENTATION | **User Email Uniqueness Conflict:** Missing or duplicate emails breaking authentication. Mitigated by staged email migration (Phase A: keep nullable). |
 
+### 20.2 Explicit Implementation Blockers
+The following conditions must be resolved before production DDL execution:
+
+- **BLOCKER 1:** AutoMigrate governance (`AUTO_MIGRATE=false` runtime support) must be implemented and verified in code.
+- **BLOCKER 2:** The knowledge orphan/NULL mutation in `seedDefaultTenant()` (`database.go:1066`) must be removed before tenant-wide knowledge is enabled.
+- **BLOCKER 3:** Knowledge model, query, and cache changes (supporting nullable `agent_id` and deterministic overrides) must be implemented and tested before tenant-wide knowledge migration is considered safe.
+- **BLOCKER 4:** Migration backup and restore procedure must be validated on staging before executing any production DDL.
+- **BLOCKER 5:** Super Admin tenant-context separation must be implemented and tested before multi-tenant customer access is enabled.
+- **BLOCKER 6:** Subscription current-record transaction semantics must be implemented and tested before subscription activation workflows.
+- **BLOCKER 7:** Any unresolved commercial policy affecting quota semantics must be decided before implementing quota enforcement that depends on it.
+
 ---
 
 ## 21. Open Questions
 
-1. **Payment Gateway Integration (Commercial Policy):**  
-   Which payment gateway provider (e.g., Midtrans, Xendit, or Tripay) will be implemented in Phase 2C for automated payment processing?  
+1. **Payment Gateway Provider (Phase 2C):**
+   Which payment gateway provider (e.g., Midtrans, Xendit, Tripay) will be integrated in Phase 2C for automated recurring billing?
    *Current Status:* Open commercial decision. Phase 2B implements the subscription state machine and manual billing reconciliation.
-2. **Inbound WhatsApp Metering:**  
-   Should incoming messages be counted towards usage limits, or should inbound processing remain entirely free/unmetered?  
-   *Recommended Policy:* Inbound messages unmetered; only outbound messages, broadcast dispatches, and completed AI turns consume quota.
-3. **Scheduled Reconciliation Mechanism:**  
-   Should trial and subscription expiration reconciliation be handled via an internal background goroutine / ticker inside the Go backend, or an external systemd timer / cron job calling a protected internal endpoint?  
+2. **Inbound WhatsApp Metering Policy:**
+   Should incoming WhatsApp messages consume commercial quota, or remain free/unmetered?
+   *Recommended Policy:* Inbound processing unmetered; quota consumption applies exclusively to outbound messages, broadcast dispatches, and completed AI turns.
+3. **Scheduled Reconciliation Architecture:**
+   Should subscription and trial expiration reconciliation execute as an internal background Go ticker or an external systemd timer / cron calling an internal endpoint?
    *Recommended Policy:* Internal Go ticker running every 1 hour, complemented by request-time lazy evaluation during entitlement checks.
+4. **Inbound Processing Behavior During Suspension:**
+   When a tenant is suspended, should customer inbound chats still be received?
+   *Recommended Policy:* Silently receive and store inbound messages in `chat_histories` to preserve customer conversation history, while blocking human outbound responses and disabling AI auto-replies.
+5. **Commercial Quota Semantics for Broadcast Dispatches:**
+   Should broadcast recipient deliveries consume the general outbound message quota or a separate broadcast allocation?
+   *Recommended Policy:* Define whether `messages_outbound` is the sole authoritative quota, avoiding double-counting with `broadcast_recipients`.
 
 ---
 
 ## 22. Phase 2B.3 Recommended Implementation Order
 
-To execute Phase 2B.3 with maximum safety and zero risk of regression:
+Phase 2B.3 execution must strictly preserve the following 21-step safety sequence:
 
-1. **Step 1: AutoMigrate Governance & Safety Refactoring**  
-   Implement `AUTO_MIGRATE=false` environment flag in `backend/database/database.go`. Remove line 1066 orphan overwrite.
-2. **Step 2: Core Model Extensions**  
-   Update GORM model structs in `backend/models/` for `Tenant`, `Knowledge`, `Contact`, `User`, and introduce new SaaS entities.
-3. **Step 3: SQL Migration Script Creation**  
-   Author standalone, idempotent SQL migration and rollback scripts (`migrations/001_phase2b_saas_schema.sql`).
-4. **Step 4: Entitlement & Quota Service Implementation**  
-   Build `backend/services/entitlement.go` to replace `plan_features.go` stubs.
-5. **Step 5: Authentication & Tenant Membership Refactoring**  
-   Update `backend/handlers/auth.go` to enforce `tenant_members` and decouple Super Admin from Tenant 1.
-6. **Step 6: Knowledge & RAG Scoping Implementation**  
-   Refactor `backend/services/embedding.go` to support tenant-wide knowledge retrieval and overrides.
-7. **Step 7: Sender Quota Enforcement**  
-   Add quota checks to `backend/handlers/agents.go` and `numbers.go`.
-8. **Step 8: Staging Deployment & Multi-Tenant Verification**  
-   Execute migration on Staging; run test suite TS-A through TS-X.
-9. **Step 9: Production Deployment & Verification**  
-   Execute migration on Production following the approved maintenance checklist.
+1. **AutoMigrate Governance:** Implement `AUTO_MIGRATE=false` flag and preflight schema verification in `backend/database/database.go`.
+2. **Remove Unsafe Startup Mutations:** Remove destructive `agent_id = 1` overwrites in `seedDefaultTenant()`.
+3. **Core Models:** Extend GORM model structs in `backend/models/` for `Tenant`, `Knowledge`, `Contact`, and new SaaS entities.
+4. **Database Migration Scripts:** Author standalone, idempotent SQL migration and rollback scripts (`migrations/001_phase2b_saas_schema.sql`).
+5. **Entitlement/Subscription Service:** Build `backend/services/entitlement.go` to replace `plan_features.go` stubs.
+6. **Authentication & Tenant Membership:** Update `backend/handlers/auth.go` to enforce `tenant_members` and decouple Super Admin from Tenant 1.
+7. **Tenant Isolation Enforcement:** Audit all handlers to ensure strict tenant scoping.
+8. **Knowledge/RAG Tenant-Wide Scope:** Refactor `backend/services/embedding.go` to support tenant-wide knowledge with deterministic overrides.
+9. **Contact Tenant Scope:** Update contact creation to populate `tenant_id` from agent context.
+10. **Sender Quota:** Add quota checks to `backend/handlers/agents.go` and `numbers.go`.
+11. **Usage Counters:** Integrate atomic counter increments for outbound messages and AI turns.
+12. **API / Webhook Feature Gates:** Add entitlement gates to public REST API and webhook configuration.
+13. **Audit Logging:** Integrate `audit_logs` recordings for administrative and subscription events.
+14. **Automated Tests:** Execute test suite TS-A through TS-X locally.
+15. **Staging Migration:** Execute SQL migration script against `ruangkirim_staging`.
+16. **Staging Deployment:** Deploy Phase 2B.3 binary to staging environment.
+17. **Staging Isolation & Regression Testing:** Verify multi-tenant isolation, sender limits, and trial lifecycle.
+18. **Observation Period:** Monitor staging runtime stability for 24 hours.
+19. **Production Approval Gate:** Review staging results and obtain explicit authorization.
+20. **Production Migration:** Execute SQL migration script against `ruangkirim` production database.
+21. **Production Verification:** Confirm service health, table parity (51 tables), and active WhatsApp Agent 3 connectivity.

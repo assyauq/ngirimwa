@@ -441,19 +441,23 @@ Application logic must maintain the operational invariant:
 
 ### 12.1 Quota Metrics vs Analytics Metrics
 The implementation must strictly distinguish between metrics that govern commercial quota limits (billable/limiting counters) versus metrics tracked solely for operational analytics:
-- **Commercial Quota Metrics:** Consume plan allowances (e.g. `monthly_messages`, `ai_turns`).
-- **Analytics / Operational Metrics:** Track internal operational volume (e.g. `broadcast_recipients`, delivery counts).
+- **Authoritative Commercial Quota Metrics:**
+  - `messages_outbound`: Outbound messages sent via WhatsApp or public REST API.
+  - `ai_turns`: Completed AI customer service turns.
+- **Analytics-Only Metric:**
+  - `broadcast_recipients`: Recipient rows dispatched in marketing or notification broadcast campaigns.
 
-| Metric | Type | Event Trigger | Idempotency / Counting Guard |
-| :--- | :--- | :--- | :--- |
-| **`messages_outbound`** | Quota Metric | Outbound message sent via WhatsApp or REST API | Increment only on successful message dispatch |
-| **`ai_turns`** | Quota Metric | Completed AI response generation turn | Increment alongside `models.AITurn` creation |
-| **`broadcast_recipients`** | Analytics Metric | Recipient row dispatched in broadcast campaign | Increment per dispatched recipient |
+| Metric | Metric Class | Event Trigger | Phase 2B.3 Enforcement | Idempotency / Counting Guard |
+| :--- | :--- | :--- | :--- | :--- |
+| **`messages_outbound`** | Commercial Quota | Outbound message dispatched via WhatsApp or REST API | Authoritative Billable Quota | Increment only on successful message dispatch |
+| **`ai_turns`** | Commercial Quota | Completed AI response generation turn | Authoritative Billable Quota | Increment alongside `models.AITurn` creation |
+| **`broadcast_recipients`** | Analytics Only | Recipient row dispatched in broadcast campaign | Analytics Only (Deferred Quota) | Increment per dispatched recipient |
 
 > [!IMPORTANT]
-> **Commercial Quota Decision Note:**
-> Commercial quota semantics for `broadcast_recipients` versus `messages_outbound` must be finalized before implementation if both are intended as billable/limiting counters. An individual broadcast delivery must not accidentally double-consume a quota merely because it is represented by multiple usage metrics. The implementation must define which metric is authoritative for each quota.
-> *(Status: OPEN COMMERCIAL DECISION)*
+> **Commercial Quota & Broadcast Boundary Lock:**
+> 1. **No Double-Counting:** An individual broadcast delivery must never consume the same commercial allowance twice through both `broadcast_recipients` and `messages_outbound`.
+> 2. **Phase 2B.3 Quota Boundary:** In Phase 2B.3, commercial quota enforcement applies exclusively to `messages_outbound` and `ai_turns`. Broadcast deliveries dispatched via WhatsApp are counted under `messages_outbound` for message quota accounting, while `broadcast_recipients` remains strictly an analytics metric.
+> 3. **Commercial Policy Deferral:** Whether broadcast campaigns will be subject to a separate commercial broadcast quota allocation remains an **OPEN COMMERCIAL DECISION** to be finalized in a future billing phase (Phase 2C). No separate broadcast quota gate is enforced in Phase 2B.3.
 
 ### 12.2 Atomic Concurrency
 To prevent race conditions during concurrent message processing:
@@ -476,11 +480,11 @@ ON DUPLICATE KEY UPDATE used_value = used_value + VALUES(used_value), updated_at
 ### 13.2 Grandfathering Execution Strategy & Invariants
 Tenant 1 is the existing single-tenant live production workspace. Under Phase 2B, Tenant 1 is classified as a **migration-time grandfathered/manual administrative exception** whose persisted representation must remain fully compatible with the canonical subscription schema without altering the general multi-tenant architecture.
 
-#### Architectural Invariants:
+#### Canonical Invariants:
 1. **Canonical Schema Alignment:**
    - Tenant 1 uses the canonical **`business`** plan (`code = 'business'`).
    - No new plan codes (e.g. `enterprise`, `grandfathered`, `lifetime`) are introduced.
-   - No new database columns or schema flags are added.
+   - No new database columns or schema flags (e.g. `is_grandfathered`) are added. The generic subscription schema itself does not semantically identify Tenant 1 as grandfathered.
 2. **Persisted Record Values:**
    - `tenants.slug = 'default'`
    - `tenants.status = 'active'` (NOT trialing)
@@ -489,18 +493,41 @@ Tenant 1 is the existing single-tenant live production workspace. Under Phase 2B
    - `subscriptions.plan_id = (SELECT id FROM plans WHERE code = 'business')`
    - `subscriptions.status = 'active'`
    - `subscriptions.is_current = 1`
+   - `subscriptions.payment_provider = 'manual'`
    - `subscriptions.current_period_start = NOW()`
    - `subscriptions.current_period_end`: In accordance with the canonical database schema, `current_period_end` remains `DATETIME(3) NOT NULL`. Tenant 1's administrative period value is strictly a **technical migration representation and NOT a commercial expiry date**.
-3. **Exemption Semantics & Entitlement Isolation:**
-   - Tenant 1 is exempt from normal trial expiration and automated commercial subscription expiry.
-   - Entitlement and scheduled reconciliation logic **MUST NOT** treat Tenant 1's grandfathered administrative treatment as an ordinary expiring commercial subscription.
-   - The entitlement/reconciliation implementation must not use the administrative `current_period_end` value to expire Tenant 1.
-   - The implementation **MUST NOT hard-code `tenant_id == 1` as the general entitlement architecture**. Instead, Tenant 1 is maintained as a controlled migration/bootstrap administrative exception isolated from generic commercial billing flows.
-4. **Tenant Membership:**
+3. **Tenant Membership:**
    - Attach User 1 (superadmin) as owner in `tenant_members` (`tenant_id = 1, user_id = 1, role = 'owner'`).
-5. **Operational Verification:**
-   - Tenant 1 operates without commercial trial popups, artificial expiry limits, or automated suspension.
-   - Agent 3 WhatsApp session remains connected and operational throughout.
+
+### 13.3 Runtime Boundary & Entitlement Consumption
+The runtime distinguishes Tenant 1's administrative exception through service boundary separation rather than schema mutation or generic code bypasses:
+
+1. **Bootstrap / Migration Provisioning Boundary:**
+   - Grandfathering is strictly a **controlled bootstrap/migration provisioning concern**.
+   - The migration script (`001_phase2b_saas_schema.sql`) and `SubscriptionService` provisioning logic establish Tenant 1's subscription in an active state under the canonical `business` plan.
+2. **Runtime Entitlement Evaluation (`EntitlementService`):**
+   - Runtime entitlement evaluation is **purely state-driven**. It checks whether the tenant is `active`, whether a current subscription (`is_current = 1`) exists with `status = 'active'`, and whether the associated plan features permit the requested action.
+   - `EntitlementService` evaluates the established subscription state directly without inspecting how or why it was provisioned.
+3. **Scheduled Reconciliation Boundary:**
+   - The scheduled reconciliation engine evaluates subscriptions subject to automated lifecycle transitions (e.g. trialing tenants expiring after 30 days, or payment-gateway subscriptions requiring webhook/billing renewal).
+   - Scheduled reconciliation **MUST NOT infer Tenant 1 expiry from the administrative `current_period_end` timestamp**.
+   - Manual administrative subscriptions (`payment_provider = 'manual'`) are exempted from automated gateway expiration sweeps at the reconciliation boundary, ensuring Tenant 1 remains continuously active without automated commercial expiry.
+
+### 13.4 Prevention of Generic Tenant-ID Bypass Architecture
+The implementation must maintain strict multi-tenant code hygiene. Architecture such as:
+```go
+// STRICTLY PROHIBITED IN GENERIC ENTITLEMENT
+if tenantID == 1 {
+    bypassExpiry()
+}
+```
+is **STRICTLY PROHIBITED** inside:
+- `EntitlementService`
+- Generic quota evaluation services
+- Generic subscription state evaluators
+- Generic reconciliation engines
+
+Any logic specific to Tenant 1's historical setup is strictly confined to the initial migration script and bootstrap seeding functions. It is **NOT** a reusable or generic entitlement pattern.
 
 ---
 
@@ -568,6 +595,11 @@ In Phase 2B.3, code modifications will be grouped into distinct layers:
   - `ConsumeQuota(tenantID uint, metric string, count int) error`
   - `GetActiveSenderLimit(tenantID uint) (int, error)`
   - `GetTenantSubscriptionState(tenantID uint) (string, error)`
+  - **Boundary Rule:** Purely state-driven evaluation consuming active subscription and plan feature records. Strictly prohibits hardcoded `tenantID == 1` bypass checks.
+- Create `backend/services/subscription.go`:
+  - Handles subscription creation, promotion, demotion, and transactional current-record switching.
+  - Manages isolated migration bootstrap provisioning for Tenant 1 without bleeding exceptions into generic entitlement.
+  - Enforces authoritative commercial quota metrics (`messages_outbound`, `ai_turns`), while deferring separate broadcast quota gating.
 
 ### Layer 4: Authentication & Context Middleware (`backend/handlers/`, `backend/middleware/`)
 - Decouple Super Admin from Tenant 1 fallback.
@@ -752,13 +784,13 @@ The following conditions must be resolved before production DDL execution:
    *Current Status:* Open commercial decision. Phase 2B implements the subscription state machine and manual billing reconciliation.
 2. **Inbound WhatsApp Metering Policy:**
    - Inbound messages: RECOMMENDED as unmetered (free customer communication).
-   - Outbound messages: Commercial quota metric (`messages_outbound`).
+   - Outbound messages: Authoritative commercial quota metric (`messages_outbound`).
    - AI turns: Commercial quota metric (`ai_turns`).
-   - Broadcast recipients: Currently tracked as an analytics metric (`broadcast_recipients`).
+   - Broadcast recipients: Analytics-only metric for Phase 2B.3 (`broadcast_recipients`).
    *Current Status:* Inbound processing recommended as unmetered.
 3. **Broadcast Quota Semantics vs General Outbound Quota:**
-   Whether broadcast delivery additionally consumes the general outbound quota (`messages_outbound`) remains an **OPEN COMMERCIAL DECISION**.
-   *Critical Invariant:* A single broadcast delivery must not accidentally consume the same commercial allowance twice through both `broadcast_recipients` and `messages_outbound`. The implementation must define which metric is authoritative for each quota before quota gating is enforced.
+   Whether broadcast delivery additionally consumes a separate commercial quota remains an **OPEN COMMERCIAL DECISION**.
+   *Phase 2B.3 Boundary Lock:* In Phase 2B.3, separate broadcast quota enforcement is deferred. Broadcast deliveries dispatched over WhatsApp are accounted under `messages_outbound`, while `broadcast_recipients` tracks recipient volume strictly for analytics. A single broadcast delivery must never consume commercial quota twice across multiple metrics.
 4. **Scheduled Reconciliation Architecture:**
    Should subscription and trial expiration reconciliation execute as an internal background Go ticker or an external systemd timer / cron calling an internal endpoint?
    *Recommended Policy:* Internal Go ticker running every 1 hour, complemented by request-time lazy evaluation during entitlement checks.

@@ -187,7 +187,7 @@ func TestAPIMessage(c *gin.Context) {
 	}
 	text := strings.TrimSpace(req.Text)
 	if text == "" {
-		text = "Uji REST API Kirimwa — pesan ini dikirim dari dashboard."
+		text = "Uji REST API Ruangkirim — pesan ini dikirim dari dashboard."
 	}
 	msgID, code, errMsg := deliverAPIMessage(id, to, apiMessageReq{To: to, Type: "text", Text: text})
 	if errMsg != "" {
@@ -199,7 +199,6 @@ func TestAPIMessage(c *gin.Context) {
 		"to":         to,
 		"type":       "text",
 		"message_id": msgID,
-		"note":       "Jalur pengiriman sama dengan POST /api/v1/messages. Integrasi eksternal tetap memakai Authorization: Bearer <API_KEY>.",
 	})
 }
 
@@ -209,14 +208,22 @@ func TestWebhook(c *gin.Context) {
 	if !ok {
 		return
 	}
+	if !tenantPlanAllows(currentTenantID(c), featAPI) {
+		c.JSON(403, gin.H{"error": planFeatureMessage})
+		return
+	}
 	var agent models.Agent
-	if database.DB.First(&agent, id).Error != nil || strings.TrimSpace(agent.WebhookURL) == "" {
-		c.JSON(400, gin.H{"error": "Simpan URL webhook terlebih dahulu."})
+	if database.DB.First(&agent, id).Error != nil {
+		c.JSON(404, gin.H{"error": "Agent tidak ditemukan"})
+		return
+	}
+	if strings.TrimSpace(agent.WebhookURL) == "" {
+		c.JSON(400, gin.H{"error": "Simpan URL webhook terlebih dahulu sebelum uji coba."})
 		return
 	}
 	body, _ := json.Marshal(gin.H{
 		"event": "webhook.test", "agent_id": agent.ID, "number": agent.Number,
-		"timestamp": time.Now().Unix(), "message": "Webhook Kirimwa berhasil terhubung.",
+		"timestamp": time.Now().Unix(), "message": "Webhook Ruangkirim berhasil terhubung.",
 	})
 	req, err := newSignedWebhookRequest(agent.WebhookURL, agent.WebhookSecret, bytes.NewReader(body))
 	if err != nil {

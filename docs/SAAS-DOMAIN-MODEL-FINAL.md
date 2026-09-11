@@ -2,7 +2,7 @@
 **Project:** Ruangkirim
 **Repository:** `mrifatsyauqi/ruangkirim`
 **Document:** Final SaaS Domain Model
-**Phase:** 2B.1.1 Refinement
+**Phase:** 2B.1.2 Final Micro-Refinement
 **Status:** APPROVED DESIGN SPECIFICATION (ZERO IMPLEMENTATION / READ-ONLY)
 **Date:** September 11, 2026
 
@@ -14,7 +14,7 @@ This document establishes the canonical SaaS domain model for Ruangkirim, evolvi
 
 The architecture is designed to fulfill strict commercial and operational requirements:
 1. **Multi-Tenancy:** Workspace isolation where each customer company operates within an independent Tenant boundary.
-2. **Data & Session Integrity:** Designed to preserve existing production data (Tenant 1, User 1, Agent 3, 29,941 chat history records) without intentional downtime. WhatsApp session files must not be relocated or modified (`/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db`).
+2. **Data & Session Integrity:** Designed to preserve existing production data (Tenant 1, User 1, Agent 3, 29,941 chat history records) without intentional downtime. WhatsApp session files must not be intentionally relocated or modified during Phase 2B migration (`/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db`).
 3. **SaaS Commercial Lifecycle:** Database-driven plans, entitlements, 30-day self-service trials, strict 1-sender trial caps, and usage tracking.
 4. **Security Boundaries:** Cryptographic and database separation between platform administration (Super Admin) and tenant administration (Tenant Owner/Admin/CS).
 5. **Operational Safety:** Staging-first migration, backup verification, and rollback procedures minimize operational risk.
@@ -53,22 +53,25 @@ The `Tenant` entity represents a customer workspace, business account, and comme
        â–¼
    trialing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º active â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º past_due
        â”‚                   â–²                     â”‚
-       â”‚ (30 days expire)  â”‚ (Payment)           â”‚ (Grace period ends)
-       â–¼                   â”‚                     â–¼
-    expired â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 suspended
-       â”‚                                         â”‚
-       â–¼                                         â–¼
-   cancelled â—„â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+       â”‚ (Trial expires    â”‚ (Payment/Upgrade)   â”‚ (Grace period ends)
+       â”‚  without upgrade) â”‚                     â–¼
+       â–¼                   â”‚                 suspended
+   suspended â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                     â”‚
+       â”‚                                         â–¼
+       â–¼                                     cancelled
+   cancelled
 ```
 
-- `trialing`: Workspace in active 30-day trial mode. Limited to 1 sender.
-- `active`: Workspace on an active paid subscription or grandfathered internal tier.
-- `past_due`: Subscription renewal overdue; operating within grace period.
-- `suspended`: Workspace blocked from sending outbound messages due to non-payment or administrative lock.
-- `cancelled`: Workspace explicitly terminated. Data retained in read-only mode.
+- `trialing`: Workspace operating under trial entitlements. Limited to 1 sender.
+- `active`: Workspace operating with an active paid commercial subscription or grandfathered internal tier.
+- `past_due`: Commercial subscription renewal is overdue; workspace operates under a temporary grace period.
+- `suspended`: Workspace operational access is restricted (e.g., outbound message sending and AI replies are paused due to trial expiration or unpaid subscription; dashboard and historical data remain accessible in read-only mode).
+- `cancelled`: Workspace explicitly terminated by customer request or platform administration.
 
-### Grandfathered Baseline:
-Existing production Tenant (`id = 1`) is assigned `slug = 'default'`, `status = 'active'`, and `trial_ends_at = NULL`. It is not subject to trial expiration.
+*Note:* `"expired"` is strictly a **Subscription commercial state**, NOT a Tenant operational state. When a trial subscription expires without an upgrade, the Subscription transitions to `expired` while the Tenant transitions to `suspended`.
+
+### Grandfathered Baseline (Tenant 1):
+Existing production Tenant (`id = 1`) is a **grandfathered internal business tenant**. It is active, exempt from the 30-day trial, exempt from normal payment expiry, independent of external payment gateways, and retained for existing production operations. It remains active until an explicit future commercial or administrative policy alters its status.
 
 ---
 
@@ -77,7 +80,7 @@ Existing production Tenant (`id = 1`) is assigned `slug = 'default'`, `status = 
 The `User` entity represents human authentication identity across the platform.
 
 ### Staged Email Compatibility Strategy:
-To guarantee that existing production accounts continue functioning without disruption, user identity migration follows a strict three-phase plan:
+To avoid breaking existing production accounts, user identity migration follows a three-phase plan:
 
 1. **Phase A (Preservation & Backward Compatibility â€” Current Phase 2B):**
    - Preserve existing `users` table schema and authentication behavior.
@@ -86,10 +89,10 @@ To guarantee that existing production accounts continue functioning without disr
    - Multi-tenant workspace association is decoupled from `users.tenant_id` and moved to `tenant_members`.
    - Existing single-tenant accounts log in with existing usernames without breakage.
 2. **Phase B (Data Normalization & Audit):**
-   - Background audit of all user records to ensure every active user has an authentic, verified email address.
-   - Resolve any empty, duplicate, or placeholder emails before attempting schema constraints.
+   - Background audit of all user records to verify that every active user has an authentic, verified email address.
+   - Resolve any empty, duplicate, or placeholder emails before attempting schema constraint alterations.
 3. **Phase C (Constraint Enforcement â€” Future Release):**
-   - Apply `NOT NULL` and `UNIQUE` constraints to `users.email` only after Phase B validation confirms zero data conflicts.
+   - Apply `NOT NULL` and `UNIQUE` constraints to `users.email` only after Phase B validation proves zero data conflicts.
 
 ### Entity Attributes:
 - `id` (bigint, unsigned, PK): System user ID.
@@ -129,7 +132,7 @@ The `TenantMember` entity links a `User` to a `Tenant`, defining the user's role
 
 ## 6. Authentication & Tenant Context
 
-To prevent multi-tenant data leakage while supporting users who belong to multiple workspaces, the system uses a **Cryptographically Bound Active Tenant Context**.
+To avoid multi-tenant data leakage while supporting users who belong to multiple workspaces, the system uses a **Cryptographically Bound Active Tenant Context**.
 
 ### Authentication Flow:
 1. **User Login (`POST /api/login`):** User submits credentials (`username` + `password`).
@@ -237,32 +240,43 @@ Defines the explicit permissions and numeric quotas granted by each plan.
 
 Represents a tenant's historical and currently active commercial entitlement period.
 
-### Source of Truth Architecture:
-- **`subscriptions` = Commercial Source of Truth:** Authoritative ledger of commercial contracts, plan tiers, billing cycles, and current validity.
-- **`tenants.status` = Operational Workspace State:** Operational availability flag (`active`, `suspended`, `cancelled`).
-- **`tenants.trial_ends_at` = Read Cache:** Cached copy of `subscriptions.trial_ends_at` for high-speed indexing without joins.
-- **Consistency Enforcement:** `SubscriptionService` is the sole service authorized to transition subscription states. Any state update synchronizes `subscriptions` and `tenants` within a single database transaction.
+### Source of Truth Hierarchy:
+1. **Commercial Source of Truth:** `subscriptions` is the authoritative commercial record containing plan IDs, commercial states, billing periods, and current status.
+2. **Workspace Operational State:** `tenants.status` reflects the current operational access of the workspace (`trialing`, `active`, `past_due`, `suspended`, `cancelled`).
+3. **Convenience Read Cache:** `tenants.trial_ends_at` is a cached convenience field reflecting `subscriptions.trial_ends_at` to allow fast indexing without joins.
+4. **Authoritative Service Boundary:** `SubscriptionService` is the sole service authorized to mutate subscription state and synchronize `tenants.status` and `tenants.trial_ends_at` within a single atomic database transaction.
 
-### Current-Record Database Enforcement (`is_current`):
-To enforce that a tenant has **exactly one current subscription** at the database level:
-- Column: `subscriptions.is_current TINYINT(1) NULL DEFAULT NULL`
-- Constraint: `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)`
-- **MySQL Invariant Mechanism:** In MySQL InnoDB, `NULL` values are treated as distinct in unique indexes. Setting `is_current = 1` for the current subscription and `is_current = NULL` for all historical/expired/cancelled subscriptions guarantees that the database engine rejects any attempt to have more than one current subscription per tenant.
+### Subscription Commercial States:
+- `trialing`: Active trial period.
+- `active`: Active paid commercial period.
+- `past_due`: Renewal payment overdue; grace period active.
+- `expired`: Trial or subscription period concluded without renewal.
+- `cancelled`: Subscription terminated.
 
-### Transactional Transition Example:
+### Current Subscription Invariant:
+- **Database Level:** The constraint `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)` guarantees that there is **AT MOST ONE** current subscription (`is_current = 1`) per tenant.
+  - *MySQL Engine Behavior:* In MySQL (InnoDB), `NULL` values are treated as distinct in unique indexes. Multiple historical subscriptions can have `is_current = NULL`, but the engine rejects any second row with `is_current = 1` for the same `tenant_id`.
+- **Application Level:** Every provisioned tenant is expected to have **EXACTLY ONE** current subscription during normal operation, except during a controlled transactional subscription transition.
+
+### Transactional Transition Pattern:
 ```sql
 START TRANSACTION;
--- Demote existing active subscription to historical
+-- 1. Demote previous active subscription to historical
 UPDATE subscriptions
 SET is_current = NULL, status = 'expired', updated_at = NOW()
 WHERE tenant_id = ? AND is_current = 1;
 
--- Insert new current subscription
+-- 2. Insert new current subscription
 INSERT INTO subscriptions (
     tenant_id, plan_id, status, is_current,
     current_period_start, current_period_end, trial_ends_at,
     created_at, updated_at
 ) VALUES (?, ?, 'active', 1, NOW(), NOW() + INTERVAL 30 DAY, NULL, NOW(), NOW());
+
+-- 3. Synchronize operational tenant state
+UPDATE tenants
+SET status = 'active', trial_ends_at = NULL, updated_at = NOW()
+WHERE id = ?;
 COMMIT;
 ```
 
@@ -274,7 +288,9 @@ COMMIT;
 1. **Provisioning:** On registration, Tenant is created with `status = 'trialing'`, `trial_ends_at = NOW() + 30 days`.
 2. **Initial Subscription:** A subscription row is inserted with `plan_id = trial_plan_id`, `status = 'trialing'`, `is_current = 1`.
 3. **Expiration Handling (Phase 2B Pragmatic Model):**
-   - **Request-Time Entitlement Evaluation:** When an authenticated request arrives, `EntitlementService` checks if `status == 'trialing' AND NOW() > trial_ends_at`. If expired, it triggers an in-transaction status update to `expired`.
+   - **Request-Time Entitlement Evaluation:** When an authenticated request arrives, `EntitlementService` checks if `status == 'trialing' AND NOW() > trial_ends_at`. If expired:
+     - Subscription transitions from `trialing` to `expired` (`is_current = 1` retained until upgraded or cancelled).
+     - Tenant transitions from `trialing` to `suspended`.
    - **Scheduled Reconciliation Sweeper:** A periodic background job (`ReconcileSubscriptions`) checks for expired trials daily and flags them without waiting for user traffic.
    - **Behavior on Expiration:**
      - Dashboard remains accessible in read-only mode.
@@ -350,6 +366,7 @@ type EntitlementService interface {
 - **Decision:** Dual-Scope Knowledge Base (`Tenant` primary scope, optional `Agent` override).
 - **Rationale:** Businesses typically share a central product catalog and FAQ across all customer service lines, with optional per-agent customizations.
 - **Model:** Table `knowledges` receives `tenant_id` (NOT NULL). `agent_id` becomes optional (`NULL` for tenant-wide shared knowledge).
+- **Prerequisite Safety Requirement:** Before modifying `agent_id` to nullable in Phase 2B.2, an application code audit must be performed to identify all Go handlers and RAG queries assuming non-null `agent_id`, categorizing findings into (A) NULL-safe, (B) Requires adjustment, and (C) Assumes agent ownership. All (C) assumptions must be resolved before migration execution.
 
 ---
 
@@ -357,7 +374,7 @@ type EntitlementService interface {
 
 ### Architecture Decision:
 - **Decision:** Retain Agent-Scoped Contacts for Phase 2B, with additive `tenant_id` indexing.
-- **Rationale:** Retaining agent scoping avoids complex multi-agent contact merging and thread deduplication in Phase 2B, while `tenant_id` enables tenant-level contact volume checks.
+- **Rationale:** `contacts.agent_id` remains the primary operational ownership boundary. `tenant_id` is an additive denormalized scope/index derived strictly from the owning agent. Authorization must not rely on `tenant_id` alone; queries must maintain consistency between `agent_id` and `tenant_id`. Phase 2B.2 must audit contact queries to ensure no cross-tenant leakage is introduced by the column.
 
 ---
 
@@ -409,7 +426,7 @@ Audit trail for administrative, security, and subscription events.
 
 ## 22. Billing Readiness
 
-Phase 2B focuses strictly on the internal subscription and entitlement state machine. Payment gateway integrations (Tripay, Midtrans, Stripe) are decoupled and deferred to future billing phases.
+Phase 2B focuses strictly on the internal subscription and entitlement state machine. Payment gateway integrations (Tripay, Midtrans, Stripe), automated recurring billing, invoices, and payment webhooks are decoupled and deferred to future billing phases.
 
 ---
 
@@ -574,7 +591,7 @@ erDiagram
 
 ### ADR-02: Tenant Context Resolution
 - **Decision:** Derive active `tenant_id` strictly from JWT claims verified against live database membership; do not trust client query parameters or request body for tenant identification.
-- **Reason:** Guarantees zero cross-tenant spoofing.
+- **Reason:** Designed to prevent cross-tenant spoofing.
 - **Alternatives Considered:** Passing `X-Tenant-ID` header. Rejected as unsafe without per-request DB validation.
 - **Impact:** Eliminates authorization bypass vulnerabilities.
 
@@ -624,7 +641,7 @@ erDiagram
 - **Impact:** Continuity for live Agent 3 WhatsApp operations.
 
 ### ADR-12: WhatsApp Session Preservation
-- **Decision:** WhatsApp session files must not be relocated or modified on disk (`wa-session-agent-{id}.db`).
+- **Decision:** WhatsApp session files must not be intentionally relocated or modified during Phase 2B migration (`wa-session-agent-{id}.db`).
 - **Reason:** Preserves active WhatsApp authentication keys and prevents user re-login/QR requirements.
 - **Impact:** Session persistence across the migration.
 
@@ -652,7 +669,23 @@ erDiagram
 
 ---
 
-## 29. Final Domain Model Verdict
+## 29. Phase 2B.2 Implementation Prerequisites
+
+Before executing Phase 2B.2 implementation, the following prerequisite planning audits must be completed:
+1. **AutoMigrate Runtime Audit:** Inspect startup initialization in Go source code to verify exactly where AutoMigrate is called and implement environment-flagged governance (`AUTO_MIGRATE=false`).
+2. **Complete Existing Schema Preflight:** Verify all 45 tables in Staging and Production databases before running DDL.
+3. **Knowledge `agent_id` NULL Compatibility Audit:** Audit all Go handlers, queries, and RAG search code for implicit non-null assumptions on `knowledges.agent_id`.
+4. **Contact `tenant_id` Query & Mutation Audit:** Review all contact creation, update, and read queries to ensure the addition of `tenant_id` does not weaken agent-level isolation.
+5. **Tenant 1 Grandfathering Validation:** Verify Tenant 1 seed queries attach the active grandfathered subscription with `is_current = 1`.
+6. **Subscription Current-Record Invariant Validation:** Verify MySQL unique index behavior for `(tenant_id, is_current)` under concurrent write simulation.
+7. **Trial/Subscription State Transition Test Design:** Draft test cases for trial expiration, request-time evaluation, and tenant operational suspension.
+8. **Tenant Isolation Test Design:** Draft automated tests verifying cross-tenant data access is rejected with HTTP 404/403.
+9. **Sender Quota Test Design:** Draft test cases asserting that creating or connecting a second sender under trial returns HTTP 403.
+10. **Backup and Rollback Verification Plan:** Document pre-migration mysqldump procedures and binary downgrade steps.
+
+---
+
+## 30. Final Domain Model Verdict
 
 **CANONICAL DOMAIN MODEL: APPROVED FOR SPECIFICATION**
 The refined architecture satisfies all multi-tenant SaaS requirements, guarantees backward compatibility for existing user logins, establishes strong database-level subscription constraints, and provides a safe path for Phase 2B database migration.

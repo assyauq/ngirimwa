@@ -2,7 +2,7 @@
 **Project:** Ruangkirim
 **Repository:** `mrifatsyauqi/ruangkirim`
 **Document:** Final SaaS Database & Migration Specification
-**Phase:** 2B.1.1 Refinement
+**Phase:** 2B.1.2 Final Micro-Refinement
 **Status:** APPROVED DESIGN SPECIFICATION (ZERO IMPLEMENTATION / READ-ONLY)
 **Date:** September 11, 2026
 
@@ -94,15 +94,15 @@ Phase 2B introduces 6 new core SaaS tables to manage multi-tenancy, memberships,
 ---
 
 ### 4. `subscriptions`
-**Purpose:** Authoritative commercial ledger recording subscription contracts, current state, and billing periods.
+**Purpose:** Authoritative commercial ledger recording subscription contracts, current entitlement, and billing periods.
 
 | Column | Type | Nullable | Default | Constraints | Description |
 |---|---|---|---|---|---|
 | `id` | bigint unsigned | NO | auto_increment | PRIMARY KEY | Subscription ID |
 | `tenant_id` | bigint unsigned | NO | None | FK -> `tenants(id)` ON DELETE RESTRICT | Subscribed workspace |
 | `plan_id` | bigint unsigned | NO | None | FK -> `plans(id)` ON DELETE RESTRICT | Active plan tier |
-| `status` | varchar(24) | NO | 'trialing' | None | `trialing`, `active`, `past_due`, `cancelled`, `expired` |
-| `is_current` | tinyint(1) | YES | NULL | None | Flag for current subscription (`1` or `NULL`) |
+| `status` | varchar(24) | NO | 'trialing' | None | Commercial state (`trialing`, `active`, `past_due`, `expired`, `cancelled`) |
+| `is_current` | tinyint(1) | YES | NULL | None | Current subscription marker (`1` for current, `NULL` for historical) |
 | `current_period_start`| datetime(3) | NO | None | None | Billing cycle start |
 | `current_period_end` | datetime(3) | NO | None | None | Billing cycle expiration |
 | `trial_ends_at` | datetime(3) | YES | NULL | None | Specific trial end timestamp |
@@ -113,7 +113,7 @@ Phase 2B introduces 6 new core SaaS tables to manage multi-tenancy, memberships,
 | `updated_at` | datetime(3) | YES | CURRENT_TIMESTAMP(3) | None | Timestamp |
 
 **Indexes & Constraints:**
-- `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)`: Guarantees at most ONE current subscription per tenant at the MySQL engine level (since MySQL allows multiple `NULL` values in unique indexes).
+- `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)`: Enforces that there is **AT MOST ONE** current subscription (`is_current = 1`) per tenant at the MySQL engine level. Because MySQL InnoDB treats each `NULL` value as distinct, multiple historical subscriptions can exist with `is_current = NULL`, while any second record with `is_current = 1` for the same tenant is rejected.
 - `KEY idx_subscriptions_tenant_status (tenant_id, status)`
 - `KEY idx_subscriptions_period_end (current_period_end)`
 
@@ -166,7 +166,7 @@ All changes to existing tables are strictly **additive**:
 
 ### 1. Table `tenants`
 - Add Column: `slug` (`varchar(64) NULL`) -> Backfilled to `'default'` for `id=1` -> Set to `NOT NULL` with `UNIQUE KEY uk_tenants_slug (slug)`.
-- Add Column: `status` (`varchar(24) NOT NULL DEFAULT 'active'`) -> Operational state (`trialing`, `active`, `past_due`, `suspended`, `cancelled`).
+- Add Column: `status` (`varchar(24) NOT NULL DEFAULT 'active'`) -> Operational workspace state (`trialing`, `active`, `past_due`, `suspended`, `cancelled`). Note: `expired` is a Subscription state, not a Tenant status.
 - Add Column: `trial_ends_at` (`datetime(3) NULL`) -> Read-cache field reflecting `subscriptions.trial_ends_at`. Initialized to `NULL` for existing `id=1`.
 - Add Index: `KEY idx_tenants_status (status)`.
 
@@ -186,10 +186,12 @@ All changes to existing tables are strictly **additive**:
 - Add Column: `tenant_id` (`bigint unsigned NULL`) -> Backfilled via `agents.tenant_id` -> Set to `NOT NULL`.
 - Make `agent_id` nullable (`bigint unsigned NULL DEFAULT NULL`) to support tenant-wide knowledge bases.
 - Add Index: `KEY idx_knowledges_tenant (tenant_id)`.
+- **Prerequisite:** Before altering `agent_id` to nullable, Phase 2B.2 must audit all Go handlers and RAG queries for implicit non-null assumptions.
 
 ### 5. Table `contacts`
 - Add Column: `tenant_id` (`bigint unsigned NULL`) -> Backfilled via `agents.tenant_id`.
 - Add Index: `KEY idx_contacts_tenant_number (tenant_id, number)`.
+- **Clarification:** `contacts.agent_id` remains the primary operational ownership boundary. `contacts.tenant_id` is an additive denormalized scope/index. Authorization must verify consistency between `agent_id` and `tenant_id`.
 
 ---
 
@@ -262,7 +264,7 @@ To guarantee multi-tenant safety and commercial integrity:
 - `tenant_members`: `UNIQUE KEY uk_tenant_members_tenant_user (tenant_id, user_id)`
 - `plans.code`: `UNIQUE KEY uk_plans_code (code)`
 - `plan_features`: `UNIQUE KEY uk_plan_features_plan_key (plan_id, feature_key)`
-- `subscriptions`: `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)`
+- `subscriptions`: `UNIQUE KEY uk_subscriptions_tenant_current (tenant_id, is_current)` (guarantees AT MOST ONE current subscription per tenant in MySQL)
 - `usage_counters`: `UNIQUE KEY uk_usage_counters (tenant_id, metric_key, period_start, period_end)`
 - `users.username`: `UNIQUE KEY uk_users_username (username)` (retained for backward compatibility)
 - `users.email`: Constraint deferred to Phase C.
@@ -306,17 +308,22 @@ LIMIT 1;
 Transactional transition to new plan:
 ```sql
 START TRANSACTION;
--- Demote previous subscription
+-- 1. Demote previous active subscription to historical
 UPDATE subscriptions
 SET is_current = NULL, status = 'expired', updated_at = NOW()
 WHERE tenant_id = ? AND is_current = 1;
 
--- Insert new subscription with is_current = 1
+-- 2. Insert new current subscription
 INSERT INTO subscriptions (
     tenant_id, plan_id, status, is_current,
     current_period_start, current_period_end, trial_ends_at,
     created_at, updated_at
 ) VALUES (?, ?, 'active', 1, NOW(), NOW() + INTERVAL 30 DAY, NULL, NOW(), NOW());
+
+-- 3. Synchronize tenant operational state
+UPDATE tenants
+SET status = 'active', trial_ends_at = NULL, updated_at = NOW()
+WHERE id = ?;
 COMMIT;
 ```
 
@@ -347,10 +354,12 @@ For existing production data:
    ```
 2. **Step 2: Seed Plans**
    Insert standard plans (`trial`, `starter`, `pro`, `business`) and assign feature records.
-3. **Step 3: Tenant 1 Subscription**
+3. **Step 3: Tenant 1 Grandfathered Subscription**
+   *Note:* The query below uses an illustrative far-future date to indicate administrative permanence; it is non-canonical illustrative SQL. The canonical definition is that Tenant 1 remains active until an explicit future administrative policy alters its state.
    ```sql
+   -- NON-CANONICAL ILLUSTRATIVE SQL:
    INSERT INTO subscriptions (tenant_id, plan_id, status, is_current, current_period_start, current_period_end, trial_ends_at)
-   SELECT 1, id, 'active', 1, NOW(), NOW() + INTERVAL 10 YEAR, NULL
+   SELECT 1, id, 'active', 1, NOW(), '2099-12-31 23:59:59', NULL
    FROM plans WHERE code = 'business' LIMIT 1;
    ```
 4. **Step 4: User 1 Membership**
@@ -377,7 +386,7 @@ For existing production data:
 
 ## 12. Tenant 1 Migration
 
-Tenant 1 (`Default`) is the live company workspace operating WhatsApp Agent 3 (`Admin J&T Express Batang`). It is grandfathered as an active business-tier tenant with permanent validity, ensuring Agent 3 encounters zero operational interruption.
+Tenant 1 (`Default`) is the live company workspace operating WhatsApp Agent 3 (`Admin J&T Express Batang`). It is a grandfathered internal business tenant exempt from the 30-day trial and payment expiration, operating continuously under an active business tier without dependency on future payment gateways.
 
 ---
 
@@ -397,7 +406,7 @@ Table `chat_histories` contains **29,941 records**.
 
 ### Final Policy:
 1. **Production Boot Safety:** GORM `AutoMigrate` must not execute unmanaged DDL on production startup.
-2. **Implementation:** Introduce environment flag `AUTO_MIGRATE=false` in production.
+2. **Runtime Verification Requirement:** Configuring `AUTO_MIGRATE=false` is a target, not proof of safety. Phase 2B.2 must first audit the live application startup path in `backend/database/database.go` and `backend/main.go` to identify every AutoMigrate invocation and ensure the configuration flag is actively verified before disabling or restricting it.
 3. **Execution Model:** Schema changes in production must be applied via explicit, idempotent SQL migration scripts executed before binary deployment.
 4. **Staging Verification:** All SQL scripts must be executed and verified on Staging (`ruangkirim_staging`) prior to production execution.
 
@@ -409,7 +418,7 @@ The migration sequence follows an exact 17-step operational process designed to 
 
 ```text
 01. AutoMigrate governance/preflight
-    Rationale: Ensures application cannot attempt conflicting DDL during deployment.
+    Rationale: Audits the startup path and verifies AutoMigrate behavior before running migrations.
 02. Schema preflight
     Rationale: Verifies table counts, active connections, and engine status before touching schema.
 03. Backup + backup verification
@@ -425,7 +434,7 @@ The migration sequence follows an exact 17-step operational process designed to 
 08. Seed plans/features
     Rationale: Populates commercial plan catalog and feature limits.
 09. Create Tenant 1 grandfathered subscription
-    Rationale: Attaches active permanent subscription to Tenant 1 with is_current = 1.
+    Rationale: Attaches active grandfathered subscription to Tenant 1 with is_current = 1.
 10. Create Tenant 1 membership
     Rationale: Links User 1 (superadmin) as owner in tenant_members.
 11. Validate data integrity
@@ -451,7 +460,7 @@ The migration sequence follows an exact 17-step operational process designed to 
 1. **Database Rollback:** Because all changes are additive (new tables, new nullable columns), rolling back application code does not require rolling back the database.
 2. **Cold Snapshot:** A pre-migration dump `backup_pre_phase2b.sql` is retained on VPS.
 3. **Application Downgrade:** If issues arise, swapping back the Phase 2A binary (`ed2a0fb`) restores previous behavior, ignoring the new SaaS tables.
-4. **WhatsApp Safety:** WhatsApp session files must not be relocated or modified.
+4. **WhatsApp Safety:** WhatsApp session files must not be intentionally relocated or modified during Phase 2B migration.
 
 ---
 
@@ -487,13 +496,16 @@ SELECT count(*) FROM tenant_members WHERE tenant_id = 1 AND user_id = 1 AND role
 -- 3. Verify Agent 3 remains intact
 SELECT count(*) FROM agents WHERE id = 3 AND tenant_id = 1; -- Expected: 1
 
--- 4. Verify no orphaned agents exist
+-- 4. Verify exactly one current subscription exists for Tenant 1
+SELECT count(*) FROM subscriptions WHERE tenant_id = 1 AND is_current = 1; -- Expected: 1
+
+-- 5. Verify no orphaned agents exist
 SELECT count(*) FROM agents WHERE tenant_id IS NULL OR tenant_id = 0; -- Expected: 0
 
--- 5. Verify no orphaned knowledges exist
+-- 6. Verify no orphaned knowledges exist
 SELECT count(*) FROM knowledges WHERE tenant_id IS NULL OR tenant_id = 0; -- Expected: 0
 
--- 6. Verify table count
+-- 7. Verify table count
 SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE(); -- Expected: 51
 ```
 
@@ -507,7 +519,23 @@ SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE(); 
 
 ---
 
-## 21. Final Schema Verdict
+## 21. Phase 2B.2 Implementation Prerequisites
+
+Before executing Phase 2B.2 implementation, the following prerequisite planning audits must be completed:
+1. **AutoMigrate Runtime Audit:** Inspect startup initialization in Go source code to verify exactly where AutoMigrate is called and implement environment-flagged governance (`AUTO_MIGRATE=false`).
+2. **Complete Existing Schema Preflight:** Verify all 45 tables in Staging and Production databases before running DDL.
+3. **Knowledge `agent_id` NULL Compatibility Audit:** Audit all Go handlers, queries, and RAG search code for implicit non-null assumptions on `knowledges.agent_id`.
+4. **Contact `tenant_id` Query & Mutation Audit:** Review all contact creation, update, and read queries to ensure the addition of `tenant_id` does not weaken agent-level isolation.
+5. **Tenant 1 Grandfathering Validation:** Verify Tenant 1 seed queries attach the active grandfathered subscription with `is_current = 1`.
+6. **Subscription Current-Record Invariant Validation:** Verify MySQL unique index behavior for `(tenant_id, is_current)` under concurrent write simulation.
+7. **Trial/Subscription State Transition Test Design:** Draft test cases for trial expiration, request-time evaluation, and tenant operational suspension.
+8. **Tenant Isolation Test Design:** Draft automated tests verifying cross-tenant data access is rejected with HTTP 404/403.
+9. **Sender Quota Test Design:** Draft test cases asserting that creating or connecting a second sender under trial returns HTTP 403.
+10. **Backup and Rollback Verification Plan:** Document pre-migration mysqldump procedures and binary downgrade steps.
+
+---
+
+## 22. Final Schema Verdict
 
 **FINAL DATABASE SPECIFICATION: APPROVED FOR IMPLEMENTATION PLANNING**
 The schema specification provides an empirically verified, production-safe database blueprint that transforms Ruangkirim into a multi-tenant SaaS platform while preserving live WhatsApp operations.

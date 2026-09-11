@@ -607,3 +607,35 @@ flowchart TD
 - **ChatLoop Legacy:**
   - Tetap terisolasi dan tidak dimodifikasi.
 
+---
+
+## Phase 2A.1 — Production Deployment & Post-Deployment Verification
+
+- **Tanggal Eksekusi:** 11 September 2026
+- **Status:** **PRODUCTION VERIFIED (PASS WITH WARNINGS)**
+- **Deployed Commit:** `ed2a0fb` (feat: update crawler and link preview User-Agent to RuangkirimBot)
+- **Previous Production Baseline:** `e8887e1` (Phase 1G.6C.22)
+
+### Ringkasan Status Produksi Pasca-Deployment
+
+1. **Service & Runtime:**
+   - `ruangkirim.service` aktif (Main PID `1739418`, port 3031).
+   - Health check `http://127.0.0.1:3031/health` ➔ `HTTP/1.1 200 OK {"status":"ok"}`.
+   - Public URL `https://ruangkirim.web.id/` ➔ `HTTP 200`.
+   - Judul halaman HTML ➔ `<title>Ruangkirim — Asisten WhatsApp AI</title>`.
+   - Favicon & aset logo ➔ `/logo-ruangkirim.png` & `/assets/logo-ruangkirim.png` (HTTP 200).
+
+2. **WhatsApp Agent 3 Safety:**
+   - Dedicated storage `/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db` (+ wal, shm) tetap digunakan secara deterministik.
+   - Sesi terhubung otomatis tanpa interupsi (`ESTABLISHED` ke WhatsApp/Meta IP `157.240.13.54:443`).
+   - Direktori legacy `/var/www/ruangkirim/data/` terbukti `CONFIRMED_NOT_OPEN` dan tersimpan sebagai rollback backup.
+
+3. **Integritas Database & Isolasi ChatLoop:**
+   - Database `ruangkirim` tetap tepat **45 tabel** (nol perubahan skema/tabel).
+   - Port 3030 tetap tidak aktif (`INACTIVE`).
+   - Unit `chatloop.service` dan folder `/var/www/chatloop` tidak tersentuh/tidak aktif.
+
+4. **Staging Environment:**
+   - `ruangkirim-staging.service` (port 3032) tetap aktif dan sehat (`HTTP 200`).
+
+

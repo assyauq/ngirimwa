@@ -554,3 +554,56 @@ flowchart TD
 - Audit dilakukan secara non-destruktif dan read-only (tidak mengubah kode, database, ataupun konfigurasi live).
 - Uji coba pengiriman pesan broadcast massal tidak dieksekusi selama audit untuk menjaga reputasi nomor WhatsApp aktif milik user.
 - Pengujian multi-tenant sejati dibatasi oleh fakta bahwa database produksi dan staging saat ini hanya memiliki 1 data tenant aktif (`id=1`).
+
+---
+
+## Phase 2A — Branding Consolidation (Execution & Verification)
+
+- **Tanggal Eksekusi:** 11 September 2026
+- **Status:** **STAGING VERIFIED — PENDING USER APPROVAL FOR PRODUCTION**
+- **Git Commit:** `f4f8075` (branch `develop`, upstream `ruangkirim/develop`)
+
+### Ringkasan Perubahan Branding
+
+1. **Frontend User-Facing Identity:**
+   - `frontend/src/pages/Dashboard.tsx`: Mengganti logo ke `logo-ruangkirim.png`, teks dan alt ke `Ruangkirim`, migrasi kunci suara notifikasi ke `ruangkirim_inbox_sound` dengan fallback baca/tulis ke `chatloop_inbox_sound`.
+   - `frontend/src/pages/CheckEmail.tsx`: Mengganti import logo ke `logo-ruangkirim.png`, alt text ke `Ruangkirim`.
+   - `frontend/src/pages/Privacy.tsx`: Mengganti logo ke `logo-ruangkirim.png`, seluruh penyebutan merek ke `Ruangkirim`, email kontak ke `halo@ruangkirim.web.id`, hak cipta ke `Ruangkirim`.
+   - `frontend/src/pages/Terms.tsx`: Mengganti logo ke `logo-ruangkirim.png`, seluruh penyebutan merek ke `Ruangkirim`, email kontak ke `halo@ruangkirim.web.id`, hak cipta ke `Ruangkirim`.
+   - `frontend/src/pages/Login.tsx`: Mengadopsi pengecekan suara dengan fallback transparan.
+   - `frontend/src/components/InboxPanel.tsx`: Empty state title diubah menjadi `Ruangkirim Inbox`.
+   - `frontend/src/components/BroadcastPanel.tsx`: Alert blast dijeda diperbarui menyebut `Ruangkirim`.
+   - `frontend/src/components/ApiPanel.tsx`: Kode contoh (Node.js & PHP), teks alur, dan deskripsi diperbarui menggunakan `RUANGKIRIM_API_KEY`, `RUANGKIRIM_WEBHOOK_SECRET`, dan `Ruangkirim`.
+   - `frontend/src/components/WidgetPanel.tsx`: Komentar snippet widget diubah menjadi `<!-- Tombol WhatsApp by Ruangkirim -->`.
+   - `frontend/index.html`: Judul halaman menjadi `Ruangkirim — Asisten WhatsApp AI`, favicon mengarah ke `/logo-ruangkirim.png`.
+   - `frontend/public/`: Menambahkan file `logo-ruangkirim.png` dan `assets/logo-ruangkirim.png`.
+   - `frontend/src/index.css`: Memperbarui komentar header design tokens ke `Ruangkirim`.
+   - `frontend/src/hooks.ts`: Menghapus hook dead-code `useUsage` (0 callers, tidak ada backend handler).
+
+2. **Backend User-Facing Identity:**
+   - `backend/services/email.go`: Default sender diubah menjadi `"Ruangkirim <noreply@ruangkirim.web.id>"`.
+   - `backend/handlers/verify.go`: Subjek email reset diubah menjadi `"Reset Password Ruangkirim"`, subjek verifikasi menjadi `"Verifikasi Email Ruangkirim"`, badan email menyebut `Ruangkirim`, fallback URL domain diubah ke `https://ruangkirim.web.id`.
+   - `backend/ui/banner.go`: Banner terminal `StartupOK` diubah dari `Kirimwa` menjadi `Ruangkirim`.
+
+3. **Technical Identifiers Intentionally Preserved:**
+   - Modul Go: `go.mod` tetap `kirimwa`, import internal `kirimwa/backend/...` dipertahankan utuh tanpa perubahan.
+   - DOM Debug Attributes: `data-chatloop-role` dipertahankan untuk kebutuhan telemetry dan debugging DOM.
+   - Debug API: `window.__chatloopInboxDebug` dan `DEBUG_STORAGE_KEY` dipertahankan untuk instrumentasi.
+   - Toast Host: `chatloop-toast-host` dipertahankan.
+   - Isolasi ChatLoop: Port 3030, `/var/www/chatloop`, dan database `db_wa_blast` tidak disentuh.
+
+### Status Verifikasi Staging & Produksi
+
+- **Staging Environment (`/var/www/ruangkirim-staging`):**
+  - Git branch `develop` berada di commit `f4f8075`.
+  - Frontend (`tsc -b && vite build`) dan Backend Go binary berhasil di-build.
+  - Layanan `ruangkirim-staging.service` aktif (Port 3032).
+  - Health endpoint `http://127.0.0.1:3032/health` mengembalikan `{"status":"ok"}` (HTTP 200).
+  - Judul HTML staging: `<title>Ruangkirim — Asisten WhatsApp AI</title>`.
+  - Favicon & aset logo staging merespons HTTP 200 (126.369 bytes).
+- **Production Environment (`/var/www/ruangkirim`):**
+  - Layanan `ruangkirim.service` (Port 3031) **100% TIDAK DISENTUH**, tetap aktif dan melayani traffic.
+  - Sesi WhatsApp Agent 3 (`/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db`) tetap tersambung tanpa interupsi.
+- **ChatLoop Legacy:**
+  - Tetap terisolasi dan tidak dimodifikasi.
+

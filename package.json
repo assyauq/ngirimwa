@@ -1,7 +1,7 @@
 {
-  "name": "kirimwa",
+  "name": "ruangkirim",
   "private": false,
-  "description": "Kirimwa — self-hosted WhatsApp AI business platform",
+  "description": "Ruangkirim — self-hosted WhatsApp AI business platform",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:backend": "go run ./backend",

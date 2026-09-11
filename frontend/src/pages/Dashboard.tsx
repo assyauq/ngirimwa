@@ -30,7 +30,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import VolumeOffOutlinedIcon from '@mui/icons-material/VolumeOffOutlined';
 import VolumeUpOutlinedIcon from '@mui/icons-material/VolumeUpOutlined';
 import { QRCodeSVG } from 'qrcode.react';
-import logo from '../assets/logo-chatloop-1.png';
+import logo from '../assets/logo-ruangkirim.png';
 import api from '../services/api';
 import { swalConfirm, swalAlert, swalToast } from '../services/swal';
 import { playInboxSound, unlockInboxSound } from '../services/inboxSound';
@@ -286,7 +286,7 @@ export default function Dashboard() {
     messageId: string;
   }>>([]);
   const [notificationSoundEnabled, setNotificationSoundEnabled] = useState(
-    () => localStorage.getItem('chatloop_inbox_sound') !== 'off',
+    () => (localStorage.getItem('ruangkirim_inbox_sound') ?? localStorage.getItem('chatloop_inbox_sound')) !== 'off',
   );
   const soundWarningShown = useRef(false);
   const playNotification = useCallback(() => {
@@ -748,6 +748,7 @@ BATASAN & ATURAN ANTI-BLUNDER:
   const toggleNotificationSound = async () => {
     const enabled = !notificationSoundEnabled;
     setNotificationSoundEnabled(enabled);
+    localStorage.setItem('ruangkirim_inbox_sound', enabled ? 'on' : 'off');
     localStorage.setItem('chatloop_inbox_sound', enabled ? 'on' : 'off');
     soundWarningShown.current = false;
     if (!enabled) {
@@ -1179,10 +1180,10 @@ BATASAN & ATURAN ANTI-BLUNDER:
                 bgcolor: 'background.paper', overflow: 'hidden',
               }}
             >
-              <img src={logo} alt="ChatLoop" style={{ width: 28, height: 28 }} />
+              <img src={logo} alt="Ruangkirim" style={{ width: 28, height: 28 }} />
             </Box>
             <Box sx={{ minWidth: 0, display: { xs: 'none', sm: 'block' } }}>
-              <Typography sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.01em' }}>ChatLoop</Typography>
+              <Typography sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.01em' }}>Ruangkirim</Typography>
               <Typography
                 variant="caption"
                 color="text.secondary"

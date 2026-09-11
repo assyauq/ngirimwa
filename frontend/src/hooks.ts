@@ -1900,12 +1900,3 @@ export function useAgentConnectPairing(agentId: number) {
     },
   });
 }
-
-// ---- Usage ----
-
-export function useUsage() {
-  return useQuery<{ tenant: { id: number; name: string }; numbers_used: number; max_numbers: number }>({
-    queryKey: ['usage'],
-    queryFn: async () => (await api.get('/usage')).data,
-  });
-}

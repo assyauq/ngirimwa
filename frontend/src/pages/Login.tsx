@@ -136,7 +136,9 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (loading || cooldown > 0) return;
-    if (localStorage.getItem('chatloop_inbox_sound') !== 'off') void unlockInboxSound();
+    if ((localStorage.getItem('ruangkirim_inbox_sound') ?? localStorage.getItem('chatloop_inbox_sound')) !== 'off') {
+      void unlockInboxSound();
+    }
 
     const cleanUsername = username.trim();
     const nextErrors: Record<string, string> = {};

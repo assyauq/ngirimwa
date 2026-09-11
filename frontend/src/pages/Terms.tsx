@@ -1,19 +1,19 @@
 import { Box, Container, Typography, Stack, Divider, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import heroLogo from '../assets/Logo-chatloop-gradients.png';
+import heroLogo from '../assets/logo-ruangkirim.png';
 
 const SECTIONS: { h: string; p: string[] }[] = [
   {
     h: '1. Penerimaan ketentuan',
     p: [
-      'Dengan mendaftar dan menggunakan ChatLoop, kamu menyetujui Syarat dan Ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan.',
+      'Dengan mendaftar dan menggunakan Ruangkirim, kamu menyetujui Syarat dan Ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan.',
     ],
   },
   {
     h: '2. Tentang layanan',
     p: [
-      'ChatLoop adalah layanan asisten WhatsApp bertenaga AI yang membantu bisnis membalas pelanggan secara otomatis, mengelola kontak, broadcast, pesan terjadwal, follow up, dan fitur terkait lainnya.',
+      'Ruangkirim adalah layanan asisten WhatsApp bertenaga AI yang membantu bisnis membalas pelanggan secara otomatis, mengelola kontak, broadcast, pesan terjadwal, follow up, dan fitur terkait lainnya.',
     ],
   },
   {
@@ -39,21 +39,21 @@ const SECTIONS: { h: string; p: string[] }[] = [
   {
     h: '6. Penggunaan yang dapat diterima',
     p: [
-      'Kamu dilarang menggunakan ChatLoop untuk mengirim spam, penipuan, konten ilegal, atau melanggar hukum yang berlaku.',
+      'Kamu dilarang menggunakan Ruangkirim untuk mengirim spam, penipuan, konten ilegal, atau melanggar hukum yang berlaku.',
       'Kamu wajib memperoleh persetujuan penerima sebelum mengirim pesan broadcast dan mematuhi kebijakan WhatsApp serta peraturan perlindungan data yang berlaku.',
     ],
   },
   {
     h: '7. Risiko terkait WhatsApp',
     p: [
-      'ChatLoop terhubung ke WhatsApp melalui fitur perangkat tertaut. Penggunaan otomatisasi, balasan massal, dan broadcast membawa risiko nomor WhatsApp dibatasi atau diblokir oleh pihak WhatsApp.',
-      'Risiko ini berada di luar kendali kami. Kamu menggunakan fitur otomatisasi dan broadcast atas tanggung jawab sendiri, dan ChatLoop tidak bertanggung jawab atas pemblokiran nomor yang terjadi.',
+      'Ruangkirim terhubung ke WhatsApp melalui fitur perangkat tertaut. Penggunaan otomatisasi, balasan massal, dan broadcast membawa risiko nomor WhatsApp dibatasi atau diblokir oleh pihak WhatsApp.',
+      'Risiko ini berada di luar kendali kami. Kamu menggunakan fitur otomatisasi dan broadcast atas tanggung jawab sendiri, dan Ruangkirim tidak bertanggung jawab atas pemblokiran nomor yang terjadi.',
     ],
   },
   {
     h: '8. Batasan tanggung jawab',
     p: [
-      'Layanan disediakan apa adanya. Sejauh diizinkan hukum, ChatLoop tidak bertanggung jawab atas kerugian tidak langsung, kehilangan keuntungan, atau kehilangan data yang timbul dari penggunaan layanan.',
+      'Layanan disediakan apa adanya. Sejauh diizinkan hukum, Ruangkirim tidak bertanggung jawab atas kerugian tidak langsung, kehilangan keuntungan, atau kehilangan data yang timbul dari penggunaan layanan.',
     ],
   },
   {
@@ -77,7 +77,7 @@ const SECTIONS: { h: string; p: string[] }[] = [
   {
     h: '12. Kontak',
     p: [
-      'Untuk pertanyaan tentang ketentuan ini, hubungi kami di halo@chatloop.id.',
+      'Untuk pertanyaan tentang ketentuan ini, hubungi kami di halo@ruangkirim.web.id.',
     ],
   },
 ];
@@ -88,7 +88,7 @@ export default function Terms() {
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
       <Box sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#fff' }}>
         <Container maxWidth="md" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
-          <Box component="img" src={heroLogo} alt="ChatLoop" sx={{ height: 34, cursor: 'pointer' }} onClick={() => navigate('/')} />
+          <Box component="img" src={heroLogo} alt="Ruangkirim" sx={{ height: 34, cursor: 'pointer' }} onClick={() => navigate('/')} />
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')}>Beranda</Button>
         </Container>
       </Box>
@@ -108,7 +108,7 @@ export default function Terms() {
           ))}
         </Stack>
         <Divider sx={{ my: 4 }} />
-        <Typography variant="caption" color="text.secondary">© {new Date().getFullYear()} ChatLoop. Seluruh hak cipta dilindungi.</Typography>
+        <Typography variant="caption" color="text.secondary">© {new Date().getFullYear()} Ruangkirim. Seluruh hak cipta dilindungi.</Typography>
       </Container>
     </Box>
   );

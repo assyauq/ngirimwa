@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -58,16 +59,22 @@ func EnvInt(key string, defaultVal int) int {
 }
 
 func EnvBool(key string, defaultVal bool) bool {
-	v := os.Getenv(key)
+	v := strings.ToLower(strings.TrimSpace(os.Getenv(key)))
 	if v == "" {
 		return defaultVal
 	}
 	switch v {
-	case "1", "true", "TRUE", "yes", "on":
+	case "1", "true", "yes", "on":
 		return true
-	case "0", "false", "FALSE", "no", "off":
+	case "0", "false", "no", "off":
 		return false
 	default:
 		return defaultVal
 	}
+}
+
+// AutoMigrateEnabled mengembalikan status apakah migration mode aktif via env AUTO_MIGRATE.
+// Default mutlak adalah false (mode aman produksi, tanpa AutoMigrate dan tanpa DDL otomatis).
+func AutoMigrateEnabled() bool {
+	return EnvBool("AUTO_MIGRATE", false)
 }

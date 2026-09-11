@@ -30,6 +30,13 @@ func fatalDatabaseStartup(message string, err error) {
 }
 
 func Init() {
+	autoMigrate := config.AutoMigrateEnabled()
+	if autoMigrate {
+		log.Println("AutoMigrate mode ENABLED (AUTO_MIGRATE=true: mode migrasi developer)")
+	} else {
+		log.Println("AutoMigrate mode DISABLED (AUTO_MIGRATE=false: mode aman produksi)")
+	}
+
 	host := config.Env("DB_HOST", "localhost")
 	port := config.Env("DB_PORT", "3306")
 	user := config.Env("DB_USER", "root")
@@ -41,12 +48,15 @@ func Init() {
 		name = "wa_assistant"
 	}
 
-	// Buat database-nya kalau belum ada (connect tanpa nama DB dulu).
-	rootDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/?charset=utf8mb4&parseTime=True&loc=Local", user, pass, host, port)
-	if rootDB, err := gorm.Open(mysql.Open(rootDSN), &gorm.Config{}); err == nil {
-		rootDB.Exec("CREATE DATABASE IF NOT EXISTS `" + name + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
-		if sqlDB, e := rootDB.DB(); e == nil {
-			sqlDB.Close()
+	// Hanya buat database jika autoMigrate aktif (mode development).
+	// Pada AUTO_MIGRATE=false (produksi), database diasumsikan sudah ada dan tidak boleh menjalankan DDL ke root.
+	if autoMigrate {
+		rootDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/?charset=utf8mb4&parseTime=True&loc=Local", user, pass, host, port)
+		if rootDB, err := gorm.Open(mysql.Open(rootDSN), &gorm.Config{}); err == nil {
+			rootDB.Exec("CREATE DATABASE IF NOT EXISTS `" + name + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+			if sqlDB, e := rootDB.DB(); e == nil {
+				sqlDB.Close()
+			}
 		}
 	}
 
@@ -65,38 +75,48 @@ func Init() {
 		sqlDB.SetConnMaxLifetime(time.Duration(config.EnvInt("DB_CONN_MAX_LIFETIME_MIN", 30)) * time.Minute)
 	}
 
-	if err := preflightCanonicalChatSchema(); err != nil {
-		fatalDatabaseStartup("Database tidak aman sebelum migrasi Inbox", err)
-	}
-	if err := DB.AutoMigrate(
-		&models.User{}, &models.UserAgentAssignment{}, &models.CSActivityLog{}, &models.LoginThrottle{}, &models.Agent{}, &models.ChatHistory{}, &models.InboxReadState{}, &models.Setting{},
-		&models.AITurn{},
-		&models.Knowledge{}, &models.Handoff{}, &models.Contact{}, &models.ConversationMemory{},
-		&models.CrawlJob{}, &models.CrawlPage{},
-		&models.Tenant{},
-		&models.Broadcast{}, &models.BroadcastRecipient{}, &models.OptOut{}, &models.ContactConsent{},
-		&models.ScheduledMessage{}, &models.ScheduledStatus{}, &models.Label{}, &models.ChatLabel{}, &models.AutoReply{},
-		&models.Flow{}, &models.FlowSession{}, &models.OTPCode{},
-		&models.Template{},
-		&models.FollowUp{}, &models.FollowUpStep{}, &models.FollowUpEnrollment{},
-		&models.Product{}, &models.ProductCheckoutSession{}, &models.ProductOrder{},
-		&models.AIForm{}, &models.AIFormSession{}, &models.AIFormSubmission{},
-		&models.AppSetting{},
-		&models.ClosingForm{}, &models.ClosingRecord{},
-		&models.ShippingCity{},
-		&models.GroupGuardConfig{}, &models.GroupModerationLog{},
-		&models.MetaConversionEvent{},
-	); err != nil {
-		fatalDatabaseStartup("Migrasi database gagal", err)
+	if !autoMigrate {
+		// Jalur aman produksi (AUTO_MIGRATE=false):
+		// Hanya lakukan validasi skema read-only. Tidak ada AutoMigrate dan tidak ada DDL.
+		if err := preflightCurrentSchema(); err != nil {
+			fatalDatabaseStartup("Preflight skema database gagal (AUTO_MIGRATE=false)", err)
+		}
+		log.Println("Database schema preflight PASSED (read-only)")
+	} else {
+		// Jalur migrasi developer (AUTO_MIGRATE=true):
+		if err := preflightCanonicalChatSchema(); err != nil {
+			fatalDatabaseStartup("Database tidak aman sebelum migrasi Inbox", err)
+		}
+		if err := DB.AutoMigrate(
+			&models.User{}, &models.UserAgentAssignment{}, &models.CSActivityLog{}, &models.LoginThrottle{}, &models.Agent{}, &models.ChatHistory{}, &models.InboxReadState{}, &models.Setting{},
+			&models.AITurn{},
+			&models.Knowledge{}, &models.Handoff{}, &models.Contact{}, &models.ConversationMemory{},
+			&models.CrawlJob{}, &models.CrawlPage{},
+			&models.Tenant{},
+			&models.Broadcast{}, &models.BroadcastRecipient{}, &models.OptOut{}, &models.ContactConsent{},
+			&models.ScheduledMessage{}, &models.ScheduledStatus{}, &models.Label{}, &models.ChatLabel{}, &models.AutoReply{},
+			&models.Flow{}, &models.FlowSession{}, &models.OTPCode{},
+			&models.Template{},
+			&models.FollowUp{}, &models.FollowUpStep{}, &models.FollowUpEnrollment{},
+			&models.Product{}, &models.ProductCheckoutSession{}, &models.ProductOrder{},
+			&models.AIForm{}, &models.AIFormSession{}, &models.AIFormSubmission{},
+			&models.AppSetting{},
+			&models.ClosingForm{}, &models.ClosingRecord{},
+			&models.ShippingCity{},
+			&models.GroupGuardConfig{}, &models.GroupModerationLog{},
+			&models.MetaConversionEvent{},
+		); err != nil {
+			fatalDatabaseStartup("Migrasi database gagal", err)
+		}
+		if err := ensureCanonicalChatMessageIDs(); err != nil {
+			fatalDatabaseStartup("Database tidak aman untuk sinkronisasi Inbox", err)
+		}
 	}
 
 	backfillKnowledgeCharCount()
 	backfillHistoricalDeliveryStatus()
 	backfillInboxLastMsgAt()
 	normalizeSenderFields()
-	if err := ensureCanonicalChatMessageIDs(); err != nil {
-		fatalDatabaseStartup("Database tidak aman untuk sinkronisasi Inbox", err)
-	}
 	_ = os.Remove(".tmp/backend-startup-error.log")
 	recoverStuckCrawlJobs()
 	seedSuperAdmin()
@@ -420,6 +440,140 @@ type canonicalWAMessageIDColumnInfo struct {
 	DataType      string `gorm:"column:data_type"`
 	MaxLength     int64  `gorm:"column:max_length"`
 	CollationName string `gorm:"column:collation_name"`
+}
+
+// RequiredCurrentTables adalah daftar tabel yang wajib ada untuk runtime saat ini.
+// CATATAN: Tabel SaaS Fase 2B (tenant_members, plans, plan_features, subscriptions,
+// usage_counters, audit_logs) sengaja BELUM dimasukkan di sini karena baru akan
+// dibuat pada migrasi eksplisit checkpoint berikutnya.
+var RequiredCurrentTables = []string{
+	"users",
+	"user_agent_assignments",
+	"cs_activity_logs",
+	"login_throttles",
+	"agents",
+	"chat_histories",
+	"inbox_read_states",
+	"settings",
+	"ai_turns",
+	"knowledges",
+	"handoffs",
+	"contacts",
+	"conversation_memories",
+	"crawl_jobs",
+	"crawl_pages",
+	"tenants",
+	"broadcasts",
+	"broadcast_recipients",
+	"opt_outs",
+	"contact_consents",
+	"scheduled_messages",
+	"scheduled_statuses",
+	"labels",
+	"chat_labels",
+	"auto_replies",
+	"flows",
+	"flow_sessions",
+	"otp_codes",
+	"templates",
+	"follow_ups",
+	"follow_up_steps",
+	"follow_up_enrollments",
+	"products",
+	"product_checkout_sessions",
+	"product_orders",
+	"ai_forms",
+	"ai_form_sessions",
+	"ai_form_submissions",
+	"app_settings",
+	"closing_forms",
+	"closing_records",
+	"shipping_cities",
+	"group_guard_configs",
+	"group_moderation_logs",
+	"meta_conversion_events",
+}
+
+// CheckMissingTables membandingkan tabel yang ada terhadap daftar tabel wajib.
+func CheckMissingTables(existing []string, required []string) []string {
+	set := make(map[string]struct{}, len(existing))
+	for _, t := range existing {
+		set[strings.ToLower(strings.TrimSpace(t))] = struct{}{}
+	}
+	var missing []string
+	for _, r := range required {
+		if _, ok := set[strings.ToLower(strings.TrimSpace(r))]; !ok {
+			missing = append(missing, r)
+		}
+	}
+	return missing
+}
+
+// ValidateCanonicalChatSchemaReadonly memvalidasi kesiapan skema chat_histories secara read-only tanpa DDL.
+func ValidateCanonicalChatSchemaReadonly(
+	waIDExists bool, waIDInfo canonicalWAMessageIDColumnInfo,
+	keyExists bool, keyInfo canonicalGeneratedColumnInfo,
+	indexExists bool, indexParts []canonicalIndexPart,
+) error {
+	if !waIDExists {
+		return fmt.Errorf("kolom chat_histories.wa_msg_id tidak ditemukan")
+	}
+	if !canonicalWAMessageIDColumnValid(waIDInfo) {
+		return fmt.Errorf("kolom chat_histories.wa_msg_id tidak valid atau belum ascii_bin (type=%s, length=%d, collation=%s)",
+			waIDInfo.DataType, waIDInfo.MaxLength, waIDInfo.CollationName)
+	}
+	if !keyExists {
+		return fmt.Errorf("kolom generated chat_histories.wa_msg_key tidak ditemukan")
+	}
+	if !canonicalGeneratedColumnValid(
+		keyInfo.DataType,
+		keyInfo.MaxLength,
+		keyInfo.CollationName,
+		keyInfo.Extra,
+		keyInfo.GenerationExpression,
+	) {
+		return invalidCanonicalGeneratedColumnError(keyInfo)
+	}
+	if !indexExists {
+		return fmt.Errorf("unique index chat_histories.uidx_chat_agent_wa_key tidak ditemukan")
+	}
+	if !canonicalMessageIndexValid(indexParts) {
+		return fmt.Errorf("unique index chat_histories.uidx_chat_agent_wa_key tidak valid: bagian=%v", indexParts)
+	}
+	return nil
+}
+
+// preflightCurrentSchema memvalidasi keberadaan seluruh tabel dan skema kritis secara read-only saat AUTO_MIGRATE=false.
+// Tidak ada operasi mutasi data ataupun eksekusi DDL yang dijalankan pada fungsi ini.
+func preflightCurrentSchema() error {
+	var tableNames []string
+	if err := DB.Raw(`
+		SELECT TABLE_NAME
+		FROM information_schema.TABLES
+		WHERE TABLE_SCHEMA = DATABASE()
+	`).Scan(&tableNames).Error; err != nil {
+		return fmt.Errorf("gagal membaca daftar tabel dari information_schema: %w", err)
+	}
+
+	missing := CheckMissingTables(tableNames, RequiredCurrentTables)
+	if len(missing) > 0 {
+		return fmt.Errorf("skema database belum siap: %d tabel wajib belum ditemukan (%s); jalankan migrasi dengan AUTO_MIGRATE=true atau gunakan skrip migrasi eksplisit", len(missing), strings.Join(missing, ", "))
+	}
+
+	waIDExists, waIDInfo, err := readCanonicalWAMessageIDColumn()
+	if err != nil {
+		return err
+	}
+	keyExists, keyInfo, err := readCanonicalGeneratedColumn()
+	if err != nil {
+		return err
+	}
+	indexExists, indexParts, err := readCanonicalMessageIndex()
+	if err != nil {
+		return err
+	}
+
+	return ValidateCanonicalChatSchemaReadonly(waIDExists, waIDInfo, keyExists, keyInfo, indexExists, indexParts)
 }
 
 func preflightCanonicalChatSchema() error {
@@ -1056,13 +1210,15 @@ func seedDefaultTenant() {
 	if agentCount == 0 {
 		def := models.Agent{TenantID: 1, Name: "CS Utama", Tone: "ramah"}
 		DB.Create(&def)
-		DB.Model(&models.Knowledge{}).Where("agent_id = 0 OR agent_id IS NULL").Update("agent_id", def.ID)
-		DB.Model(&models.ChatHistory{}).Where("agent_id = 0 OR agent_id IS NULL").Update("agent_id", def.ID)
 		log.Printf("Seeder: agent default 'CS Utama' dibuat untuk tenant 1")
 	}
 
-	// Pindahkan data yatim ke tenant 1.
-	DB.Model(&models.Agent{}).Where("tenant_id = 0 OR tenant_id IS NULL").Update("tenant_id", 1)
-	DB.Model(&models.Knowledge{}).Where("agent_id = 0 OR agent_id IS NULL").Update("agent_id", 1)
-	DB.Model(&models.ChatHistory{}).Where("agent_id = 0 OR agent_id IS NULL").Update("agent_id", 1)
+	// Pindahkan data yatim ke tenant 1 hanya pada mode migrasi aktif (AUTO_MIGRATE=true).
+	// Pada mode produksi aman (AUTO_MIGRATE=false), mutasi data startup ditiadakan.
+	// CATATAN KRITIS: Mutasi knowledge orphan (agent_id = 1) telah DIHAPUS PERMANEN
+	// karena agent_id = NULL merupakan status kepemilikan valid untuk tenant-wide knowledge di Phase 2B.
+	if config.AutoMigrateEnabled() {
+		DB.Model(&models.Agent{}).Where("tenant_id = 0 OR tenant_id IS NULL").Update("tenant_id", 1)
+		DB.Model(&models.ChatHistory{}).Where("agent_id = 0 OR agent_id IS NULL").Update("agent_id", 1)
+	}
 }

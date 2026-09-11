@@ -473,19 +473,33 @@ ON DUPLICATE KEY UPDATE used_value = used_value + VALUES(used_value), updated_at
 - **Active History:** 29,941 chat messages, 5,163 read states, 532 contacts
 - **Active WhatsApp Session:** `/var/lib/ruangkirim/whatsapp/wa-session-agent-3.db`
 
-### 13.2 Grandfathering Execution Strategy
-1. **Tenant Attributes:**
+### 13.2 Grandfathering Execution Strategy & Invariants
+Tenant 1 is the existing single-tenant live production workspace. Under Phase 2B, Tenant 1 is classified as a **migration-time grandfathered/manual administrative exception** whose persisted representation must remain fully compatible with the canonical subscription schema without altering the general multi-tenant architecture.
+
+#### Architectural Invariants:
+1. **Canonical Schema Alignment:**
+   - Tenant 1 uses the canonical **`business`** plan (`code = 'business'`).
+   - No new plan codes (e.g. `enterprise`, `grandfathered`, `lifetime`) are introduced.
+   - No new database columns or schema flags are added.
+2. **Persisted Record Values:**
    - `tenants.slug = 'default'`
    - `tenants.status = 'active'` (NOT trialing)
-   - `tenants.trial_ends_at = NULL` (No artificial commercial expiration)
-2. **Grandfathered Subscription:**
-   - Tenant 1 receives an **explicitly grandfathered/manual subscription treatment**. It is exempt from normal trial expiration and automated commercial expiry.
-   - The exact persisted representation must conform to the approved canonical subscription schema and migration decision (associating Tenant 1 with the canonical `business` plan under manual/grandfathered administration with `status = 'active'`, `is_current = 1`, and active operational status).
-   - No fictional plan codes or extra columns are introduced.
-3. **Tenant Membership:**
+   - `tenants.trial_ends_at = NULL`
+   - `subscriptions.tenant_id = 1`
+   - `subscriptions.plan_id = (SELECT id FROM plans WHERE code = 'business')`
+   - `subscriptions.status = 'active'`
+   - `subscriptions.is_current = 1`
+   - `subscriptions.current_period_start = NOW()`
+   - `subscriptions.current_period_end`: In accordance with the canonical database schema, `current_period_end` remains `DATETIME(3) NOT NULL`. Tenant 1's administrative period value is strictly a **technical migration representation and NOT a commercial expiry date**.
+3. **Exemption Semantics & Entitlement Isolation:**
+   - Tenant 1 is exempt from normal trial expiration and automated commercial subscription expiry.
+   - Entitlement and scheduled reconciliation logic **MUST NOT** treat Tenant 1's grandfathered administrative treatment as an ordinary expiring commercial subscription.
+   - The entitlement/reconciliation implementation must not use the administrative `current_period_end` value to expire Tenant 1.
+   - The implementation **MUST NOT hard-code `tenant_id == 1` as the general entitlement architecture**. Instead, Tenant 1 is maintained as a controlled migration/bootstrap administrative exception isolated from generic commercial billing flows.
+4. **Tenant Membership:**
    - Attach User 1 (superadmin) as owner in `tenant_members` (`tenant_id = 1, user_id = 1, role = 'owner'`).
-4. **Safety Verification:**
-   - Tenant 1 operates without trial popups or automated suspension.
+5. **Operational Verification:**
+   - Tenant 1 operates without commercial trial popups, artificial expiry limits, or automated suspension.
    - Agent 3 WhatsApp session remains connected and operational throughout.
 
 ---
@@ -582,7 +596,7 @@ In Phase 2B.3, code modifications will be grouped into distinct layers:
 | **TS-I** | Subscription Expiration| Paid sub period expires | Scheduled reconciliation | Transitions to `past_due` then `suspended` | P2 |
 | **TS-J** | Past Due Grace Period | Tenant in `past_due` | Test inbound vs outbound message | Inbound recorded; outbound warns/blocks | P2 |
 | **TS-K** | Suspension | Tenant in `suspended` | Call dashboard / API endpoints | Read-only mode; outbound blocked | P1 |
-| **TS-L** | Tenant 1 Grandfathering| Inspect Tenant 1 | Check limits & status | Active, exempt from trial expiry | P0 |
+| **TS-L** | Tenant 1 Grandfathering| Inspect Tenant 1 | Check limits & status | Active on canonical business tier, exempt from automated expiry | P0 |
 | **TS-M** | Sender Quota (Trial) | Trial tenant connects 1 agent | Attempt connecting 2nd agent | 2nd connection rejected (limit = 1) | P0 |
 | **TS-N** | Sub Concurrency | 2 threads activate current sub | Concurrent `is_current = 1` updates | At most one succeeds; UK constraint enforced | P0 |
 | **TS-O** | Usage Counters | Send 5 outbound messages | Inspect `usage_counters` table | Count atomically equals 5 | P1 |
@@ -737,17 +751,20 @@ The following conditions must be resolved before production DDL execution:
    Which payment gateway provider (e.g., Midtrans, Xendit, Tripay) will be integrated in Phase 2C for automated recurring billing?
    *Current Status:* Open commercial decision. Phase 2B implements the subscription state machine and manual billing reconciliation.
 2. **Inbound WhatsApp Metering Policy:**
-   Should incoming WhatsApp messages consume commercial quota, or remain free/unmetered?
-   *Recommended Policy:* Inbound processing unmetered; quota consumption applies exclusively to outbound messages, broadcast dispatches, and completed AI turns.
-3. **Scheduled Reconciliation Architecture:**
+   - Inbound messages: RECOMMENDED as unmetered (free customer communication).
+   - Outbound messages: Commercial quota metric (`messages_outbound`).
+   - AI turns: Commercial quota metric (`ai_turns`).
+   - Broadcast recipients: Currently tracked as an analytics metric (`broadcast_recipients`).
+   *Current Status:* Inbound processing recommended as unmetered.
+3. **Broadcast Quota Semantics vs General Outbound Quota:**
+   Whether broadcast delivery additionally consumes the general outbound quota (`messages_outbound`) remains an **OPEN COMMERCIAL DECISION**.
+   *Critical Invariant:* A single broadcast delivery must not accidentally consume the same commercial allowance twice through both `broadcast_recipients` and `messages_outbound`. The implementation must define which metric is authoritative for each quota before quota gating is enforced.
+4. **Scheduled Reconciliation Architecture:**
    Should subscription and trial expiration reconciliation execute as an internal background Go ticker or an external systemd timer / cron calling an internal endpoint?
    *Recommended Policy:* Internal Go ticker running every 1 hour, complemented by request-time lazy evaluation during entitlement checks.
-4. **Inbound Processing Behavior During Suspension:**
+5. **Inbound Processing Behavior During Suspension:**
    When a tenant is suspended, should customer inbound chats still be received?
    *Recommended Policy:* Silently receive and store inbound messages in `chat_histories` to preserve customer conversation history, while blocking human outbound responses and disabling AI auto-replies.
-5. **Commercial Quota Semantics for Broadcast Dispatches:**
-   Should broadcast recipient deliveries consume the general outbound message quota or a separate broadcast allocation?
-   *Recommended Policy:* Define whether `messages_outbound` is the sole authoritative quota, avoiding double-counting with `broadcast_recipients`.
 
 ---
 
